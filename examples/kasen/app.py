@@ -25,7 +25,7 @@ from openvons.voice.state import StateDef, StateMachine
 
 CONFIRM_TIMEOUT_SEC = 8.0
 ZOOM_STEP = 1.5
-DEFAULT_ZOOM = 1.5     # 表示直後は一段拡大した状態から (ユーザー要望)
+DEFAULT_ZOOM = 1.0     # 画像は元の解像度で表示する (引き伸ばすと荒れる)。拡大はホイールか「寄って」で
 MAX_ZOOM = 6.0
 
 INTENTS = [

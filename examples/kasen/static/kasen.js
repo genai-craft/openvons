@@ -124,6 +124,7 @@ $('.imgwrap') && $('.imgwrap').addEventListener('wheel', (e) => {
 }, { passive: false });
 /* ダブルクリックで等倍に戻す、⛶ でブラウザの全画面 */
 $('.imgwrap') && $('.imgwrap').addEventListener('dblclick', () => { applyZoom(1); send({ type: 'intent', intent: 'zoom_out' }); });
+$('#camCard').addEventListener('click', (e) => { if (e.target === e.currentTarget) send({ type: 'intent', intent: 'back' }); });   // 背景クリックで閉じる
 $('#fullBtn').onclick = () => { const el = $('#camCard'); if (!document.fullscreenElement) el.requestFullscreen?.(); else document.exitFullscreen?.(); };
 
 /* ---------------- マイク ---------------- */
