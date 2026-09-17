@@ -3,8 +3,16 @@
 .leaflet-tile{filter:brightness(.72) contrast(1.05) saturate(.7)}
 .st-label{background:rgba(11,15,20,.85);color:#e6edf3;border:1px solid #26303b;border-radius:4px;padding:1px 5px;font-size:11px;white-space:nowrap;box-shadow:none}
 .st-label.focus{color:#4cc2ff;border-color:#4cc2ff;font-weight:700;font-size:13px}
-.card{position:absolute;left:16px;right:16px;top:52px;bottom:34px;background:rgba(17,23,31,.97);border:1px solid var(--acc);border-radius:10px;padding:12px;display:flex;flex-direction:column;gap:8px;z-index:20}
+/* 選択中は地図ペイン全体を覆うモーダル。画像を最大化する */
+.card{position:absolute;inset:8px;background:rgba(12,16,22,.98);border:1px solid var(--acc);border-radius:10px;padding:10px 12px;display:flex;flex-direction:column;gap:6px;z-index:20}
 .card b{font-size:20px}
+.imgwrap{cursor:zoom-in}
+.fullbtn{position:absolute;right:8px;top:8px;background:rgba(0,0,0,.55);border:1px solid var(--line);color:#fff;border-radius:6px;padding:4px 8px;font-size:16px}
+.lightbox{position:fixed;inset:0;z-index:1000;background:rgba(0,0,0,.96);display:flex;flex-direction:column}
+.lbhead{display:flex;align-items:center;gap:12px;padding:10px 16px;color:#fff}.lbhead b{font-size:20px}.lbhead .right{margin-left:auto}
+#lbClose{background:transparent;border:1px solid var(--line);color:#fff;font-size:16px}
+.lightbox img{flex:1;min-height:0;width:100%;object-fit:contain;transition:transform .2s;transform-origin:center;cursor:zoom-out}
+.lbfoot{padding:6px 16px}
 .camhead{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
 .cardbtns{display:flex;gap:6px;flex-wrap:wrap}.cardbtns .back{border-color:var(--acc)}
 .imgwrap{flex:1;min-height:200px;overflow:hidden;background:#000;border-radius:8px;position:relative}

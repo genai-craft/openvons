@@ -95,19 +95,35 @@ function drawFocus() {
   const m = state.markers[s.camera.id]; if (m) { m.setStyle({ radius: 11 }); const t = m.getTooltip(); if (t && t.getElement()) t.getElement().classList.add('focus'); }
 }
 function renderCard(s) {
-  const card = $('#camCard'); if (!s || !s.camera) { card.hidden = true; return; }
+  const card = $('#camCard'); if (!s || !s.camera) { card.hidden = true; closeLightbox(); return; }
   card.hidden = false; const all = state.all || state.cams; const c = all.find(x => x.id === s.camera.id) || s.camera;
   $('#camLabel').innerHTML = `${c.label} <span class="yomi">${(c.readings || [])[0] || ''}</span>`; $('#camMeta').textContent = `${c.attrs.river} / ${c.attrs.office}${c.attrs.pref ? ' / ' + c.attrs.pref : ''}`;
   const img = $('#camImg');
   const stamp = Math.floor((s.view.refreshed_at || 0) * 1000);
   if (c.attrs.image_url) { img.hidden = false; img.src = `/api/image/${c.id}?t=${stamp}`; $('#imgNote').textContent = `ライブ画像 (約 ${c.attrs.interval_min || 10} 分ごとに更新)。出典: 関東地方整備局 ${c.attrs.office}`; }
   else { img.hidden = true; $('#imgNote').textContent = 'この地点は画像 URL が未登録です'; }
-  localZoom = null; img.style.transform = `scale(${s.view.zoom || 1})`;
+  localZoom = null; img.style.transform = `scale(${s.view.zoom || 1})`; syncLightbox();
   const same = all.filter(x => x.attrs.river === c.attrs.river).sort((a, b) => a.attrs.order - b.attrs.order);
   const i = same.findIndex(x => x.id === c.id); const up = same[i - 1], down = same[i + 1];
   $('#camNeighbors').innerHTML = `上流 ${up ? '▲ ' + up.label + yomi(up) : '（最上流）'}　<span class="cur">${c.label}</span>　下流 ${down ? down.label + yomi(down) + ' ▼' : '（最下流）'}`;
 }
 window.addEventListener('resize', () => map.invalidateSize());
+/* 全画面 (ライトボックス): 画像クリックか ⛶ で開き、クリック / Esc / 地図に戻る で閉じる */
+const lb = $('#lightbox');
+function openLightbox() { const s = state.snap; if (!s || !s.camera) return; lb.hidden = false; syncLightbox(); }
+function closeLightbox() { lb.hidden = true; }
+function syncLightbox() {
+  if (lb.hidden) return; const s = state.snap; if (!s || !s.camera) { closeLightbox(); return; }
+  const all = state.all || state.cams; const c = all.find(x => x.id === s.camera.id) || s.camera;
+  $('#lbLabel').innerHTML = `${c.label} <span class="yomi">${(c.readings || [])[0] || ''}</span>`; $('#lbMeta').textContent = `${c.attrs.river} / ${c.attrs.office}`;
+  const src = $('#camImg').src; if ($('#lbImg').src !== src) $('#lbImg').src = src;
+  $('#lbImg').style.transform = $('#camImg').style.transform; $('#lbNote').textContent = $('#imgNote').textContent + '　' + (s.attribution || '');
+}
+$('#camImg').addEventListener('click', openLightbox); $('#fullBtn').onclick = (e) => { e.stopPropagation(); openLightbox(); };
+$('#lbClose').onclick = closeLightbox; $('#lbImg').addEventListener('click', closeLightbox);
+lb.addEventListener('wheel', (e) => { e.preventDefault(); const cur = localZoom ?? (state.snap.view.zoom || 1); localZoom = Math.min(6, Math.max(1, cur * (e.deltaY < 0 ? 1.5 : 1 / 1.5))); $('#lbImg').style.transform = `scale(${localZoom})`; $('#camImg').style.transform = `scale(${localZoom})`;
+  const now = Date.now(); if (now - wheelAt > 250) { wheelAt = now; send({ type: 'intent', intent: e.deltaY < 0 ? 'zoom_in' : 'zoom_out' }); } }, { passive: false });
+
 /* ライブ画像の上でマウスホイール → 拡大/縮小 (音声の「寄って / 引いて」と同じ状態機械を通す)。ローカルでも即時に反映して待ち時間を隠す */
 let wheelAt = 0, localZoom = null;
 $('#camImg').parentElement.addEventListener('wheel', (e) => {
@@ -192,7 +208,7 @@ $('#sayForm').onsubmit = async (e) => { e.preventDefault(); const t = $('#sayTex
 $('#quick').onclick = (e) => { const b = e.target.closest('button'); if (b) say(b.dataset.say); };
 async function say(text) { $('#speech').textContent = '… TTS 合成中'; const snr = $('#saySnr').value; const r = await fetch('/api/say', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ session: state.session, text, snr_db: snr ? +snr : null }) }); const j = await r.json(); if (j.error) $('#speech').textContent = 'エラー: ' + j.error; }
 $('#camCard').onclick = (e) => { const b = e.target.closest('button'); if (b) send({ type: 'intent', intent: b.dataset.intent }); };
-document.addEventListener('keydown', (e) => { if (e.target.tagName === 'INPUT') return; const map = { Escape: 'back', ArrowUp: 'upstream', ArrowDown: 'downstream', '+': 'zoom_in', '=': 'zoom_in', '-': 'zoom_out', r: 'refresh' }; const it = map[e.key]; if (it && state.snap && state.snap.state !== 'MAP') { e.preventDefault(); send({ type: 'intent', intent: it }); } });
+document.addEventListener('keydown', (e) => { if (e.target.tagName === 'INPUT') return; if (e.key === 'Escape' && !lb.hidden) { closeLightbox(); return; } const map = { Escape: 'back', ArrowUp: 'upstream', ArrowDown: 'downstream', '+': 'zoom_in', '=': 'zoom_in', '-': 'zoom_out', r: 'refresh' }; const it = map[e.key]; if (it && state.snap && state.snap.state !== 'MAP') { e.preventDefault(); send({ type: 'intent', intent: it }); } });
 $('#scopeSel').onchange = (e) => useScope(e.target.value);
 $('#tabMonitor').onclick = () => { $('#monitor').hidden = false; $('#register').hidden = true; $('#tabMonitor').classList.add('active'); $('#tabRegister').classList.remove('active'); setTimeout(() => map.invalidateSize(), 50); };
 $('#tabRegister').onclick = async () => { $('#monitor').hidden = true; $('#register').hidden = false; $('#tabRegister').classList.add('active'); $('#tabMonitor').classList.remove('active'); if (!state.hier) await loadHierarchy(); renderCamTable(); };
