@@ -61,6 +61,7 @@ L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19, att
 const layers = { lines: L.layerGroup().addTo(map), cams: L.layerGroup().addTo(map) };
 const PALETTE = ['#4cc2ff', '#3fb950', '#d29922', '#f85149', '#a371f7', '#79c0ff', '#ff7b72', '#56d364', '#e3b341', '#f778ba'];
 const riverColor = {};
+const yomi = (c) => (c && c.readings && c.readings[0]) ? `<small class="yomi">${c.readings[0]}</small>` : '';
 async function loadCams() {
   const sc = state.scopes.find(s => s.id === (state.snap && state.snap.scope.id)); if (!sc) return;
   if (!state.all) state.all = await (await fetch('/api/cameras?limit=20000')).json();
@@ -82,7 +83,7 @@ function drawBase() {
   const many = state.cams.length > 40;
   for (const c of state.cams) { if (c.attrs.lat == null) continue;
     const m = L.circleMarker([c.attrs.lat, c.attrs.lng], { radius: 7, color: '#fff', weight: 2, fillColor: colorOf(c.attrs.river), fillOpacity: .95 }).addTo(layers.cams);
-    m.bindTooltip(c.label, { permanent: !many, direction: 'top', offset: [0, -7], className: 'st-label' });
+    m.bindTooltip(`${c.label}${yomi(c)}`, { permanent: !many, direction: 'top', offset: [0, -7], className: 'st-label' });
     m.on('click', () => send({ type: 'click_camera', id: c.id, label: c.label }));
     state.markers[c.id] = m; }
 }
@@ -95,8 +96,8 @@ function drawFocus() {
 }
 function renderCard(s) {
   const card = $('#camCard'); if (!s || !s.camera) { card.hidden = true; return; }
-  card.hidden = false; const c = s.camera; const all = state.all || state.cams;
-  $('#camLabel').textContent = c.label; $('#camMeta').textContent = `${c.attrs.river} / ${c.attrs.office}${c.attrs.pref ? ' / ' + c.attrs.pref : ''}`;
+  card.hidden = false; const all = state.all || state.cams; const c = all.find(x => x.id === s.camera.id) || s.camera;
+  $('#camLabel').innerHTML = `${c.label} <span class="yomi">${(c.readings || [])[0] || ''}</span>`; $('#camMeta').textContent = `${c.attrs.river} / ${c.attrs.office}${c.attrs.pref ? ' / ' + c.attrs.pref : ''}`;
   const img = $('#camImg');
   const stamp = Math.floor((s.view.refreshed_at || 0) * 1000);
   if (c.attrs.image_url) { img.hidden = false; img.src = `/api/image/${c.id}?t=${stamp}`; $('#imgNote').textContent = `ライブ画像 (約 ${c.attrs.interval_min || 10} 分ごとに更新)。出典: 関東地方整備局 ${c.attrs.office}`; }
@@ -104,7 +105,7 @@ function renderCard(s) {
   img.style.transform = `scale(${s.view.zoom || 1})`;
   const same = all.filter(x => x.attrs.river === c.attrs.river).sort((a, b) => a.attrs.order - b.attrs.order);
   const i = same.findIndex(x => x.id === c.id); const up = same[i - 1], down = same[i + 1];
-  $('#camNeighbors').innerHTML = `上流 ${up ? '▲ ' + up.label : '（最上流）'}　<span class="cur">${c.label}</span>　下流 ${down ? down.label + ' ▼' : '（最下流）'}`;
+  $('#camNeighbors').innerHTML = `上流 ${up ? '▲ ' + up.label + yomi(up) : '（最上流）'}　<span class="cur">${c.label}</span>　下流 ${down ? down.label + yomi(down) + ' ▼' : '（最下流）'}`;
 }
 window.addEventListener('resize', () => map.invalidateSize());
 /* ---------------- マイク ---------------- */

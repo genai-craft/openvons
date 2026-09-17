@@ -89,7 +89,7 @@ function renderWall() {
     const div = document.createElement('div'); div.className = 'tile'; div.dataset.id = c.id;
     const cv = document.createElement('canvas'); cv.width = 320; cv.height = 180;
     drawScene(cv.getContext('2d'), c, { pan: 0, tilt: 0, zoom: 1 }, 320, 180, true);
-    const lbl = document.createElement('div'); lbl.className = 'lbl'; lbl.innerHTML = `${c.label}<small>${c.attrs.route_label}</small>`;
+    const lbl = document.createElement('div'); lbl.className = 'lbl'; lbl.innerHTML = `${c.label}<small>${c.attrs.route_label}</small><small class="yomi">${(c.readings || [])[0] || ''}</small>`;
     div.append(cv, lbl); div.onclick = () => send({ type: 'click_camera', id: c.id, label: c.label });
     wall.append(div);
   }
@@ -98,7 +98,7 @@ function flashTile(id) { const t = document.querySelector(`.tile[data-id="${id}"
 
 function renderFocus(s) {
   const c = state.cams.find(x => x.id === s.camera.id) || { id: s.camera.id, label: s.camera.label, attrs: s.camera.attrs };
-  $('#focusLabel').textContent = c.label;
+  $('#focusLabel').innerHTML = `${c.label} <span class="yomi">${(c.readings || [])[0] || ''}</span>`;
   $('#focusMeta').textContent = `${c.attrs.office} / ${c.attrs.route_label} / ${c.attrs.direction}`;
   const p = s.ptz || { pan: 0, tilt: 0, zoom: 1 };
   $('#ptzInfo').textContent = `pan ${p.pan.toFixed(0)}°  tilt ${p.tilt.toFixed(0)}°  zoom ×${p.zoom.toFixed(1)}  preset ${p.presets ? p.presets.length : 0}`;

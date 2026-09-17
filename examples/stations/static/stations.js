@@ -61,6 +61,7 @@ L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19, att
 const layers = { lines: L.layerGroup().addTo(map), stations: L.layerGroup().addTo(map), route: L.layerGroup().addTo(map) };
 const PALETTE = ['#4cc2ff', '#3fb950', '#d29922', '#f85149', '#a371f7', '#79c0ff', '#ff7b72', '#56d364', '#e3b341', '#f778ba'];
 let lineColor = {};
+const yomi = (c) => (c && c.readings && c.readings[0]) ? `<small class="yomi">${c.readings[0]}</small>` : '';
 async function loadCams() {
   const sc = state.scopes.find(s => s.id === (state.snap && state.snap.scope.id)); if (!sc) return;
   if (!state.all) state.all = await (await fetch('/api/cameras?limit=20000')).json();
@@ -85,7 +86,7 @@ function drawBase() {
   const many = state.cams.length > 60;
   for (const c of state.cams) {
     const m = L.circleMarker([c.attrs.lat, c.attrs.lng], { radius: 6, color: '#fff', weight: 2, fillColor: '#0b0f14', fillOpacity: 1 }).addTo(layers.stations);
-    m.bindTooltip(c.label, { permanent: !many, direction: 'top', offset: [0, -6], className: 'st-label' });
+    m.bindTooltip(`${c.label}${yomi(c)}`, { permanent: !many, direction: 'top', offset: [0, -6], className: 'st-label' });
     m.on('click', () => send({ type: 'click_camera', id: c.id, label: c.label }));
     state.markers[c.id] = m;
   }
@@ -112,12 +113,12 @@ function drawFocus() {
 }
 function renderCard(s) {
   const card = $('#stationCard'); if (!s || !s.station) { card.hidden = true; return; }
-  card.hidden = false; const st = s.station; const lc = s.view.line_code; const all = state.all || state.cams;
+  card.hidden = false; const all = state.all || state.cams; const st = all.find(x => x.id === s.station.id) || s.station; const lc = s.view.line_code;
   const pos = st.attrs.positions.find(p => p.line_code === lc) || st.attrs.positions[0];
-  $('#stLabel').textContent = st.label; $('#stMeta').textContent = `${st.attrs.pref} / ${pos.line} (${pos.index + 1}/${pos.n})  ${st.attrs.lines.length > 1 ? '乗換 ' + (st.attrs.lines.length - 1) + ' 路線: ' + st.attrs.lines.filter(l => l !== pos.line).slice(0, 4).join('・') : ''}`;
+  $('#stLabel').innerHTML = `${st.label} <span class="yomi">${(st.readings || [])[0] || ''}</span>`; $('#stMeta').textContent = `${st.attrs.pref} / ${pos.line} (${pos.index + 1}/${pos.n})  ${st.attrs.lines.length > 1 ? '乗換 ' + (st.attrs.lines.length - 1) + ' 路線: ' + st.attrs.lines.filter(l => l !== pos.line).slice(0, 4).join('・') : ''}`;
   const at = (i) => all.find(c => c.attrs.positions.some(p => p.line_code === pos.line_code && p.index === i));
   const prev = at(pos.index - 1), next = at(pos.index + 1);
-  $('#stNeighbors').innerHTML = `${prev ? '◀ ' + prev.label : '（始点）'} <span class="cur">${st.label}</span> ${next ? next.label + ' ▶' : '（終点）'}`;
+  $('#stNeighbors').innerHTML = `${prev ? '◀ ' + prev.label + yomi(prev) : '（始点）'} <span class="cur">${st.label}</span> ${next ? next.label + yomi(next) + ' ▶' : '（終点）'}`;
   const r = s.view.route; const rd = $('#stRoute');
   if (r) { rd.hidden = false; let k = 0; const o = all.find(c => c.id === r.stations[0]); rd.innerHTML = `<b>${o ? o.label : ''} → ${st.label}</b>　${r.stations.length - 1} 駅・乗換 ${r.transfers} 回・約 ${r.minutes} 分<br>` + r.legs.map(l => `<span class="leg" style="background:${colorOf(l.line_code, k++)}">${l.line} ${l.hops} 駅</span>`).join('→ '); }
   else rd.hidden = true;

@@ -13,3 +13,7 @@
 .neighbors{display:flex;gap:10px;align-items:center;flex-wrap:wrap;font-size:14px}.neighbors .cur{color:var(--acc);font-weight:700}
 .credit{margin-top:6px}.credit a{color:var(--muted)}
 @media (max-width:1000px){.map{min-height:45vh}.card{left:8px;right:8px}}
+
+.yomi{display:block;color:var(--muted);font-size:10px;font-weight:400;letter-spacing:.3px}
+.card b .yomi,#stLabel .yomi,#camLabel .yomi{display:inline;font-size:12px;margin-left:6px}
+.neighbors .yomi{display:inline;margin-left:3px}
