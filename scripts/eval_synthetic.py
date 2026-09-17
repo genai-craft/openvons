@@ -26,7 +26,7 @@ sys.path.insert(0, str(ROOT))
 from examples.road_cameras.app import INTENTS  # noqa: E402
 from openvons.voice import kana as K  # noqa: E402
 from openvons.voice.asr import KanaASR  # noqa: E402
-from openvons.voice.calibration import Calibration, fit  # noqa: E402
+from openvons.core.none_calibration import Calibration, fit  # noqa: E402
 from openvons.voice.engine import Recognizer  # noqa: E402
 from openvons.voice.grammar import Grammar  # noqa: E402
 from openvons.voice.lexicon import Lexicon, Scope  # noqa: E402
