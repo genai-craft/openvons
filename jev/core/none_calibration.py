@@ -90,7 +90,9 @@ def fit(samples: list[tuple], init: Calibration | None = None, fit_len_bonus: bo
             z = cal.logits(cs, fs, lens, nf)
             z = z - z.max()
             tot += np.log(np.exp(z).sum()) - z[y]
-        tot += 0.02 * ((x[0] - np.log(init.temperature)) ** 2 + 0.1 * (b0 - init.none_bias) ** 2 + (b1 - init.len_bonus) ** 2 + (g - init.residual_penalty) ** 2)
+        # 正則化はサンプルが少ないほど強く (200 件で 0.02、50 件で 0.08)。少数サンプルでの退化 (β0 が 17 に飛ぶ等) を防ぐ
+        lam = 0.02 * max(1.0, 200.0 / max(len(S), 1))
+        tot += lam * ((x[0] - np.log(init.temperature)) ** 2 + 0.1 * (b0 - init.none_bias) ** 2 + (b1 - init.len_bonus) ** 2 + (g - init.residual_penalty) ** 2)
         return tot / max(len(S), 1)
 
     res = minimize(nll, x0=[np.log(init.temperature), init.none_bias, init.len_bonus, init.residual_penalty], method="Nelder-Mead",

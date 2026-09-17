@@ -110,6 +110,7 @@ class PretrainConfig:
     background_level_db: float | None = -12.0     # None で無効
     n_out_of_grammar: int = 12
     add_readings: bool = True
+    min_utts: int = 320                         # 校正サンプルの下限 (足りなければ声・言い方を自動で増やす)
     reading_max_mora_distance: int = 4          # 実現読みを追加する上限 (これ以上離れていたら別物として警告)
     check_label_reading: bool = True            # 表示名 (漢字) でも合成し、登録読みと TTS の読みが食い違う実体を警告する
     #: 他の状態の校正サンプル: (状態名, 受理する意図, [(発話, 正解意図 or None=該当なし)])。アプリが自分の文法に合わせて渡す
@@ -165,6 +166,22 @@ class Pretrainer:
         if not ents:
             res.warnings.append("範囲に実体がありません")
             return res
+        # 範囲が小さいと校正サンプルが足りず fit が退化する (山手線 30 駅 × 2 言い方 × 3 声 = 180 発話で β0 が 17 に飛んだ)。
+        # 最低 cfg.min_utts 発話になるまで声 (seed) と言い方を増やす
+        extra_carriers = ["{%s}を表示" % slot, "{%s}に行きたい" % slot, "{%s}お願い" % slot, "{%s}出して" % slot]
+        seeds, carriers = list(cfg.seeds), list(cfg.carriers)
+        while len(ents) * len(seeds) * len(carriers) < cfg.min_utts and (len(seeds) < 6 or len(carriers) < 6):
+            if len(seeds) < 6:
+                seeds.append(max(seeds) + 1)
+            elif extra_carriers:
+                c = extra_carriers.pop(0)
+                if c not in carriers:
+                    carriers.append(c)
+            else:
+                break
+        if (seeds, carriers) != (list(cfg.seeds), list(cfg.carriers)):
+            res.warnings.append(f"範囲が小さいため声 {len(seeds)} 種・言い方 {len(carriers)} 種に増やしました ({len(ents) * len(seeds) * len(carriers)} 発話)")
+        cfg = PretrainConfig(**{**cfg.__dict__, "seeds": seeds, "carriers": carriers})
         rep = lambda **kw: progress(kw) if progress else None
 
         # --- 1. 名前だけを合成し、実現読みを採る (複数の声で一致したものだけ登録)
