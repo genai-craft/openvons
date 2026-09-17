@@ -1,7 +1,7 @@
-/* 指図 デモ UI: WebSocket で音声を送り、状態とカメラ描画を更新する */
+/* 指令 (shirei) デモ UI: WebSocket で音声を送り、状態とカメラ描画を更新する */
 (() => {
 const $ = (s) => document.querySelector(s);
-const state = { session: localStorage.getItem('sashizu_session') || '', ws: null, snap: null, cams: [], scopes: [], hier: null,
+const state = { session: localStorage.getItem('shirei_session') || '', ws: null, snap: null, cams: [], scopes: [], hier: null,
   reg: { bureau: null, office: null, routes: new Set() }, mic: null };
 
 /* ---------------- WebSocket ---------------- */
@@ -16,7 +16,7 @@ function connect() {
 function send(obj) { if (state.ws && state.ws.readyState === 1) state.ws.send(JSON.stringify(obj)); }
 
 function onMessage(m) {
-  if (m.type === 'hello') { state.session = m.session; localStorage.setItem('sashizu_session', m.session); state.scopes = m.scopes; renderScopes(); applyState(m.state); loadCams(); }
+  if (m.type === 'hello') { state.session = m.session; localStorage.setItem('shirei_session', m.session); state.scopes = m.scopes; renderScopes(); applyState(m.state); loadCams(); }
   else if (m.type === 'state') applyState(m.state);
   else if (m.type === 'vad') { $('#vadChip').textContent = m.speaking ? '発話中' : '待機'; $('#vadChip').classList.toggle('on', m.speaking); }
   else if (m.type === 'result') onResult(m);

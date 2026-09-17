@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import csv
 import json
+import os
 import random
 import sys
 from collections import defaultdict
@@ -22,7 +23,7 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 from openvons.voice import kana as K  # noqa: E402
 
-KEN_ALL = Path("/data/sashizu/data/kenall/ken_all.csv")
+KEN_ALL = Path(os.environ.get("OPENVONS_DATA", str(ROOT / "data"))) / "kenall" / "ken_all.csv"   # 日本郵便の都道府県別 zip を結合したもの
 
 # 地方整備局 -> 事務所 -> (都道府県, 国道番号リスト)。事務所名は実在の名称に寄せている。
 HIERARCHY: dict[str, dict[str, tuple[list[str], list[int]]]] = {

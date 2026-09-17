@@ -7,6 +7,7 @@ result イベントを確認する。pytest からも呼べる (サーバーが�
 """
 from __future__ import annotations
 
+import os
 import argparse
 import asyncio
 import json
@@ -22,7 +23,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 async def run(url: str, tts_url: str, texts: list[str]) -> list[dict]:
     import websockets
     from openvons.voice.synth import TTSClient
-    tts = TTSClient(tts_url, cache_dir="/data/sashizu/state/tts_cache")
+    tts = TTSClient(tts_url, cache_dir=os.environ.get("OPENVONS_STATE", "state") + "/tts_cache")
     results = []
     async with websockets.connect(url + "?session=wstest", max_size=None) as ws:
         hello = json.loads(await ws.recv()); assert hello["type"] == "hello"
