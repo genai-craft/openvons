@@ -32,7 +32,7 @@
 | 端末のマイク入力 | 完了。サンプルレートを毎コールバック読む (機種でルートが変わると壊れる罠の対策) |
 | 小型モデルの蒸留 | pilot 完了。whisper-small 2 層 decoder、147M、検証 kana CER 0.23 (docs/voice_small_model.md) |
 | 小型モデルの品質 | 課題。自由認識は同等だが候補の尤度採点が弱い (PTZ 0.58)。ReazonSpeech medium (1,000h) + KL 蒸留 + decoder 4 層が次 |
-| ONNX 変換 → transformers.js (端末内推論) | 未着手 |
+| ONNX 変換 → ブラウザ内推論 | **通った** (2026-09-18)。onnxruntime-web 直叩き + KV cache なし decoder。headless WASM 4 スレッドで encoder 2.2s / 採点 0.6s。実機 (WebGPU) の測定はこれから。int8 で 318MB |
 | ネイティブアプリ (Capacitor) | 未着手。PWA で足りる間は不要 |
 
 ## 残課題 (技術)
