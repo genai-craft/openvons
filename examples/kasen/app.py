@@ -63,7 +63,7 @@ SLOT = "camera"
 SELECT_INTENT = "select_camera"
 DATA_FILE = "cameras.json"
 TITLE = "河川ライブカメラを声で見る"
-TTS_HINTS = {"下流": "かりゅう", "上流": "じょうりゅう", "水位": "すいい", "排水機場": "はいすいきじょう", "樋管": "ひかん"}
+TTS_HINTS = {"下流": "カリュー", "上流": "ジョーリュー", "水位": "すいい", "排水機場": "はいすいきじょう", "樋管": "ひかん"}
 ATTRIBUTION = "出典：関東地方整備局ウェブサイト (https://www.ktr.mlit.go.jp/river/bousai/river_bousai00000080.html) を加工して作成"
 
 
