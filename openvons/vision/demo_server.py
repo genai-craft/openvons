@@ -45,6 +45,7 @@ def _detect_faces(img: Image.Image, max_faces: int = 4) -> list[tuple[int, int, 
     det = G.get("detector")
     if det is None:
         return []
+    import cv2
     arr = np.array(img)[:, :, ::-1].copy()          # RGB -> BGR
     scale = 1.0
     if max(arr.shape[:2]) > 640:                    # YuNet は 320〜640px が適正。大きい画像は縮めて検出し座標を戻す
