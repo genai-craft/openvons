@@ -46,11 +46,15 @@ def _detect_faces(img: Image.Image, max_faces: int = 4) -> list[tuple[int, int, 
     if det is None:
         return []
     arr = np.array(img)[:, :, ::-1].copy()          # RGB -> BGR
-    det.setInputSize((img.width, img.height))
+    scale = 1.0
+    if max(arr.shape[:2]) > 640:                    # YuNet は 320〜640px が適正。大きい画像は縮めて検出し座標を戻す
+        scale = 640 / max(arr.shape[:2])
+        arr = cv2.resize(arr, (int(arr.shape[1] * scale), int(arr.shape[0] * scale)))
+    det.setInputSize((arr.shape[1], arr.shape[0]))
     _, faces = det.detect(arr)
     if faces is None:
         return []
-    boxes = [(int(f[0]), int(f[1]), int(f[2]), int(f[3])) for f in faces if f[2] > 24 and f[3] > 24]
+    boxes = [(int(f[0] / scale), int(f[1] / scale), int(f[2] / scale), int(f[3] / scale)) for f in faces if f[2] / scale > 24 and f[3] / scale > 24]
     return sorted(boxes, key=lambda b: -b[2] * b[3])[:max_faces]
 
 
@@ -58,6 +62,26 @@ def _crop(img: Image.Image, box: tuple[int, int, int, int], margin: float = 0.25
     x, y, w, h = box
     m = int(max(w, h) * margin)
     return img.crop((max(0, x - m), max(0, y - m), min(img.width, x + w + m), min(img.height, y + h + m)))
+
+
+AGE_ORDER = {"age": ["0-2", "3-9", "10-19", "20-29", "30-39", "40-49", "50-59", "60-69", "more than 70"]}
+AGE_LO_HI = {"0-2": (0, 2), "3-9": (3, 9), "10-19": (10, 19), "20-29": (20, 29), "30-39": (30, 39), "40-49": (40, 49), "50-59": (50, 59), "60-69": (60, 69), "more than 70": (70, 99)}
+
+
+def _age_range(ids: list[str], p: list[float], target: float = 0.7) -> dict[str, Any] | None:
+    """順序尺度の年齢: 最尤区分から隣へ広げ、累積確率が target を超えた幅を見出しにする (「30〜49 歳 82%」)。
+    9 区分の argmax だけを見せると隣の区分に割れて「ばらける」ように見えるため。"""
+    if ids != AGE_ORDER["age"]:
+        return None
+    best = int(np.argmax(p)); lo = hi = best; mass = p[best]
+    while mass < target and (lo > 0 or hi < len(p) - 1):
+        left = p[lo - 1] if lo > 0 else -1; right = p[hi + 1] if hi < len(p) - 1 else -1
+        if right > left: hi += 1; mass += p[hi]
+        else: lo -= 1; mass += p[lo]
+    a, b = AGE_LO_HI[ids[lo]][0], AGE_LO_HI[ids[hi]][1]
+    label = f"{a} 歳以上" if b >= 99 else (f"{a}〜{b} 歳" if lo != hi else LABELS_JA["age"][ids[lo]])
+    expected = sum(pi * (AGE_LO_HI[i][0] + min(AGE_LO_HI[i][1], 80)) / 2 for i, pi in zip(ids, p))
+    return {"label": label, "mass": round(float(mass), 4), "expected": round(float(expected))}
 
 
 def _answers(model, questions: dict, imgs: list[Image.Image]) -> list[dict[str, Any]]:
@@ -69,10 +93,12 @@ def _answers(model, questions: dict, imgs: list[Image.Image]) -> list[dict[str, 
         for i, p in enumerate(probs.tolist()):
             p = p[: len(ids)]
             best = int(np.argmax(p))
-            action, _ = decide(float(p[best]), 0.0, "low", th)
-            res[i][key] = {"title": TITLE_JA.get(key, key), "choice": ids[best], "choice_ja": LABELS_JA.get(key, {}).get(ids[best], ids[best]),
-                           "confidence": round(float(p[best]), 4), "level": {"execute": "確定", "confirm": "要確認", "reject": "不明"}.get(action, action),
-                           "probabilities": {i_: {"label": LABELS_JA.get(key, {}).get(i_, i_), "p": round(float(v), 4)} for i_, v in zip(ids, p)}}
+            rng = _age_range(ids, p)
+            conf = float(rng["mass"]) if rng else float(p[best])       # 年齢は幅の確率で判定する
+            action, _ = decide(conf, 0.0, "low", th)
+            res[i][key] = {"title": TITLE_JA.get(key, key), "choice": ids[best], "choice_ja": (rng["label"] if rng else LABELS_JA.get(key, {}).get(ids[best], ids[best])),
+                           "confidence": round(conf, 4), "level": {"execute": "確定", "confirm": "要確認", "reject": "不明"}.get(action, action),
+                           "range": rng, "probabilities": {i_: {"label": LABELS_JA.get(key, {}).get(i_, i_), "p": round(float(v), 4)} for i_, v in zip(ids, p)}}
     return res
 
 
@@ -113,6 +139,13 @@ async def analyze(body: dict):
         bb = body.get("body_box")
         crop = img.crop((bb[0], bb[1], bb[0] + bb[2], bb[1] + bb[3])) if bb else img
         out["body"] = {"box": bb or [0, 0, img.width, img.height], **_answers(G["body"], G["body_q"], [crop])[0]}
+        # 顔がフレームの高さの 12% 超 = 上半身のポートレート。歩行者用の全身モデルの前提が外れるので「参考」に落とす
+        faces = out.get("faces") or []
+        if not bb and faces and max(f["box"][3] for f in faces) / img.height > 0.12:
+            out["body"]["reference_only"] = True
+            for k, v in out["body"].items():
+                if isinstance(v, dict) and "level" in v:
+                    v["level"] = "参考"
         out["body_ms"] = round((time.perf_counter() - t1) * 1000, 1)
     out["total_ms"] = round((time.perf_counter() - t0) * 1000, 1)
     return out
@@ -130,10 +163,19 @@ def main() -> None:
     logging.basicConfig(level=logging.INFO, format="%(asctime)s %(name)s %(levelname)s %(message)s")
     import cv2
     from openvons.vision.vision_model import VisionDecisionModel
-    if Path(args.detector).exists():
-        G["detector"] = cv2.FaceDetectorYN.create(args.detector, "", (320, 320), 0.6, 0.3, 50)
-    else:
-        log.warning("face detector not found: %s (顔検出なし。上の URL から取得して置く)", args.detector)
+    det_path = Path(args.detector)
+    if not det_path.exists():
+        url = "https://github.com/opencv/opencv_zoo/raw/main/models/face_detection_yunet/face_detection_yunet_2023mar.onnx"
+        try:
+            import httpx
+            det_path.parent.mkdir(parents=True, exist_ok=True)
+            det_path.write_bytes(httpx.get(url, follow_redirects=True, timeout=60).content)
+            log.info("downloaded YuNet -> %s", det_path)
+        except Exception as e:  # noqa: BLE001
+            log.warning("face detector not found and download failed: %s (%s) — 顔検出なしで起動", det_path, e)
+    if det_path.exists():
+        G["detector"] = cv2.FaceDetectorYN.create(str(det_path), "", (320, 320), 0.5, 0.3, 50)
+        log.info("face detector: YuNet %s", det_path)
     G["thresholds"] = Thresholds(execute=0.7, confirm=0.45)
     for name in ("face", "body"):
         ck = getattr(args, name)

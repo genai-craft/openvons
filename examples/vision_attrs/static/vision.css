@@ -23,7 +23,7 @@ h3{margin:8px 0 4px;font-size:14px;color:var(--muted)}
 .attr .bars i{display:block;height:100%;opacity:.85}
 .attr .ans{text-align:right;white-space:nowrap}
 .lv{border-radius:999px;padding:0 8px;font-size:12px;font-weight:700}
-.lv.確定{background:#1f3b26;color:var(--ok)}.lv.要確認{background:#3b3220;color:var(--warn)}.lv.不明{background:#3b2020;color:var(--bad)}
+.lv.確定{background:#1f3b26;color:var(--ok)}.lv.参考{background:#22303c;color:var(--muted)}.lv.要確認{background:#3b3220;color:var(--warn)}.lv.不明{background:#3b2020;color:var(--bad)}
 .legend{list-style:none;padding:0;margin:0;font-size:13px}.legend li{padding:3px 0}
 .muted{color:var(--muted)}.small{font-size:12px}
 @media (max-width:1000px){main{grid-template-columns:1fr}}
