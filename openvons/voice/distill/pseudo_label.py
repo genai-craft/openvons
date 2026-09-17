@@ -41,6 +41,8 @@ def main() -> None:
     ap.add_argument("--batch", type=int, default=24)
     ap.add_argument("--max-sec", type=float, default=30.0)
     ap.add_argument("--limit", type=int, default=0)
+    ap.add_argument("--shard", type=int, default=0, help="このプロセスが担当する分割番号")
+    ap.add_argument("--num-shards", type=int, default=1, help="parquet ファイルをこの数に分けて並列に走らせる")
     args = ap.parse_args()
     out = Path(args.out); out.parent.mkdir(parents=True, exist_ok=True)
     done = set()
@@ -50,6 +52,9 @@ def main() -> None:
     asr = KanaASR()
     proc = asr.processor
     files = sorted(Path(args.parquet_dir).glob("*.parquet"))
+    if args.num_shards > 1:
+        files = files[args.shard::args.num_shards]
+        print(f"shard {args.shard}/{args.num_shards}: {len(files)} files", flush=True)
     n = 0; t0 = time.time()
     with open(out, "a", encoding="utf-8") as fo:
         for pf in files:

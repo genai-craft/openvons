@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0f1318">
+<title>端末の中だけで動かす — openvons (open-Jev)</title>
+<link rel="stylesheet" href="/shared/style.css?v=__V__">
+<link rel="stylesheet" href="/static/ondevice.css?v=__V__">
+</head>
+<body>
+<header>
+  <div class="brand">端末内で動かす <span class="sub">openvons — 音声認識も候補採点も、このブラウザの中で</span></div>
+  <a class="contact" href="https://genai-craft.com" target="_blank" rel="noopener">導入のご相談 ↗</a>
+</header>
+
+<main class="odmain">
+  <section class="pane">
+    <h3>1. モデルを読み込む</h3>
+    <div class="row">
+      <label>実行先 <select id="device"><option value="auto">自動 (WebGPU→WASM)</option><option value="webgpu">WebGPU</option><option value="wasm">WASM (CPU)</option></select></label>
+      <label>精度 <select id="dtype"><option value="fp16">fp16 (374MB)</option><option value="fp32">fp32 (749MB)</option><option value="q8">int8 (488MB)</option></select></label>
+      <button id="loadBtn" class="mic">読み込む</button>
+    </div>
+    <div class="progress"><div id="dlBar"></div></div>
+    <div id="loadMsg" class="muted small">初回はモデルをダウンロードします (以後はブラウザにキャッシュ)。通信量にご注意ください。</div>
+    <div id="envInfo" class="muted small mono"></div>
+
+    <h3>2. 話しかける</h3>
+    <div class="row">
+      <button id="micBtn" class="mic" disabled>🎙 押している間だけ録音</button>
+      <span id="vadChip" class="chip">待機</span>
+      <label class="chk"><input type="checkbox" id="cmpServer"> サーバーの大きいモデルとも比べる</label>
+    </div>
+    <div class="vu"><div id="vuBar"></div></div>
+    <p class="muted small">例: 「栗橋」「メフキバシ」「更新して」「ひとつ下流」「地図に戻って」。関係ない雑談は「該当なし」に倒れます。</p>
+
+    <h3>状態 <span class="muted" id="stateName"></span></h3>
+    <div class="row"><select id="stateSel"></select><span class="muted small" id="stateInfo"></span></div>
+  </section>
+
+  <section class="pane">
+    <h3>結果</h3>
+    <div class="speech" id="speech">—</div>
+    <div class="free"><span class="muted">聞こえたカナ:</span> <span id="freeKana" class="mono"></span></div>
+    <div id="decision" class="decision"></div>
+    <div id="nbest" class="nbest"></div>
+    <table class="times" id="times"></table>
+    <div id="serverCmp" class="cmp"></div>
+    <h3>ログ</h3>
+    <pre id="log" class="log"></pre>
+  </section>
+</main>
+<script type="module" src="/static/ondevice.js?v=__V__"></script>
+</body>
+</html>
