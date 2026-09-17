@@ -28,8 +28,8 @@ ZOOM_STEP = 1.5
 
 INTENTS = [
     Intent("select_camera", ["{camera}[を](表示|出して|見せて|映して|お願い)", "{camera}[に](切り替え|切り替えて)", "{camera}"], description="地点のカメラを表示"),
-    Intent("upstream", ["(上流|一つ上流|上流側)[へ|に][移って|行って|見せて]", "上流のカメラ", "一つ上"], description="上流のカメラへ"),
-    Intent("downstream", ["(下流|一つ下流|下流側)[へ|に][移って|行って|見せて]", "下流のカメラ", "一つ下"], description="下流のカメラへ"),
+    Intent("upstream", ["(上流|一つ上流|上流側)[へ|に][移って|行って|見せて]", "上流のカメラ", "ひとつ上流"], description="上流のカメラへ"),
+    Intent("downstream", ["(下流|一つ下流|下流側)[へ|に][移って|行って|見せて]", "下流のカメラ", "ひとつ下流"], description="下流のカメラへ"),
     Intent("refresh", ["(更新|最新)[して|の画像]", "リロード", "今の画像"], description="画像を更新"),
     Intent("zoom_in", ["[もっと](寄って|拡大|ズームイン)", "拡大して"], description="画像を拡大"),
     Intent("zoom_out", ["[もっと](引いて|縮小|ズームアウト)", "縮小して", "全体を見せて"], description="画像を縮小"),
