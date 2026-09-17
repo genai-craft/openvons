@@ -28,7 +28,8 @@
 "label": "榊橋",
 "kind": "camera",
 "readings": [
-"サカキキョー"
+"サカキバシ",
+"サカキハシ"
 ],
 "aliases": [],
 "attrs": {
@@ -51,7 +52,8 @@
 "label": "幸久橋",
 "kind": "camera",
 "readings": [
-"ユキヒサキョー"
+"ユキヒサバシ",
+"ユキヒサハシ"
 ],
 "aliases": [],
 "attrs": {
@@ -120,7 +122,8 @@
 "label": "富岡橋",
 "kind": "camera",
 "readings": [
-"トミオカキョー"
+"トミオカバシ",
+"トミオカハシ"
 ],
 "aliases": [],
 "attrs": {
@@ -190,8 +193,9 @@
 "label": "常井橋水位観測所",
 "kind": "camera",
 "readings": [
-"トコイキョースイイカンソクショ",
-"トコイキョー"
+"トコイバシスイイカンソクショ",
+"トコイハシスイイカンソクショ",
+"トコイバシ"
 ],
 "aliases": [],
 "attrs": {
@@ -214,7 +218,8 @@
 "label": "海門橋",
 "kind": "camera",
 "readings": [
-"カイモンキョー"
+"カイモンバシ",
+"カイモンハシ"
 ],
 "aliases": [],
 "attrs": {
@@ -308,7 +313,8 @@
 "label": "水府橋",
 "kind": "camera",
 "readings": [
-"スイフキョー"
+"スイフバシ",
+"スイフハシ"
 ],
 "aliases": [],
 "attrs": {
@@ -449,8 +455,9 @@
 "label": "新那珂川橋(逆川合流点)",
 "kind": "camera",
 "readings": [
-"シンナカガワキョーサカカワゴーリューテン",
-"シンナカガワキョー"
+"シンナカガワバシサカカワゴーリューテン",
+"シンナカガワハシサカカワゴーリューテン",
+"シンナカガワバシ"
 ],
 "aliases": [],
 "attrs": {
@@ -473,7 +480,8 @@
 "label": "大瀬橋",
 "kind": "camera",
 "readings": [
-"オーセキョー"
+"オーセバシ",
+"オーセハシ"
 ],
 "aliases": [],
 "attrs": {
@@ -828,7 +836,8 @@
 "label": "芽吹橋",
 "kind": "camera",
 "readings": [
-"メフキキョー"
+"メフキバシ",
+"メフキハシ"
 ],
 "aliases": [],
 "attrs": {
@@ -920,6 +929,7 @@
 "label": "栗橋水衝部",
 "kind": "camera",
 "readings": [
+"クリバシスイショーブ",
 "クリハシスイショーブ"
 ],
 "aliases": [],
@@ -966,8 +976,9 @@
 "label": "栗橋水位",
 "kind": "camera",
 "readings": [
+"クリバシスイイ",
 "クリハシスイイ",
-"クリハシ"
+"クリバシ"
 ],
 "aliases": [],
 "attrs": {
@@ -1061,8 +1072,9 @@
 "label": "昭和橋上流（羽生市）",
 "kind": "camera",
 "readings": [
-"ショーワキョージョーリューハブシ",
-"ショーワキョージョーリュー"
+"ショーワバシジョーリューハブシ",
+"ショーワハシジョーリューハブシ",
+"ショーワバシジョーリュー"
 ],
 "aliases": [],
 "attrs": {
@@ -1205,6 +1217,8 @@
 "label": "刀水橋上流",
 "kind": "camera",
 "readings": [
+"カタナスイバシジョーリュー",
+"カタナスイハシジョーリュー",
 "カタナミズハシジョーリュー"
 ],
 "aliases": [],
@@ -1344,7 +1358,8 @@
 "label": "五料橋",
 "kind": "camera",
 "readings": [
-"ゴリョーキョー"
+"ゴリョーバシ",
+"ゴリョーハシ"
 ],
 "aliases": [],
 "attrs": {
@@ -1461,7 +1476,8 @@
 "label": "赤岩橋上流",
 "kind": "camera",
 "readings": [
-"アカイワキョージョーリュー"
+"アカイワバシジョーリュー",
+"アカイワハシジョーリュー"
 ],
 "aliases": [],
 "attrs": {
@@ -1484,7 +1500,8 @@
 "label": "赤岩橋下流",
 "kind": "camera",
 "readings": [
-"アカイワキョーカリュー"
+"アカイワバシカリュー",
+"アカイワハシカリュー"
 ],
 "aliases": [],
 "attrs": {
@@ -1507,8 +1524,9 @@
 "label": "広見橋水位観測所",
 "kind": "camera",
 "readings": [
-"ヒロミキョースイイカンソクショ",
-"ヒロミキョー"
+"ヒロミバシスイイカンソクショ",
+"ヒロミハシスイイカンソクショ",
+"ヒロミバシ"
 ],
 "aliases": [],
 "attrs": {
@@ -1555,7 +1573,8 @@
 "label": "松原橋上流",
 "kind": "camera",
 "readings": [
-"マツバラキョージョーリュー"
+"マツバラバシジョーリュー",
+"マツバラハシジョーリュー"
 ],
 "aliases": [],
 "attrs": {
@@ -1578,7 +1597,8 @@
 "label": "葉鹿橋下流",
 "kind": "camera",
 "readings": [
-"ハジカキョーカリュー"
+"ハジカバシカリュー",
+"ハジカハシカリュー"
 ],
 "aliases": [],
 "attrs": {
@@ -1601,7 +1621,8 @@
 "label": "鹿島橋上流",
 "kind": "camera",
 "readings": [
-"カシマキョージョーリュー"
+"カシマバシジョーリュー",
+"カシマハシジョーリュー"
 ],
 "aliases": [],
 "attrs": {
@@ -1648,6 +1669,7 @@
 "label": "中橋右岸",
 "kind": "camera",
 "readings": [
+"ナカバシウガン",
 "ナカハシウガン"
 ],
 "aliases": [],
@@ -1671,6 +1693,7 @@
 "label": "中橋上流",
 "kind": "camera",
 "readings": [
+"ナカバシジョーリュー",
 "ナカハシジョーリュー"
 ],
 "aliases": [],
@@ -1742,7 +1765,8 @@
 "label": "藤川橋",
 "kind": "camera",
 "readings": [
-"フジカワキョー"
+"フジカワバシ",
+"フジカワハシ"
 ],
 "aliases": [],
 "attrs": {
@@ -1765,8 +1789,9 @@
 "label": "足森橋水位観測所",
 "kind": "camera",
 "readings": [
-"アシモリキョースイイカンソクショ",
-"アシモリキョー"
+"アシモリバシスイイカンソクショ",
+"アシモリハシスイイカンソクショ",
+"アシモリバシ"
 ],
 "aliases": [],
 "attrs": {
@@ -1789,7 +1814,8 @@
 "label": "江川橋上流",
 "kind": "camera",
 "readings": [
-"エガワキョージョーリュー"
+"エガワバシジョーリュー",
+"エガワハシジョーリュー"
 ],
 "aliases": [],
 "attrs": {
@@ -1812,7 +1838,8 @@
 "label": "高田橋上流",
 "kind": "camera",
 "readings": [
-"タカダキョージョーリュー"
+"タカダバシジョーリュー",
+"タカダハシジョーリュー"
 ],
 "aliases": [],
 "attrs": {
@@ -1859,6 +1886,7 @@
 "kind": "camera",
 "readings": [
 "イボーチシンバシスイイカンソクショ",
+"イボーチシンハシスイイカンソクショ",
 "イボーチシンバシ"
 ],
 "aliases": [],
@@ -2918,7 +2946,8 @@
 "label": "神宮橋",
 "kind": "camera",
 "readings": [
-"ジングーバシ"
+"ジングーバシ",
+"ジングーハシ"
 ],
 "aliases": [],
 "attrs": {
@@ -3664,7 +3693,8 @@
 "label": "治水橋",
 "kind": "camera",
 "readings": [
-"チスイキョー"
+"チスイバシ",
+"チスイハシ"
 ],
 "aliases": [],
 "attrs": {
@@ -3710,7 +3740,8 @@
 "label": "上江橋",
 "kind": "camera",
 "readings": [
-"ウワエキョー"
+"ウワエバシ",
+"ウワエハシ"
 ],
 "aliases": [],
 "attrs": {
@@ -3733,10 +3764,12 @@
 "label": "武蔵水路合流点(糠田橋)",
 "kind": "camera",
 "readings": [
-"ムサシスイロゴーリューテンヌカタキョー",
-"ムサシスイロゴーリューテン"
+"ムサシスイロゴーリューテンヌカタバシ",
+"ムサシスイロゴーリューテンヌカタハシ"
 ],
-"aliases": [],
+"aliases": [
+"武蔵水路合流点"
+],
 "attrs": {
 "river": "荒川",
 "office": "荒川上流河川事務所",
@@ -3757,7 +3790,8 @@
 "label": "大芦橋",
 "kind": "camera",
 "readings": [
-"オーアシキョー"
+"オーアシバシ",
+"オーアシハシ"
 ],
 "aliases": [],
 "attrs": {
@@ -3803,7 +3837,8 @@
 "label": "笹目橋",
 "kind": "camera",
 "readings": [
-"ササメキョー"
+"ササメバシ",
+"ササメハシ"
 ],
 "aliases": [],
 "attrs": {
@@ -3826,6 +3861,7 @@
 "label": "羽根倉橋",
 "kind": "camera",
 "readings": [
+"ハネクラバシ",
 "ハネクラハシ"
 ],
 "aliases": [],
@@ -3849,7 +3885,8 @@
 "label": "久下橋",
 "kind": "camera",
 "readings": [
-"クゲキョー"
+"クゲバシ",
+"クゲハシ"
 ],
 "aliases": [],
 "attrs": {
@@ -3895,7 +3932,8 @@
 "label": "植松橋",
 "kind": "camera",
 "readings": [
-"ウエマツキョー"
+"ウエマツバシ",
+"ウエマツハシ"
 ],
 "aliases": [],
 "attrs": {
@@ -4084,7 +4122,8 @@
 "label": "西新井橋上流",
 "kind": "camera",
 "readings": [
-"ニシアライキョージョーリュー"
+"ニシアライバシジョーリュー",
+"ニシアライハシジョーリュー"
 ],
 "aliases": [],
 "attrs": {
@@ -4246,8 +4285,9 @@
 "label": "笹目橋(2)",
 "kind": "camera",
 "readings": [
-"ササメキョーニ",
-"ササメキョー"
+"ササメバシニ",
+"ササメハシニ",
+"ササメバシ"
 ],
 "aliases": [],
 "attrs": {
@@ -4342,7 +4382,8 @@
 "label": "初雁橋",
 "kind": "camera",
 "readings": [
-"ハツカリキョー"
+"ハツカリバシ",
+"ハツカリハシ"
 ],
 "aliases": [],
 "attrs": {
@@ -4365,7 +4406,8 @@
 "label": "とげ橋",
 "kind": "camera",
 "readings": [
-"トゲキョー"
+"トゲバシ",
+"トゲハシ"
 ],
 "aliases": [],
 "attrs": {
@@ -4388,6 +4430,8 @@
 "label": "八幡橋",
 "kind": "camera",
 "readings": [
+"ヤハタバシ",
+"ヤハタハシ",
 "ハチマンバシ"
 ],
 "aliases": [],
@@ -4435,7 +4479,8 @@
 "label": "高麗川橋",
 "kind": "camera",
 "readings": [
-"コーライガワキョー"
+"コーライガワバシ",
+"コーライガワハシ"
 ],
 "aliases": [],
 "attrs": {
@@ -4482,7 +4527,8 @@
 "label": "東松山橋",
 "kind": "camera",
 "readings": [
-"ヒガシマツヤマキョー"
+"ヒガシマツヤマバシ",
+"ヒガシマツヤマハシ"
 ],
 "aliases": [],
 "attrs": {
@@ -4568,100 +4614,6 @@
 "order": 0,
 "route_label": "越辺川",
 "core": "入西"
-}
-},
-{
-"id": "kasen_0195",
-"label": "浅間山東",
-"kind": "camera",
-"readings": [
-"アサマヤマヒガシ"
-],
-"aliases": [],
-"attrs": {
-"river": "浅間山",
-"office": "利根川水系砂防事務所",
-"pref": "群馬県吾妻郡長野原町大字北軽井沢地先",
-"lat": 36.471726,
-"lng": 138.587857,
-"geo_source": "nominatim:群馬県吾妻郡長野原町北軽井沢",
-"image_url": "https://strm-r.kannet.ne.jp/asama-east.html",
-"page_url": "https://www.ktr.mlit.go.jp/tonesui/tonesui00021.html",
-"interval_min": null,
-"order": 0,
-"route_label": "浅間山",
-"core": "浅間山東"
-}
-},
-{
-"id": "kasen_0196",
-"label": "浅間山西",
-"kind": "camera",
-"readings": [
-"アサマヤマニシ"
-],
-"aliases": [],
-"attrs": {
-"river": "浅間山",
-"office": "利根川水系砂防事務所",
-"pref": "群馬県吾妻郡嬬恋村大字田代地先",
-"lat": 36.4895424,
-"lng": 138.4561684,
-"geo_source": "nominatim:群馬県吾妻郡嬬恋村田代",
-"image_url": "https://strm-r.kannet.ne.jp/asama-west.html",
-"page_url": "https://www.ktr.mlit.go.jp/tonesui/tonesui00022.html",
-"interval_min": null,
-"order": 1,
-"route_label": "浅間山",
-"core": "浅間山西"
-}
-},
-{
-"id": "kasen_0197",
-"label": "黒斑山",
-"kind": "camera",
-"readings": [
-"クロフヤマ"
-],
-"aliases": [],
-"attrs": {
-"river": "浅間山",
-"office": "利根川水系砂防事務所",
-"pref": "群馬県吾妻郡嬬恋村大字鎌原地先",
-"lat": 36.4639462,
-"lng": 138.5585773,
-"geo_source": "nominatim:群馬県吾妻郡嬬恋村鎌原",
-"image_url": "https://strm-r.kannet.ne.jp/kurofu.html",
-"page_url": "https://www.ktr.mlit.go.jp/tonesui/tonesui00065.html",
-"interval_min": null,
-"order": 2,
-"route_label": "浅間山",
-"core": "黒斑山"
-}
-},
-{
-"id": "kasen_0198",
-"label": "（臨時）草津カメラ",
-"kind": "camera",
-"readings": [
-"リンジクサツカメラ"
-],
-"aliases": [
-"草津"
-],
-"attrs": {
-"river": "草津白根山",
-"office": "利根川水系砂防事務所",
-"pref": "群馬県吾妻郡草津町",
-"lat": 36.6185291,
-"lng": 138.6048651,
-"geo_source": "nominatim:群馬県吾妻郡 草津",
-"image_url": "https://strm-r.kannet.ne.jp/rinji.html",
-"page_url": "https://www.ktr.mlit.go.jp/tonesui/tonesui00023.html",
-"interval_min": null,
-"order": 0,
-"route_label": "草津白根山",
-"core": "草津"
 }
 }
 ]

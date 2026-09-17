@@ -23,6 +23,26 @@ from openvons.voice import kana as K  # noqa: E402
 STRIP = re.compile(r"(水位観測所|水位監視|水位|観測所|排水機場|排水樋管|樋管|水門|堰|付近|カメラ|地点|局|屋上|川表側|川裏側|（.*?）|\(.*?\))")
 
 
+def readings_for(label: str) -> list[str]:
+    """地点名の読み。G2P は「橋」を キョー と読むが、橋の固有名は バシ (連濁) か ハシ なので両方を作る
+    (芽吹橋: G2P メフキキョー → メフキバシ / メフキハシ)。「大橋」は オーハシ で正しいのでそのまま。"""
+    base = K.g2p(label)
+    if "橋" not in label or label.endswith("大橋") or "大橋" in label:
+        return [base]
+    parts = label.split("橋")
+    out = []
+    for suf in ("バシ", "ハシ"):
+        r = ""
+        for i, part in enumerate(parts):
+            r += (K.g2p(part) if part else "")
+            if i < len(parts) - 1:
+                r += suf
+        out.append(K.normalize(r))
+    if base not in out and "キョー" not in base:
+        out.append(base)
+    return out
+
+
 def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--src", required=True)
@@ -30,7 +50,7 @@ def main() -> None:
     args = ap.parse_args()
     rows = json.load(open(args.src, encoding="utf-8"))
     # 画像 URL の無い地点 (京浜 = 外部サイトへのリンクのみ、砂防 = 動画サイト) は声で選んでも見せるものが無いので外す
-    rows = [r for r in rows if r.get("image_url")]
+    rows = [r for r in rows if r.get("image_url") and re.search(r"\.(jpe?g|png|gif)(\?|$)", r["image_url"], re.I)]   # 画像でない (動画サイトの HTML 等) は外す
     # 上流→下流の順: 距離標 (河口からの km) があればそれで (大きい = 上流)、無ければ掲載順
     def km(r):
         m = re.search(r"距離標=[^;]*?([0-9.]+)km", r.get("notes") or "")
@@ -60,8 +80,9 @@ def main() -> None:
         if seen_labels[label] > 1:
             label = f"{label}({seen_labels[label]})"
         core = STRIP.sub("", name).strip() or name
-        label_reading = K.g2p(label)
-        readings = [label_reading]
+        base_readings = readings_for(label)
+        label_reading = base_readings[0]
+        readings = list(base_readings)
         aliases: list[str] = []
         if core != label:
             # 別名 (地名だけ) の読みは、表示名の読みから接尾語の読みを削って作る。別名を単独で G2P すると

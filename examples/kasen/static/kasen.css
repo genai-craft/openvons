@@ -7,8 +7,9 @@
 .card b{font-size:20px}
 .camhead{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
 .cardbtns{display:flex;gap:6px;flex-wrap:wrap}.cardbtns .back{border-color:var(--acc)}
-.imgwrap{flex:1;min-height:0;display:flex;flex-direction:column;align-items:center;justify-content:center;overflow:hidden;background:#000;border-radius:8px;position:relative}
-.imgwrap img{max-width:100%;max-height:100%;object-fit:contain;transition:transform .3s;transform-origin:center}
+.imgwrap{flex:1;min-height:200px;overflow:hidden;background:#000;border-radius:8px;position:relative}
+/* flex 子要素の中で max-height:100% は親の高さを解決できず 0 に潰れるので、絶対配置で埋める */
+.imgwrap img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;transition:transform .3s;transform-origin:center}
 #imgNote{position:absolute;left:8px;bottom:6px;background:rgba(0,0,0,.6);padding:2px 6px;border-radius:4px}
 .neighbors{display:flex;gap:10px;align-items:center;flex-wrap:wrap;font-size:14px}.neighbors .cur{color:var(--acc);font-weight:700}
 .credit{margin-top:6px}.credit a{color:var(--muted)}
