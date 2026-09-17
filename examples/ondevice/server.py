@@ -162,7 +162,8 @@ def main() -> None:
     tk = WhisperTokenizerFast.from_pretrained(str(models / G["model_list"][0]))
     G["prefix"] = tk.convert_tokens_to_ids(["<|startoftranscript|>", "<|ja|>", "<|transcribe|>", "<|notimestamps|>"])
     G["eot"] = tk.eos_token_id
-    info = json.loads((models / G["model_list"][0] / "distill_info.json").read_text()) if (models / G["model_list"][0] / "distill_info.json").exists() else {}
+    info_p = models / G["model_list"][-1] / "distill_info.json"
+    info = json.loads(info_p.read_text()) if info_p.exists() else {}
     G["suppress"] = info.get("suppress_tokens_kana_only", [])
     if args.server_asr:
         from openvons.core.none_calibration import Calibration

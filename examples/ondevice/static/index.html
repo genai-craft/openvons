@@ -18,6 +18,7 @@
   <section class="pane">
     <h3>1. モデルを読み込む</h3>
     <div class="row">
+      <label>モデル <select id="modelSel"></select></label>
       <label>実行先 <select id="device"><option value="auto">自動 (WebGPU→WASM)</option><option value="webgpu">WebGPU</option><option value="wasm">WASM (CPU)</option></select></label>
       <label>精度 <select id="dtype"><option value="q8">int8 (192MB、推奨)</option><option value="">fp32 (749MB)</option></select></label>
       <button id="loadBtn" class="mic">読み込む</button>

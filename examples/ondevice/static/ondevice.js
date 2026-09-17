@@ -13,7 +13,9 @@ ort.env.wasm.wasmPaths = 'https://cdn.jsdelivr.net/npm/onnxruntime-web@1.23.0/di
 ort.env.wasm.numThreads = self.crossOriginIsolated ? Math.min(4, navigator.hardwareConcurrency || 2) : 1;
 
 const cfg = await (await fetch('/api/config')).json();
-S.cfg = cfg; S.cal = cfg.calibration; S.name = cfg.models[0] || 'kana-small-2l';
+S.cfg = cfg; S.cal = cfg.calibration; S.name = cfg.models[cfg.models.length - 1];
+$('#modelSel').innerHTML = cfg.models.map(m => `<option ${m === S.name ? 'selected' : ''}>${m}</option>`).join('');
+$('#modelSel').onchange = (e) => { S.name = e.target.value; $('#loadBtn').disabled = false; $('#loadMsg').textContent = 'モデルを変えました。読み込み直してください。'; };
 S.sets = await (await fetch('/api/commands?app_name=kasen')).json();
 $('#stateSel').innerHTML = Object.keys(S.sets).map(k => `<option>${k}</option>`).join('');
 $('#stateSel').onchange = (e) => { S.state = e.target.value; showState(); };
@@ -31,6 +33,8 @@ $('#loadBtn').onclick = async () => {
     tjsEnv.allowLocalModels = true; tjsEnv.allowRemoteModels = false; tjsEnv.localModelPath = '/model/';
     S.tok = await AutoTokenizer.from_pretrained(S.name);
     S.proc = await AutoProcessor.from_pretrained(S.name);
+    const meta = await (await fetch(`/model/${S.name}/distill_info.json`)).json().catch(() => ({}));
+    log('model', S.name, 'decoder layers', meta.decoder_layers, 'train hours', meta.train_hours);
     const suffix = dtype === 'q8' ? '_quantized' : '';
     const opts = { executionProviders: [ep], graphOptimizationLevel: 'all' };
     const load = async (file) => {
