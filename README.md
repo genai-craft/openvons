@@ -96,9 +96,19 @@ closest phrase from the transcription, no way to refuse) next to **openvons** (p
 conventional way would have fired the wrong command. Measured on a Nothing Phone 3 (NNAPI, int8):
 2.0-2.2 s per utterance, 260-290 ms to embed an image and 11 ms to answer 9 questions about it.
 
-See [docs/ondevice_app.md](docs/ondevice_app.md) (Japanese) for the layout, the export scripts and the traps
-(handing the full vocabulary logits to the app crashes it; the decoder is re-wrapped so the graph returns
-only the scores and the next token).
+```bash
+cd app && flutter pub get
+flutter run                     # a connected Android device, or an iOS device/simulator
+flutter build apk --release     # Android (111 MB; --split-per-abi gives ~40 MB per ABI)
+flutter build ios --release     # iOS (needs macOS and an Apple signing identity)
+```
+
+On first launch it downloads about 300 MB of models (default source `https://ondevice.openvons.com`,
+the public demo) and caches them; after that the voice decision needs no network.
+To serve the models yourself: `scripts/serve_ondevice.sh start 0 8606`, then change the server in the
+settings tab. [app/README.md](app/README.md) has the details, and [docs/ondevice_app.md](docs/ondevice_app.md)
+(Japanese) covers the export scripts and the traps (handing the full vocabulary logits to the app crashes
+it, so the decoder is re-wrapped to return only the scores and the next token).
 
 ### Small model for on-device use (in progress)
 
@@ -114,6 +124,7 @@ openvons/vision/    vision_model (encoder only), vlm_decision_model (small VLM),
 openvons/voice/     kana, lexicon (entities and scopes), grammar (state-dependent command sets), asr (kana-whisper), engine, state, vad, synth (pre-training)
 openvons/tts/       TTS backends (voicevox:// default, irodori://, openai://)
 examples/           text_decision (text questions), stations (railway map), kasen (river live cameras), road_cameras (synthetic cameras)
+app/                Flutter app for Android / iOS (everything runs on the device)
 openvons/voice/demo_server.py   shared demo server (--app selects the application); openvons/voice/distill/ distillation of the small kana model
 scripts/            lm_* (text / vision experiments), build_catalog / build_stations / eval_synthetic / refit_calibration (voice), serve_demo.sh
 docs/               design, evaluation and research notes (lm_*, vision_*, voice_*), licensing.md, jev_api.md, roadmap.md
