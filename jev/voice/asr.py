@@ -50,6 +50,7 @@ class KanaASR:
         self.dtype = dtype
         self.processor = WhisperProcessor.from_pretrained(model_name)
         self.model = WhisperForConditionalGeneration.from_pretrained(model_name, dtype=dtype).to(self.device).eval()
+        self.model.generation_config.forced_decoder_ids = None
         tok = self.processor.tokenizer
         self.tok = tok
         self.prefix = tok.convert_tokens_to_ids(["<|startoftranscript|>", "<|ja|>", "<|transcribe|>", "<|notimestamps|>"])
@@ -59,6 +60,12 @@ class KanaASR:
         # 読点を挟むことがあり、候補側 (読点なし) と採点位置がずれて尤度が 10 nats 落ちる事故を防ぐ。
         # 生成時に抑制するだけでは足りない (採点時にその位置の確率質量が読点に残る) ので、両方に同じマスクを掛ける。
         self.suppress_ids = self._build_suppress_ids()
+        # 蒸留した小型モデル (jev.voice.distill) は非カナトークンの抑制リストを同梱している
+        import json as _json, os as _os
+        info = _os.path.join(model_name, "distill_info.json") if _os.path.isdir(model_name) else None
+        if info and _os.path.exists(info):
+            extra = set(_json.load(open(info)).get("suppress_tokens_kana_only", []))
+            self.suppress_ids = sorted(set(self.suppress_ids) | extra - {self.eot})
         self._suppress_tensor = torch.tensor(self.suppress_ids, device=self.device, dtype=torch.long)
         self.warmup()
 

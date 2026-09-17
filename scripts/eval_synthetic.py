@@ -42,6 +42,7 @@ def main():
     ap.add_argument("--seeds", default="1,2,3")
     ap.add_argument("--out", default=str(ROOT / "experiments" / "eval_synth.json"))
     ap.add_argument("--tts", default="voicevox://127.0.0.1:50021")
+    ap.add_argument("--asr-model", default="sbintuitions/kana-whisper", help="kana-whisper か、蒸留した小型モデルのディレクトリ")
     args = ap.parse_args()
     rng = random.Random(0)
     seeds = [int(x) for x in args.seeds.split(",")]
@@ -52,7 +53,8 @@ def main():
         "千葉県 (全事務所)": Scope("chiba", "千葉県", filters={"pref": ["千葉県"]}),
         "全国 (2,932台)": Scope("all", "全国", filters={"bureau": lex.values_of("bureau")}),
     }
-    asr = KanaASR()
+    asr = KanaASR(args.asr_model)
+    print(f"asr {args.asr_model}: {asr.n_params / 1e6:.0f}M params", flush=True)
     rec = Recognizer(asr)
     g = Grammar(INTENTS)
     tts = TTSClient(args.tts, cache_dir="/data/openjev/state/tts_cache")
@@ -84,7 +86,7 @@ def main():
             for sd in seeds[:2]:
                 ptz.append((pad_silence(tts.synth(t, seed=sd), rng), intent, t, "ptz"))
 
-    results = {"n_camera_utts": len(utts), "n_oog": len(oog), "n_ptz": len(ptz), "scopes": {}}
+    results = {"asr_model": args.asr_model, "asr_params_m": round(asr.n_params / 1e6), "n_camera_utts": len(utts), "n_oog": len(oog), "n_ptz": len(ptz), "scopes": {}}
     for sname, sc in scopes.items():
         ents = lex.in_scope(sc)
         t0 = time.time(); cs = g.compile(["select_camera", "help"], ents, "WALL"); t_compile = time.time() - t0

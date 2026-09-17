@@ -110,6 +110,14 @@ def main():
         keep = [0] + list(range(len(dec.layers) - (args.decoder_layers - 1), len(dec.layers))) if args.decoder_layers > 1 else [0]
         dec.layers = torch.nn.ModuleList([dec.layers[i] for i in keep])
         model.config.decoder_layers = len(dec.layers)
+        # 残した層は元の layer_idx (例: 11) を持ったままなので、KV cache の添字が範囲外になる → 新しい位置に振り直す
+        for new_idx, layer in enumerate(dec.layers):
+            for attr in ("self_attn", "encoder_attn"):
+                a = getattr(layer, attr, None)
+                if a is not None and hasattr(a, "layer_idx"):
+                    a.layer_idx = new_idx
+            if hasattr(layer, "layer_idx"):
+                layer.layer_idx = new_idx
     model.config.forced_decoder_ids = None
     model.generation_config.forced_decoder_ids = None
     tok = proc.tokenizer
@@ -141,7 +149,7 @@ def main():
                 print("encoder unfrozen", flush=True)
             feats, dec_in, labels = feats.to(device), dec_in.to(device), labels.to(device)
             with torch.autocast("cuda", dtype=torch.bfloat16):
-                logits = model(input_features=feats, decoder_input_ids=dec_in).logits
+                logits = model(input_features=feats, decoder_input_ids=dec_in, use_cache=False).logits
                 loss = torch.nn.functional.cross_entropy(logits.float().reshape(-1, logits.shape[-1]), labels.reshape(-1), ignore_index=-100)
             opt.zero_grad(set_to_none=True)
             loss.backward()
