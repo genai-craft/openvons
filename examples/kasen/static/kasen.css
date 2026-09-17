@@ -1,0 +1,15 @@
+.map{width:100%;flex:1;min-height:60vh;background:#0b0f14;border-radius:8px;border:1px solid var(--line)}
+.leaflet-container{background:#0b0f14;font:inherit}
+.leaflet-tile{filter:brightness(.72) contrast(1.05) saturate(.7)}
+.st-label{background:rgba(11,15,20,.85);color:#e6edf3;border:1px solid #26303b;border-radius:4px;padding:1px 5px;font-size:11px;white-space:nowrap;box-shadow:none}
+.st-label.focus{color:#4cc2ff;border-color:#4cc2ff;font-weight:700;font-size:13px}
+.card{position:absolute;left:16px;right:16px;top:52px;bottom:34px;background:rgba(17,23,31,.97);border:1px solid var(--acc);border-radius:10px;padding:12px;display:flex;flex-direction:column;gap:8px;z-index:20}
+.card b{font-size:20px}
+.camhead{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.cardbtns{display:flex;gap:6px;flex-wrap:wrap}.cardbtns .back{border-color:var(--acc)}
+.imgwrap{flex:1;min-height:0;display:flex;flex-direction:column;align-items:center;justify-content:center;overflow:hidden;background:#000;border-radius:8px;position:relative}
+.imgwrap img{max-width:100%;max-height:100%;object-fit:contain;transition:transform .3s;transform-origin:center}
+#imgNote{position:absolute;left:8px;bottom:6px;background:rgba(0,0,0,.6);padding:2px 6px;border-radius:4px}
+.neighbors{display:flex;gap:10px;align-items:center;flex-wrap:wrap;font-size:14px}.neighbors .cur{color:var(--acc);font-weight:700}
+.credit{margin-top:6px}.credit a{color:var(--muted)}
+@media (max-width:1000px){.map{min-height:45vh}.card{left:8px;right:8px}}

@@ -388,6 +388,8 @@ def main():
     G["asr"] = KanaASR()
     G["recognizer"] = Recognizer(G["asr"], Calibration(), Thresholds())
     log.info("ready: %d cameras, tts=%s", len(G["lexicon"]), G["tts"].ok())
+    if hasattr(APP, "register_routes"):        # アプリ固有の API (河川版のライブ画像プロキシなど)
+        APP.register_routes(app, G, STATE_DIR)
     app.mount("/static", StaticFiles(directory=str(G["static"])), name="static")
     app.mount("/shared", StaticFiles(directory=str(HERE / "demo_static")), name="shared")
     import uvicorn
