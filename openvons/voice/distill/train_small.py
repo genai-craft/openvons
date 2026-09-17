@@ -43,10 +43,11 @@ CONTENT_VOCAB = 50258          # 0..50256 が内容トークン、50257 が EOT�
 
 
 class KanaSet(Dataset):
-    def __init__(self, rows: list[dict], parquet_dir: Path, processor, max_len: int = 96):
+    def __init__(self, rows: list[dict], parquet_dir: Path, processor, max_len: int = 96, teacher_proc=None):
         self.rows = rows
         self.dir = Path(parquet_dir)
         self.proc = processor
+        self.tproc = teacher_proc          # 教師は mel 128 なので別に作る (large-v3 系)
         self.max_len = max_len
         self._pf: dict[str, pq.ParquetFile] = {}
         self._cache: OrderedDict = OrderedDict()
@@ -78,9 +79,11 @@ class KanaSet(Dataset):
         df = self._row_group(pf, int(rg))
         cell = df.loc[int(idx), "audio"]
         a, sr = sf.read(io.BytesIO(cell["bytes"]))
-        feats = self.proc.feature_extractor(to16k(a, sr), sampling_rate=16000, return_tensors="np").input_features[0]
+        wav = to16k(a, sr)
+        feats = self.proc.feature_extractor(wav, sampling_rate=16000, return_tensors="np").input_features[0]
         ids = self.proc.tokenizer(r["kana"], add_special_tokens=False).input_ids[: self.max_len]
-        return torch.from_numpy(feats), ids
+        tfeats = self.tproc.feature_extractor(wav, sampling_rate=16000, return_tensors="np").input_features[0] if self.tproc else None
+        return torch.from_numpy(feats), ids, (torch.from_numpy(tfeats) if tfeats is not None else torch.zeros(0))
 
 
 class BlockSampler(Sampler):
@@ -109,7 +112,8 @@ class BlockSampler(Sampler):
 
 def collate(batch, prefix: list[int], eot: int):
     feats = torch.stack([b[0] for b in batch])
-    seqs = [prefix + ids + [eot] for _, ids in batch]
+    tfeats = torch.stack([b[2] for b in batch]) if batch[0][2].numel() else None
+    seqs = [prefix + b[1] + [eot] for b in batch]
     L = max(len(x) for x in seqs)
     ids = torch.full((len(seqs), L), eot, dtype=torch.long)
     mask = torch.zeros((len(seqs), L), dtype=torch.bool)
@@ -117,7 +121,7 @@ def collate(batch, prefix: list[int], eot: int):
         ids[i, : len(x)] = torch.tensor(x)
         mask[i, : len(x)] = True
     mask[:, : len(prefix)] = False              # 強制 prefix は学習しない
-    return feats, ids, mask
+    return feats, ids, mask, tfeats
 
 
 def cut_decoder(model, n_layers: int):
@@ -205,7 +209,8 @@ def main() -> None:
     else:
         t_prefix = prefix
 
-    ds = KanaSet(train, Path(args.parquet_dir), proc)
+    tproc = WhisperProcessor.from_pretrained(args.teacher) if teacher is not None else None
+    ds = KanaSet(train, Path(args.parquet_dir), proc, teacher_proc=tproc)
     sampler = BlockSampler(ds, rank, world)
     dl = DataLoader(ds, batch_size=args.batch, sampler=sampler, num_workers=args.workers,
                     collate_fn=lambda b: collate(b, prefix, eot), drop_last=True, persistent_workers=args.workers > 0,
@@ -228,12 +233,13 @@ def main() -> None:
     ep = 0
     while step < steps_total:
         sampler.set_epoch(ep); ep += 1
-        for feats, ids, mask in dl:
+        for feats, ids, mask, tfeats in dl:
             if step == args.freeze_encoder_steps:
                 for p in model.model.encoder.parameters():
                     p.requires_grad = True
                 log("encoder unfrozen")
             feats, ids, mask = feats.to(device, non_blocking=True), ids.to(device), mask.to(device)
+            tfeats = tfeats.to(device, non_blocking=True) if tfeats is not None else None
             dec_in, labels_mask = ids[:, :-1], mask[:, 1:]
             with torch.autocast("cuda", dtype=torch.bfloat16):
                 logits = net(input_features=feats, decoder_input_ids=dec_in, use_cache=False).logits
@@ -245,7 +251,7 @@ def main() -> None:
                 with torch.no_grad(), torch.autocast("cuda", dtype=torch.bfloat16):
                     t_in = dec_in.clone()
                     t_in[:, : len(prefix)] = torch.tensor(t_prefix, device=device)      # prefix の id だけ教師側に合わせる
-                    t_logits = teacher(input_features=feats, decoder_input_ids=t_in, use_cache=False).logits.float()
+                    t_logits = teacher(input_features=tfeats, decoder_input_ids=t_in, use_cache=False).logits.float()
                 T = args.kl_temp
                 s_lp = torch.log_softmax(logits[..., :CONTENT_VOCAB] / T, -1)
                 t_p = torch.softmax(t_logits[..., :CONTENT_VOCAB] / T, -1)
@@ -290,7 +296,8 @@ def evaluate(model, vds, proc, prefix, eot, suppress, device, n: int = 300, bs: 
         feats = torch.stack([it[0] for it in items]).to(device)
         out = model.generate(input_features=feats, decoder_input_ids=torch.tensor([prefix] * len(items), device=device),
                              max_new_tokens=96, num_beams=1, do_sample=False, suppress_tokens=suppress)
-        for seq, (_, ids) in zip(out.tolist(), items):
+        for seq, it in zip(out.tolist(), items):
+            ids = it[1]
             hyp = proc.tokenizer.decode([t for t in seq if t < eot], skip_special_tokens=True)
             ref = proc.tokenizer.decode(ids, skip_special_tokens=True)
             tot += cer(ref, hyp); cnt += 1

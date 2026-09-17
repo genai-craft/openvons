@@ -28,8 +28,8 @@
 
     <h3>2. 話しかける</h3>
     <div class="row">
-      <button id="micBtn" class="mic" disabled>🎙 押している間だけ録音</button>
-      <button id="selfTest" disabled>セルフテスト (録音なしで 1 発話)</button>
+      <button id="micBtn" class="mic" disabled>🎙 録音開始 (もう一度押すと停止)</button>
+      <button id="selfTest" disabled>セルフテスト (録音なしで 4 発話)</button>
       <span id="vadChip" class="chip">待機</span>
       <label class="chk"><input type="checkbox" id="cmpServer"> サーバーの大きいモデルとも比べる</label>
     </div>
@@ -48,6 +48,7 @@
     <div id="nbest" class="nbest"></div>
     <table class="times" id="times"></table>
     <div id="serverCmp" class="cmp"></div>
+    <div id="selfResult"></div>
     <h3>ログ</h3>
     <pre id="log" class="log"></pre>
   </section>

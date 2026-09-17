@@ -38,6 +38,7 @@ $('#loadBtn').onclick = async () => {
       const buf = await fetchWithProgress(url);
       return ort.InferenceSession.create(buf, opts);
     };
+    S.ep = ep;
     S.enc = await load('encoder_model');
     S.dec = await load('decoder_model');
     S.prefix = cfg.prefix; S.eot = cfg.eot; S.suppress = cfg.suppress || [];   // 特殊トークンの id はサーバーが解決して渡す
@@ -150,7 +151,8 @@ function calibrate(scores, lens, freeScore, nFree) {
 
 /* ---------------- 1 発話 ---------------- */
 async function handle(audio) {
-  if (S.busy || !S.enc) return; S.busy = true;
+  if (S.busy || !S.enc) return { free: '', answer: '-', action: 'busy', ms: 0 };
+  S.busy = true;
   try {
     S.supSet = new Set(S.suppress);
     const hyps = S.sets[S.state].hyps;
@@ -173,7 +175,8 @@ async function handle(audio) {
     const action = !top || none > top.p ? 'none' : top.c.r === 'high' ? (top.p >= .4 ? 'confirm' : 'reject')
       : top.p >= .85 ? 'execute' : top.p >= .4 ? 'confirm' : 'reject';
     render({ free, encMs: e.ms, scoreMs: all.ms, ranked, none, action, audio });
-  } catch (err) { log('error', err.message); $('#speech').textContent = 'エラー: ' + err.message; }
+    return { free: free.kana, answer: action === 'none' ? '該当なし' : (top ? top.c.t : '-'), action, ms: e.ms + free.ms + all.ms };
+    } catch (err) { log('error', err.message); $('#speech').textContent = 'エラー: ' + err.message; return { free: '', answer: 'エラー', action: 'error', ms: 0 }; }
   finally { S.busy = false; }
 }
 function render(r) {
@@ -240,15 +243,41 @@ async function stopRec() {
   $('#vadChip').textContent = '待機';
 }
 const mb = $('#micBtn');
-mb.addEventListener('pointerdown', (e) => { e.preventDefault(); startRec(); });
-mb.addEventListener('pointerup', stopRec);
-mb.addEventListener('pointercancel', stopRec);
-mb.addEventListener('pointerleave', () => { if (media && media.on) stopRec(); });
+mb.addEventListener('click', async () => { if (media && media.on) { await stopRec(); mb.textContent = '🎙 録音開始 (もう一度押すと停止)'; mb.classList.remove('on'); }
+  else { await startRec(); mb.textContent = '⏹ 停止して判断する'; mb.classList.add('on'); } });
+mb.addEventListener('contextmenu', (e) => e.preventDefault());
+
 window.__handle = handle;     // 自動検証から 1 発話を流すため
 $('#selfTest').onclick = async () => {
-  $('#speech').textContent = 'セルフテスト中…';
-  const r = await fetch('/api/sample_wav'); const buf = await r.arrayBuffer();
-  const ac = new AudioContext({ sampleRate: 16000 }); const ab = await ac.decodeAudioData(buf);
-  await handle(ab.getChannelData(0));
+  const samples = await (await fetch('/api/samples')).json();
+  const rows = []; const saved = S.state;
+  $('#selfResult').innerHTML = '<div class="verdict">セルフテスト中…</div>';
+  for (const sp of samples) {
+    S.state = sp.state; $('#stateSel').value = sp.state; showState();
+    const buf = await (await fetch(`/api/sample/${sp.id}.wav`)).arrayBuffer();
+    const ac = new AudioContext({ sampleRate: 16000 });
+    const ab = await ac.decodeAudioData(buf);
+    const t0 = performance.now();
+    const r = await handle(ab.getChannelData(0));
+    const hit = sp.expect ? (r.answer || '').includes(sp.expect) : (r.action === 'none' || r.action === 'reject');
+    rows.push({ ...sp, ...r, hit, ms: performance.now() - t0 });
+    renderSelf(rows, samples.length);
+  }
+  S.state = saved; $('#stateSel').value = saved; showState();
 };
+function renderSelf(rows, total) {
+  const ok = rows.filter(r => r.hit).length;
+  const avg = rows.reduce((a, r) => a + r.ms, 0) / rows.length;
+  $('#selfResult').innerHTML = `<table class="selftbl">
+    <tr><th>話した言葉</th><th>期待する答え</th><th>端末内の答え</th><th>判定</th><th>時間</th></tr>` +
+    rows.map(r => `<tr><td>${r.show}<br><span class="muted small">${r.note} / 状態 ${r.state}</span></td>
+      <td>${r.expect || '該当なし (無視)'}</td>
+      <td>${r.answer}<br><span class="muted small">聞こえ: ${r.free}</span></td>
+      <td class="${r.hit ? 'ok' : 'ng'}">${r.hit ? '○' : '×'}</td>
+      <td>${r.ms.toFixed(0)} ms</td></tr>`).join('') + `</table>
+    <div class="verdict">${rows.length}/${total} 実行　<b>${ok}/${rows.length} 一致</b>　1 発話あたり平均 <b>${avg.toFixed(0)} ms</b>
+      （実行先 ${S.ep || '-'}・WASM ${ort.env.wasm.numThreads} スレッド）<br>
+      <span class="muted small">この表が出ていれば、音声認識も候補の採点もこの端末の中だけで動いています (通信はモデルの初回ダウンロードのみ)。
+      ×が出る場合は小型モデルの精度の問題で、経路そのものは動いています。</span></div>`;
+}
 log('準備完了。モデルを読み込んでください。');

@@ -57,16 +57,36 @@ def config():
             "prefix": G["prefix"], "eot": G["eot"], "suppress": G["suppress"]}
 
 
-@app.get("/api/sample_wav")
-def sample_wav():
-    """検証用: 手元の TTS キャッシュから 1 つ返す (マイクの無い環境で経路を通すため)。"""
+#: セルフテスト用の発話 (TTS で合成)。「何が正解か」を画面に出すため、期待する答えも持つ
+SAMPLES = [
+    {"id": "s1", "say": "クリハシ", "show": "栗橋", "state": "MAP", "expect": "栗橋水位", "note": "地点名を選ぶ"},
+    {"id": "s2", "say": "コーシンシテ", "show": "更新して", "state": "CAMERA", "expect": "更新", "note": "操作の指示"},
+    {"id": "s3", "say": "ヒトツカリュー", "show": "ひとつ下流", "state": "CAMERA", "expect": "一つ下流", "note": "上流・下流の移動"},
+    {"id": "s4", "say": "はい、お世話になっております", "show": "はい、お世話になっております", "state": "MAP", "expect": None, "note": "関係ない話 → 該当なしになるのが正解"},
+]
+
+
+@app.get("/api/samples")
+def samples():
+    return SAMPLES
+
+
+@app.get("/api/sample/{sid}.wav")
+def sample_wav(sid: str):
+    """検証用の音声。TTS で作って state/ondevice/samples に置いておく (マイク無しでも経路を測れるように)。"""
     from fastapi.responses import Response
-    import glob
-    fs = sorted(glob.glob(str(ROOT / "state" / "kasen" / "tts_cache" / "*.wav")))
-    if not fs:
-        return JSONResponse({"error": "no cached wav"}, 404)
-    idx = int(os.environ.get("OPENVONS_SAMPLE_INDEX", "0")) % len(fs)
-    return Response(open(fs[idx], "rb").read(), media_type="audio/wav")
+    spec = next((s for s in SAMPLES if s["id"] == sid), None)
+    if spec is None:
+        return JSONResponse({"error": "unknown sample"}, 404)
+    d = Path(os.environ.get("OPENVONS_STATE", ROOT / "state")) / "ondevice" / "samples"
+    d.mkdir(parents=True, exist_ok=True)
+    f = d / f"{sid}.wav"
+    if not f.exists():
+        import soundfile as sf
+        from openvons.tts import get_backend
+        tts = get_backend(os.environ.get("JEV_TTS_URL", "voicevox://127.0.0.1:50021"))
+        sf.write(f, tts.synth(spec["say"], seed=1), 16000)
+    return Response(f.read_bytes(), media_type="audio/wav")
 
 
 @app.get("/api/commands")
