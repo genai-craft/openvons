@@ -38,9 +38,9 @@ Utterances captured through the microphone are stored under `state/<app>/utts/` 
 
 | Demo | Live | What it does |
 |---|---|---|
-| Railway map by voice | https://eki.aunvox.com | 8,987 stations (station_database, CC BY 4.0). Say a station to zoom; next / previous station; switch line; add favorite (asks for confirmation) |
-| Road camera monitoring | https://sashizu.aunvox.com | 2,932 synthetic cameras. Say a camera name to enlarge; pan / tilt / zoom; save preset (asks for confirmation) |
-| Face and body attributes (vision) | https://kao.aunvox.com | Webcam or upload. Age (9 bins) and gender per face (FairFace head), gender / age group / orientation / baggage for the body (PA-100K head), each with calibrated probabilities and a decided / check / unknown level. Images are not stored |
+| Railway map by voice | https://eki.openvons.com | 8,987 stations (station_database, CC BY 4.0). Say a station to zoom; next / previous station; switch line; add favorite (asks for confirmation) |
+| Road camera monitoring (指令 / shirei) | https://shirei.openvons.com | 2,932 synthetic cameras. Say a camera name to enlarge; pan / tilt / zoom; save preset (asks for confirmation) |
+| Face and body attributes (vision) | https://kao.openvons.com | Webcam or upload. Age (9 bins) and gender per face (FairFace head), gender / age group / orientation / baggage for the body (PA-100K head), each with calibrated probabilities and a decided / check / unknown level. Images are not stored |
 
 An application is just `examples/<name>/app.py` (intents, states, entities) plus `static/`; recognition, calibration, pre-training and the server are shared.
 Design and evaluation: [docs/voice_design.md](docs/voice_design.md) / [docs/voice_evaluation.md](docs/voice_evaluation.md) (Japanese).
