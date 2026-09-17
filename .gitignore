@@ -3,3 +3,13 @@ __pycache__/
 .venv
 /state/
 /data/kenall/
+
+# Flutter アプリ (ビルド成果物と環境依存ファイル)
+app/build/
+app/.dart_tool/
+app/.flutter-plugins-dependencies
+app/android/.gradle/
+app/android/local.properties
+app/ios/Pods/
+app/ios/Flutter/Flutter.podspec
+app/ios/.symlinks/

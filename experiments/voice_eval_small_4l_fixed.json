@@ -1,0 +1,248 @@
+{
+ "asr_model": "/data/openjev/distill/kana-whisper-small-4l",
+ "asr_params_m": 166,
+ "n_camera_utts": 180,
+ "n_oog": 23,
+ "n_ptz": 24,
+ "scopes": {
+  "首都国道 (100台)": {
+   "n_cameras": 100,
+   "n_hypotheses": 1715,
+   "compile_s": 0.03,
+   "A_nearest": {
+    "clean": 1.0,
+    "snr20": 1.0,
+    "snr10": 1.0,
+    "snr5": 1.0,
+    "babble": 0.939,
+    "all": 0.989
+   },
+   "B_rescore": {
+    "clean": 0.841,
+    "snr20": 0.867,
+    "snr10": 0.946,
+    "snr5": 0.806,
+    "babble": 0.727,
+    "all": 0.839
+   },
+   "latency_ms": {
+    "encode": 8.2,
+    "transcribe": 35.0,
+    "shortlist": 0.5,
+    "score": 7.0,
+    "total": 50.7
+   },
+   "latency_p95_ms": 61.7,
+   "oog_rejected": 1.0,
+   "oog_false_execute": 0.0,
+   "calibration": {
+    "temperature": 2.5,
+    "none_bias": 4.0,
+    "len_bonus": 1.4,
+    "residual_penalty": 1.0
+   },
+   "ece_before": 0.0892,
+   "acc_argmax_before": 0.8571,
+   "ece_after": 0.0892,
+   "acc_argmax_after": 0.8571,
+   "conf_gate": {
+    "0.5": {
+     "coverage": 0.894,
+     "precision": 0.938
+    },
+    "0.85": {
+     "coverage": 0.867,
+     "precision": 0.968
+    },
+    "0.95": {
+     "coverage": 0.844,
+     "precision": 0.967
+    }
+   }
+  },
+  "千葉県 (全事務所)": {
+   "n_cameras": 172,
+   "n_hypotheses": 3147,
+   "compile_s": 0.05,
+   "A_nearest": {
+    "clean": 1.0,
+    "snr20": 1.0,
+    "snr10": 1.0,
+    "snr5": 1.0,
+    "babble": 0.939,
+    "all": 0.989
+   },
+   "B_rescore": {
+    "clean": 0.841,
+    "snr20": 0.867,
+    "snr10": 0.946,
+    "snr5": 0.806,
+    "babble": 0.727,
+    "all": 0.839
+   },
+   "latency_ms": {
+    "encode": 8.2,
+    "transcribe": 33.6,
+    "shortlist": 0.8,
+    "score": 7.0,
+    "total": 50.3
+   },
+   "latency_p95_ms": 60.5,
+   "oog_rejected": 1.0,
+   "oog_false_execute": 0.0,
+   "calibration": {
+    "temperature": 2.5,
+    "none_bias": 4.0,
+    "len_bonus": 1.4,
+    "residual_penalty": 1.0
+   },
+   "ece_before": 0.0896,
+   "acc_argmax_before": 0.8571,
+   "ece_after": 0.0896,
+   "acc_argmax_after": 0.8571,
+   "conf_gate": {
+    "0.5": {
+     "coverage": 0.883,
+     "precision": 0.95
+    },
+    "0.85": {
+     "coverage": 0.867,
+     "precision": 0.968
+    },
+    "0.95": {
+     "coverage": 0.85,
+     "precision": 0.967
+    }
+   }
+  },
+  "全国 (2,932台)": {
+   "n_cameras": 2932,
+   "n_hypotheses": 55847,
+   "compile_s": 1.1,
+   "A_nearest": {
+    "clean": 1.0,
+    "snr20": 1.0,
+    "snr10": 1.0,
+    "snr5": 0.917,
+    "babble": 0.818,
+    "all": 0.95
+   },
+   "B_rescore": {
+    "clean": 0.841,
+    "snr20": 0.867,
+    "snr10": 0.946,
+    "snr5": 0.806,
+    "babble": 0.697,
+    "all": 0.833
+   },
+   "latency_ms": {
+    "encode": 8.1,
+    "transcribe": 33.8,
+    "shortlist": 13.1,
+    "score": 7.4,
+    "total": 62.3
+   },
+   "latency_p95_ms": 74.4,
+   "oog_rejected": 1.0,
+   "oog_false_execute": 0.0,
+   "calibration": {
+    "temperature": 2.5,
+    "none_bias": 4.0,
+    "len_bonus": 1.4,
+    "residual_penalty": 1.0
+   },
+   "ece_before": 0.065,
+   "acc_argmax_before": 0.8621,
+   "ece_after": 0.065,
+   "acc_argmax_after": 0.8621,
+   "conf_gate": {
+    "0.5": {
+     "coverage": 0.9,
+     "precision": 0.907
+    },
+    "0.85": {
+     "coverage": 0.828,
+     "precision": 0.946
+    },
+    "0.95": {
+     "coverage": 0.75,
+     "precision": 0.963
+    }
+   }
+  }
+ },
+ "ptz_focus": {
+  "acc": 0.667,
+  "n": 24,
+  "n_hypotheses": 1868,
+  "misses": [
+   {
+    "text": "もっと右に向けて",
+    "free": "モットワミキニムケテ",
+    "action": "none",
+    "top": "もっと上に向けて",
+    "p": 0.114
+   },
+   {
+    "text": "もっと右に向けて",
+    "free": "モットオミキニムケテ",
+    "action": "none",
+    "top": "もっと下に向けて",
+    "p": 0.027
+   },
+   {
+    "text": "右に振って",
+    "free": "ミキミフッテ",
+    "action": "none",
+    "top": "上に振って",
+    "p": 0.041
+   },
+   {
+    "text": "右に振って",
+    "free": "ミジニフッテ",
+    "action": "none",
+    "top": "上に振って",
+    "p": 0.027
+   },
+   {
+    "text": "もっと寄って",
+    "free": "モットオッテ",
+    "action": "none",
+    "top": "もっと上振って",
+    "p": 0.022
+   },
+   {
+    "text": "もっと寄って",
+    "free": "モットオッテ",
+    "action": "none",
+    "top": "もっと引いて",
+    "p": 0.028
+   },
+   {
+    "text": "一覧に戻る",
+    "free": "イチラニモドブ",
+    "action": "none",
+    "top": "市川2上り",
+    "p": 0.0
+   },
+   {
+    "text": "一覧に戻る",
+    "free": "イチラニモドル",
+    "action": "none",
+    "top": "戻る",
+    "p": 0.007
+   }
+  ]
+ },
+ "confirm_state": {
+  "acc": 0.611,
+  "n": 18,
+  "n_hypotheses": 10,
+  "snr_db": 10
+ },
+ "confirm_phone_reject": {
+  "rate": 1.0,
+  "n": 10,
+  "false_accepts": []
+ }
+}

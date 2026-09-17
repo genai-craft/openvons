@@ -98,6 +98,82 @@ def commands(app_name: str = "kasen", scope: str = "", state: str = ""):
     return sets
 
 
+@app.get("/api/tokens")
+def tokens():
+    """生成されうるトークンの id → バイト列。端末はこれを繋いで UTF-8 に戻すだけでよい
+    (byte-level BPE なので 1 トークンが UTF-8 の途中で切れることがあり、文字列として配ると壊れる)。"""
+    tk = G["tok"]
+    sup = set(G["suppress"])
+    out = {}
+    for tid in range(G["eot"] + 1):
+        if tid in sup and tid != G["eot"]:
+            continue
+        out[str(tid)] = list(tk.convert_ids_to_tokens(tid).encode("utf-8")) if False else list(bytes(tk.convert_tokens_to_string([tk.convert_ids_to_tokens(tid)]), "utf-8", "surrogatepass"))
+    return out
+
+
+@app.get("/api/vision/choices")
+def vision_choices(set: str = "general"):
+    """質問セット。general = 室内外の汎用、kasen = 河川カメラの監視で実際に見たい状態。
+    端末に置くのは画像エンコーダだけで、質問を足すのはこの JSON を配り直すだけで済む。"""
+    base = Path(os.environ.get("OPENVONS_ONDEVICE_MODELS", "/data/openjev/models/ondevice")) / "vision-choices"
+    p = base / ("choices.json" if set == "general" else f"choices_{set}.json")
+    if not p.exists():
+        return JSONResponse({"error": f"{p.name} not found"}, 404)
+    return json.loads(p.read_text(encoding="utf-8"))
+
+
+@app.get("/api/vision/sets")
+def vision_sets():
+    base = Path(os.environ.get("OPENVONS_ONDEVICE_MODELS", "/data/openjev/models/ondevice")) / "vision-choices"
+    out = []
+    for f in sorted(base.glob("choices*.json")):
+        doc = json.loads(f.read_text(encoding="utf-8"))
+        key = "general" if f.name == "choices.json" else f.stem.replace("choices_", "")
+        out.append({"key": key, "title": doc.get("title", key), "n": len(doc.get("questions", []))})
+    return out
+
+
+@app.get("/api/sites")
+def sites():
+    """アプリが「指令卓」を描くための地点一覧。読み・河川・上下流の順番まで含めて配る。
+    端末はこれだけで、地点の切り替えと上流・下流の移動を自分で行える。"""
+    lex = G.get("lexicon")
+    if lex is None:
+        return JSONResponse({"error": "lexicon not loaded"}, 503)
+    out = []
+    for e in lex.in_scope(G["scope"]):
+        a = e.attrs
+        out.append({"id": e.id, "label": e.label, "reading": (e.readings or [""])[0], "river": a.get("river", ""),
+                    "office": a.get("office", ""), "pref": a.get("pref", ""), "order": a.get("order"),
+                    "lat": a.get("lat"), "lng": a.get("lng"),
+                    "image": f"/api/image/{e.id}"})
+    out.sort(key=lambda x: (x["river"], x["order"] if x["order"] is not None else 0))
+    return {"scope": G["scope"].name, "attribution": G.get("attribution", ""), "sites": out}
+
+
+@app.get("/api/manifest")
+def manifest():
+    """アプリが最初に取りに来る一覧: 落とすファイルとそのサイズ。"""
+    base = Path(os.environ.get("OPENVONS_ONDEVICE_MODELS", "/data/openjev/models/ondevice"))
+    def files(rel: list[str]) -> list[dict]:
+        out = []
+        for r in rel:
+            f = base / r
+            if f.exists():
+                out.append({"path": r, "bytes": f.stat().st_size, "url": f"/model/{r}"})
+        return out
+    voice = G["model_list"][-1]
+    return {
+        "voice": {"name": voice, "files": files([f"{voice}/onnx/mel.onnx", f"{voice}/onnx/encoder_model.onnx", f"{voice}/onnx/decoder_model.onnx",
+                                                 f"{voice}/onnx/encoder_model_quantized.onnx", f"{voice}/onnx/decoder_model_quantized.onnx",
+                                                 # 採点と次トークンをグラフの中で潰して返す版 (アプリはこちらを使う)
+                                                 f"{voice}/onnx/decoder_head_quantized.onnx"])},
+        "vision": {"name": "siglip2-base-img", "files": files(["siglip2-base-img/image_encoder.onnx", "siglip2-base-img/image_encoder_quantized.onnx",
+                                                               "siglip2-base-img/preprocess.json"])},
+    }
+
+
 @app.post("/api/server_decide")
 def server_decide(body: dict):
     """比較用: 同じ音声をサーバーの kana-whisper で認識して判断する。"""
@@ -132,9 +208,15 @@ def build_command_sets(app_module: str):
             "state": state,
             "description": APP.STATES[state].description,
             "n": len(cs),
-            "hyps": [{"t": h.text, "k": h.kana, "i": h.intent, "s": h.slots, "r": h.risk} for h in cs.hyps],
+            # ids = カナをトークン化したもの。端末に BPE を実装しなくて済むよう、サーバーで済ませる
+            "hyps": [{"t": h.text, "k": h.kana, "i": h.intent, "s": h.slots, "r": h.risk,
+                      "ids": G["tok"].encode(h.kana, add_special_tokens=False)} for h in cs.hyps],
         }
     inst.sm.state = list(APP.STATES)[0]
+    G["lexicon"] = lex
+    G["scope"] = scope
+    G["attribution"] = getattr(APP, "ATTRIBUTION", "")
+    G["app_module"] = APP
     return out, cs_by_state, scope
 
 
@@ -151,6 +233,14 @@ def main() -> None:
     G["version"] = str(int(max(p.stat().st_mtime for p in static.glob("*"))))
     models = Path(args.models)
     G["model_list"] = sorted(p.name for p in models.iterdir() if (p / "onnx").is_dir())
+    from transformers import WhisperTokenizerFast
+    tk = WhisperTokenizerFast.from_pretrained(str(models / G["model_list"][-1]))
+    G["tok"] = tk
+    G["prefix"] = tk.convert_tokens_to_ids(["<|startoftranscript|>", "<|ja|>", "<|transcribe|>", "<|notimestamps|>"])
+    G["eot"] = tk.eos_token_id
+    info_p = models / G["model_list"][-1] / "distill_info.json"
+    info = json.loads(info_p.read_text()) if info_p.exists() else {}
+    G["suppress"] = info.get("suppress_tokens_kana_only", [])
     sets, cs_by_state, scope = build_command_sets(args.app)
     G["command_sets"] = {"kasen": sets}
     G["cs_by_state"] = cs_by_state
@@ -158,13 +248,6 @@ def main() -> None:
     G["calibration"] = {"temperature": prof.get("temperature", 2.5), "none_bias": prof.get("none_bias", 4.0),
                         "len_bonus": prof.get("len_bonus", 1.4), "residual_penalty": prof.get("residual_penalty", 1.0)}
     G["server_asr"] = bool(args.server_asr)
-    from transformers import WhisperTokenizerFast
-    tk = WhisperTokenizerFast.from_pretrained(str(models / G["model_list"][0]))
-    G["prefix"] = tk.convert_tokens_to_ids(["<|startoftranscript|>", "<|ja|>", "<|transcribe|>", "<|notimestamps|>"])
-    G["eot"] = tk.eos_token_id
-    info_p = models / G["model_list"][-1] / "distill_info.json"
-    info = json.loads(info_p.read_text()) if info_p.exists() else {}
-    G["suppress"] = info.get("suppress_tokens_kana_only", [])
     if args.server_asr:
         from openvons.core.none_calibration import Calibration
         from openvons.voice.asr import KanaASR
@@ -172,6 +255,9 @@ def main() -> None:
         G["recognizer"] = Recognizer(KanaASR())
         G["cal_obj"] = Calibration.from_dict(G["calibration"])
     log.info("models: %s  states: %s", G["model_list"], {k: v["n"] for k, v in sets.items()})
+    # アプリ固有のルート (kasen ならライブ画像の中継)。端末アプリが指令卓を描くのに要る
+    if hasattr(G.get("app_module"), "register_routes"):
+        G["app_module"].register_routes(app, G, Path(os.environ.get("OPENVONS_STATE", ROOT / "state")) / "ondevice")
     app.mount("/model", StaticFiles(directory=str(models)), name="model")
     app.mount("/static", StaticFiles(directory=str(static)), name="static")
     app.mount("/shared", StaticFiles(directory=str(ROOT / "openvons" / "voice" / "demo_static")), name="shared")

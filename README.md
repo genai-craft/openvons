@@ -83,6 +83,23 @@ DM_LLM_URL=http://127.0.0.1:8300/v1 .venv/bin/python -m openvons.lm.api.server  
 so pointing the SDK's base URL at this server makes your local decision model answer. The mapping to the public spec, and the licensing
 caveats, are in [docs/jev_api.md](docs/jev_api.md).
 
+### Native app (Android / iOS)
+
+`app/` is a Flutter app that runs the whole pipeline **on the device**: log-mel, recognition, candidate
+scoring, calibration and the decision for voice; image embedding and choice matching for vision.
+The server only hands out the models and the list of things that can be chosen; no audio or image leaves the phone.
+
+The voice screen is a river-camera console: say a site name to show its live image, then move upstream /
+downstream, refresh or zoom. Every utterance is shown in two columns, **the conventional way** (pick the
+closest phrase from the transcription, no way to refuse) next to **openvons** (probabilities including
+"none of the above", split into execute / confirm / reject), with a running count of how often the
+conventional way would have fired the wrong command. Measured on a Nothing Phone 3 (NNAPI, int8):
+2.0-2.2 s per utterance, 260-290 ms to embed an image and 11 ms to answer 9 questions about it.
+
+See [docs/ondevice_app.md](docs/ondevice_app.md) (Japanese) for the layout, the export scripts and the traps
+(handing the full vocabulary logits to the app crashes it; the decoder is re-wrapped so the graph returns
+only the scores and the next token).
+
 ### Small model for on-device use (in progress)
 
 whisper-small is being distilled into a 2-layer-decoder katakana model using pseudo labels from kana-whisper (809M) (`openvons/voice/distill/`).

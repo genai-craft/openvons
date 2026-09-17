@@ -1,0 +1,191 @@
+{
+ "asr_model": "sbintuitions/kana-whisper",
+ "asr_params_m": 809,
+ "n_camera_utts": 180,
+ "n_oog": 23,
+ "n_ptz": 24,
+ "scopes": {
+  "首都国道 (100台)": {
+   "n_cameras": 100,
+   "n_hypotheses": 1715,
+   "compile_s": 0.03,
+   "A_nearest": {
+    "clean": 1.0,
+    "snr20": 1.0,
+    "snr10": 1.0,
+    "snr5": 0.972,
+    "babble": 0.727,
+    "all": 0.944
+   },
+   "B_rescore": {
+    "clean": 1.0,
+    "snr20": 1.0,
+    "snr10": 1.0,
+    "snr5": 1.0,
+    "babble": 0.667,
+    "all": 0.939
+   },
+   "latency_ms": {
+    "encode": 16.4,
+    "transcribe": 28.8,
+    "shortlist": 0.5,
+    "score": 10.7,
+    "total": 57.2
+   },
+   "latency_p95_ms": 70.9,
+   "oog_rejected": 1.0,
+   "oog_false_execute": 0.0,
+   "calibration": {
+    "temperature": 0.7419837056654567,
+    "none_bias": 8.67399405681527,
+    "len_bonus": 1.396602939006902,
+    "residual_penalty": 0.5
+   },
+   "ece_before": 0.0235,
+   "acc_argmax_before": 0.9851,
+   "ece_after": 0.0122,
+   "acc_argmax_after": 0.9901,
+   "conf_gate": {
+    "0.5": {
+     "coverage": 0.939,
+     "precision": 1.0
+    },
+    "0.85": {
+     "coverage": 0.922,
+     "precision": 1.0
+    },
+    "0.95": {
+     "coverage": 0.906,
+     "precision": 1.0
+    }
+   }
+  },
+  "千葉県 (全事務所)": {
+   "n_cameras": 172,
+   "n_hypotheses": 3147,
+   "compile_s": 0.04,
+   "A_nearest": {
+    "clean": 1.0,
+    "snr20": 1.0,
+    "snr10": 1.0,
+    "snr5": 0.972,
+    "babble": 0.697,
+    "all": 0.939
+   },
+   "B_rescore": {
+    "clean": 1.0,
+    "snr20": 1.0,
+    "snr10": 1.0,
+    "snr5": 1.0,
+    "babble": 0.667,
+    "all": 0.939
+   },
+   "latency_ms": {
+    "encode": 15.5,
+    "transcribe": 29.0,
+    "shortlist": 0.8,
+    "score": 10.7,
+    "total": 55.9
+   },
+   "latency_p95_ms": 70.0,
+   "oog_rejected": 1.0,
+   "oog_false_execute": 0.0,
+   "calibration": {
+    "temperature": 1.529095416927595,
+    "none_bias": 12.0,
+    "len_bonus": 0.5016276077736685,
+    "residual_penalty": 0.5
+   },
+   "ece_before": 0.0233,
+   "acc_argmax_before": 0.9851,
+   "ece_after": 0.0116,
+   "acc_argmax_after": 0.9901,
+   "conf_gate": {
+    "0.5": {
+     "coverage": 0.944,
+     "precision": 0.994
+    },
+    "0.85": {
+     "coverage": 0.928,
+     "precision": 0.994
+    },
+    "0.95": {
+     "coverage": 0.911,
+     "precision": 0.994
+    }
+   }
+  },
+  "全国 (2,932台)": {
+   "n_cameras": 2932,
+   "n_hypotheses": 55847,
+   "compile_s": 1.08,
+   "A_nearest": {
+    "clean": 1.0,
+    "snr20": 1.0,
+    "snr10": 1.0,
+    "snr5": 0.972,
+    "babble": 0.636,
+    "all": 0.928
+   },
+   "B_rescore": {
+    "clean": 1.0,
+    "snr20": 1.0,
+    "snr10": 1.0,
+    "snr5": 1.0,
+    "babble": 0.667,
+    "all": 0.939
+   },
+   "latency_ms": {
+    "encode": 15.3,
+    "transcribe": 29.4,
+    "shortlist": 16.4,
+    "score": 11.4,
+    "total": 72.3
+   },
+   "latency_p95_ms": 88.7,
+   "oog_rejected": 1.0,
+   "oog_false_execute": 0.0,
+   "calibration": {
+    "temperature": 0.5,
+    "none_bias": 5.987048821231943,
+    "len_bonus": 0.775207448404243,
+    "residual_penalty": 0.5
+   },
+   "ece_before": 0.0371,
+   "acc_argmax_before": 0.9851,
+   "ece_after": 0.0178,
+   "acc_argmax_after": 0.995,
+   "conf_gate": {
+    "0.5": {
+     "coverage": 0.928,
+     "precision": 0.994
+    },
+    "0.85": {
+     "coverage": 0.878,
+     "precision": 1.0
+    },
+    "0.95": {
+     "coverage": 0.85,
+     "precision": 1.0
+    }
+   }
+  }
+ },
+ "ptz_focus": {
+  "acc": 1.0,
+  "n": 24,
+  "n_hypotheses": 1868,
+  "misses": []
+ },
+ "confirm_state": {
+  "acc": 1.0,
+  "n": 18,
+  "n_hypotheses": 10,
+  "snr_db": 10
+ },
+ "confirm_phone_reject": {
+  "rate": 1.0,
+  "n": 10,
+  "false_accepts": []
+ }
+}

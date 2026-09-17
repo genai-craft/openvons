@@ -1,0 +1,29 @@
+name: openvons
+description: "openvons — 声と映像を、端末の中で有限の選択肢に確率で答える"
+publish_to: 'none'
+version: 0.1.0+1
+
+environment:
+  sdk: ^3.9.0
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_onnxruntime: ^1.8.5
+  record: ^6.0.0
+  camera: ^0.11.0
+  image: ^4.3.0
+  http: ^1.2.2
+  path_provider: ^2.1.5
+  shared_preferences: ^2.3.2
+  permission_handler: ^12.0.0
+  flutter_map: ^8.3.2
+  latlong2: ^0.10.1
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^5.0.0
+
+flutter:
+  uses-material-design: true
