@@ -1,9 +1,10 @@
 """意図 (Intent) とテンプレートから、状態ごとの「コマンド集合」をコンパイルする.
 
 テンプレート記法:
-    {camera}            スロット。lexicon の kind="camera" の実体すべてに展開される
-    [を]                省略可能な文字列
-    (表示|出して|見せて) 択一
+    {camera}                スロット。lexicon の kind="camera" の実体すべてに展開される
+    [を]                    省略可能な文字列
+    [して|の画像]           省略可能な択一 (どれか 1 つ、または無し)
+    (表示|出して|見せて)    択一 (必ずどれか 1 つ)
 例: "{camera}[を](表示|出して|見せて|お願い)" -> camera 実体 × 4 × 2 = 8 通り/読み
 
 コンパイル結果 CommandSet は仮説 (Hypothesis) の列。仮説 = (意図, スロット充填, 表示文, ASR 形カナ)。
@@ -69,7 +70,8 @@ def expand_template(pattern: str) -> list[list[tuple[str, str]]]:
         if m.group(1):
             parts.append([("slot", m.group(1))])
         elif m.group(2):
-            parts.append([("lit", m.group(2)), None])
+            # [a] は「a か、無し」。[a|b] は「a か b か、無し」(| を書けないと [して|の画像] が literal になる)
+            parts.append([("lit", alt) for alt in m.group(2).split("|")] + [None])
         else:
             parts.append([("lit", alt) for alt in m.group(3).split("|")])
         pos = m.end()
