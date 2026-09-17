@@ -1,0 +1,192 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0b0e13">
+<title>openvons — AIに、書かせない。選ばせる。</title>
+<meta name="description" content="決められた選択肢に、確信度つきで答えるAI。文章を生成しないから速く、安く、間違いが見える。音声・画像・テキストで動くオープンソース実装。">
+<meta property="og:title" content="openvons — AIに、書かせない。選ばせる。">
+<meta property="og:description" content="決められた選択肢に、確信度つきで答えるAI。音声・画像・テキストで動くオープンソース実装。">
+<meta property="og:type" content="website">
+<link rel="icon" href="/static/icon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="/static/lp.css?v=__V__">
+</head>
+<body>
+
+<nav class="nav">
+  <a class="logo" href="/"><span class="mark"></span>openvons</a>
+  <div class="navlinks">
+    <a href="#demos">デモ</a>
+    <a href="#how">しくみ</a>
+    <a href="#numbers">実測</a>
+    <a href="#use">使いどころ</a>
+    <a href="https://github.com/genai-craft/openvons" target="_blank" rel="noopener">GitHub</a>
+    <a class="cta small" href="https://genai-craft.com" target="_blank" rel="noopener">導入のご相談</a>
+  </div>
+</nav>
+
+<header class="hero">
+  <div class="heroinner">
+    <div class="herotext">
+      <p class="eyebrow">Decision layer for AI · オープンソース</p>
+      <h1>AIに、<span class="strike">書かせない</span>。<br><span class="grad">選ばせる。</span></h1>
+      <p class="lede">決められた選択肢に、<b>確信度つき</b>で答えるAI。<br>
+        文章を作らないから、<b>速く</b>、<b>安く</b>、そして<b>間違い方が見える</b>。</p>
+      <div class="herobtns">
+        <a class="cta" href="#demos">デモを試す</a>
+        <a class="ghost" href="https://genai-craft.com" target="_blank" rel="noopener">導入のご相談 ↗</a>
+      </div>
+      <p class="mini muted">音声・画像・テキストの 5 つのデモが今すぐ動きます。登録不要。</p>
+    </div>
+
+    <div class="herodemo" aria-hidden="true">
+      <div class="panelcard">
+        <div class="pcHead"><span class="dot"></span><span class="dot"></span><span class="dot"></span>
+          <span class="pcTitle">問い合わせメールを読ませたら</span></div>
+        <div class="pcQ" id="pcQ">どの部署が対応すべきか</div>
+        <div class="pcBars" id="pcBars"></div>
+        <div class="pcFoot"><span class="badge" id="pcBadge">確定</span><span class="muted" id="pcTime">33 ms</span></div>
+      </div>
+      <div class="vs">
+        <div class="vsRow"><span class="vsTag gen">生成AI</span><div class="typing"><span id="typeText"></span><i class="caret"></i></div></div>
+        <div class="vsNote muted">文章を読み取って、形式を直して、確信度は分からない</div>
+      </div>
+    </div>
+  </div>
+  <div class="scroll">▼</div>
+</header>
+
+<section class="band">
+  <div class="bandinner">
+    <div class="bandItem"><b>1 回</b><span>状態を読むのは 1 回だけ</span></div>
+    <div class="bandItem"><b>何問でも</b><span>質問を足しても速さは変わらない</span></div>
+    <div class="bandItem"><b>確信度</b><span>自動で処理するか、人が見るかを分けられる</span></div>
+    <div class="bandItem"><b>該当なし</b><span>「どれでもない」も選べる</span></div>
+  </div>
+</section>
+
+<section id="how" class="sec">
+  <h2>しくみ</h2>
+  <p class="sub">やっていることは、たった 3 つです。</p>
+  <div class="steps">
+    <div class="step reveal">
+      <div class="num">1</div><h3>状態を 1 回だけ読む</h3>
+      <p>メール、点検メモ、カメラの映像、マイクの音声。判断のもとになるものを 1 回だけ読み込みます。</p>
+    </div>
+    <div class="step reveal">
+      <div class="num">2</div><h3>選択肢を並べる</h3>
+      <p>「どの部署か」「緊急か」「深刻度は 3 段階でどれか」。答えの形をこちらで決めます。<br>
+      <span class="muted">状況によって選べるものを変えられます。確認中なら「はい／いいえ」だけ、のように。</span></p>
+    </div>
+    <div class="step reveal">
+      <div class="num">3</div><h3>確率で答えさせる</h3>
+      <p>選択肢ごとに確率が返ります。高ければ自動で進め、低ければ人に回す。<br>
+      <span class="muted">どれにも当てはまらないときは「該当なし」に倒れます。</span></p>
+    </div>
+  </div>
+
+  <div class="compare">
+    <div class="col bad reveal">
+      <h4>ふつうの生成AI</h4>
+      <ul>
+        <li>文章が返るので、読み取る処理が要る</li>
+        <li>書式が崩れると止まる</li>
+        <li>どれくらい自信があるか分からない</li>
+        <li>質問を増やすほど遅く、高くなる</li>
+      </ul>
+    </div>
+    <div class="col good reveal">
+      <h4>openvons</h4>
+      <ul>
+        <li>選択肢と確率が返る。そのまま次の処理へ</li>
+        <li>決めた選択肢以外は出ない</li>
+        <li>確信度で「自動／要確認／棄却」を分けられる</li>
+        <li>質問を 8 個にしても速さはほぼ同じ</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<section id="numbers" class="sec alt">
+  <h2>実測</h2>
+  <p class="sub">すべて手元で測った数字です。根拠のログと再現手順は公開しています。</p>
+  <div class="cards">
+    <div class="card reveal"><div class="big">50<span>ms</span></div><h4>声で 1 つ選ぶまで</h4>
+      <p>数千の地点名から 1 つを選び、実行するまで。人が言い終えてから待たせません。</p></div>
+    <div class="card reveal"><div class="big">40<span>ms</span> <small>対</small> 900<span>ms</span></div><h4>8 問をまとめて聞く</h4>
+      <p>同じ文章に 8 つ質問したとき。左が openvons、右が文章を生成させた場合。</p></div>
+    <div class="card reveal"><div class="big">1/34</div><h4>画像判定のメモリ</h4>
+      <p>大きなモデルのゼロショットを上回りながら、使うメモリは 34 分の 1、速さは 36 倍。</p></div>
+    <div class="card reveal"><div class="big">100<span>%</span></div><h4>関係ない話は無視</h4>
+      <p>電話中の「はい、お世話になっております」を、機器への指示と取り違えなかった割合。</p></div>
+  </div>
+  <p class="foot muted">音声は合成音声、画像は公開データセットでの評価です。実環境での精度は別途の検証が要ります。
+    詳細 → <a href="https://github.com/genai-craft/openvons/tree/main/docs" target="_blank" rel="noopener">評価ドキュメント</a></p>
+</section>
+
+<section id="demos" class="sec">
+  <h2>動くデモ</h2>
+  <p class="sub">その場で試せます。声のデモはマイクを使います (スマホでも動きます)。</p>
+  <div class="demos">
+    <a class="demo reveal" href="https://text.openvons.com" target="_blank" rel="noopener">
+      <div class="thumb t1"></div>
+      <h3>文章を仕分ける</h3>
+      <p>問い合わせメールを貼ると、担当部署・緊急度・返金希望の有無などを一度に確率で返します。生成方式との速さ比べも、その場で実測できます。</p>
+      <span class="go">試す →</span></a>
+    <a class="demo reveal" href="https://eki.openvons.com" target="_blank" rel="noopener">
+      <div class="thumb t2"></div>
+      <h3>駅名で地図を動かす</h3>
+      <p>全国 8,987 駅から声で選びます。「新宿から東京まで」で乗換込みの経路も。同じ読みの駅が並んでも取り違えません。</p>
+      <span class="go">試す →</span></a>
+    <a class="demo reveal" href="https://kasen.openvons.com" target="_blank" rel="noopener">
+      <div class="thumb t3"></div>
+      <h3>河川カメラを声で見る</h3>
+      <p>国土交通省が公開する河川ライブカメラ 195 地点。地点名を言うと映像が出て、「ひとつ下流」で川を下れます。</p>
+      <span class="go">試す →</span></a>
+    <a class="demo reveal" href="https://kao.openvons.com" target="_blank" rel="noopener">
+      <div class="thumb t4"></div>
+      <h3>写真から属性を読む</h3>
+      <p>カメラの映像から、年齢層や向き、荷物の有無を確率で。自信のない判定は「要確認」と正直に言います。</p>
+      <span class="go">試す →</span></a>
+    <a class="demo reveal" href="https://shirei.openvons.com" target="_blank" rel="noopener">
+      <div class="thumb t5"></div>
+      <h3>声で機器を操作する</h3>
+      <p>数千台のカメラから 1 台を声で選び、「もっと右」「引いて」で動かします。危ない操作だけ「〜でよろしいですか」と確認します。</p>
+      <span class="go">試す →</span></a>
+  </div>
+</section>
+
+<section id="use" class="sec alt">
+  <h2>使いどころ</h2>
+  <div class="uses">
+    <div class="use reveal"><h4>手がふさがる現場</h4><p>監視、点検、運転席。電話をしながらでも、声で目的のものを呼び出して動かせます。関係ない会話は無視します。</p></div>
+    <div class="use reveal"><h4>大量の問い合わせ</h4><p>担当部署、緊急度、感情、必要な一次回答。まとめて判断して、確信の高いものだけ自動で流します。</p></div>
+    <div class="use reveal"><h4>写真・映像の確認</h4><p>撮ったその場で、決めた項目に答えさせます。小さなモデルで足りるので、端末や現場の機器にも載ります。</p></div>
+    <div class="use reveal"><h4>基幹システムの入口</h4><p>選択肢の集合を業務側で管理できるので、システムの状態に合わせて「今できること」だけを受け付けられます。</p></div>
+  </div>
+</section>
+
+<section class="sec cta-sec">
+  <h2>自分たちの業務で試す</h2>
+  <p class="sub">コードは Apache-2.0 で公開しています。対象物の登録、状態遷移の設計、社内環境への導入、実際の音声での精度検証などはご相談ください。</p>
+  <div class="ctarow">
+    <a class="cta big" href="https://genai-craft.com" target="_blank" rel="noopener">導入・カスタマイズのご相談 ↗</a>
+    <a class="ghost big" href="https://github.com/genai-craft/openvons" target="_blank" rel="noopener">GitHub で見る ↗</a>
+  </div>
+</section>
+
+<footer class="footer">
+  <div>
+    <b>openvons</b> <span class="muted">(open-Jev)</span>
+    <p class="muted small">有限の選択肢に確率で答える判断層。音声・画像・テキスト。Apache-2.0。</p>
+  </div>
+  <div class="muted small">
+    河川カメラ 出典：関東地方整備局ウェブサイトを加工して作成 ／ 駅データ：station_database (CC BY 4.0) ／ 地図：OpenStreetMap<br>
+    openvons は TypeSafe AI 社および同社製品 Jev とは無関係の独立実装です。
+  </div>
+</footer>
+
+<script src="/static/lp.js?v=__V__"></script>
+</body>
+</html>
