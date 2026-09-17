@@ -33,6 +33,16 @@ HERE = Path(__file__).resolve().parent
 G: dict[str, Any] = {}
 
 
+@app.middleware("http")
+async def cross_origin_isolation(request, call_next):
+    """SharedArrayBuffer を有効にして WASM をマルチスレッドで動かす (単スレッドだと encoder が数秒かかる)。
+    COEP は credentialless にして、CDN の CORS 付きリソースをそのまま読めるようにする。"""
+    resp = await call_next(request)
+    resp.headers["Cross-Origin-Opener-Policy"] = "same-origin"
+    resp.headers["Cross-Origin-Embedder-Policy"] = "credentialless"
+    return resp
+
+
 @app.get("/")
 def index():
     html = (HERE / "static" / "index.html").read_text(encoding="utf-8").replace("__V__", G["version"])
@@ -41,7 +51,22 @@ def index():
 
 @app.get("/api/config")
 def config():
-    return {"models": G["model_list"], "calibration": G["calibration"], "server_asr": G["server_asr"]}
+    """端末側が必要とするもの: モデル一覧、校正値、特殊トークンの id、非カナの抑制リスト。
+    トークナイザの内部構造に依存しないよう、id はサーバーで解決して渡す。"""
+    return {"models": G["model_list"], "calibration": G["calibration"], "server_asr": G["server_asr"],
+            "prefix": G["prefix"], "eot": G["eot"], "suppress": G["suppress"]}
+
+
+@app.get("/api/sample_wav")
+def sample_wav():
+    """検証用: 手元の TTS キャッシュから 1 つ返す (マイクの無い環境で経路を通すため)。"""
+    from fastapi.responses import Response
+    import glob
+    fs = sorted(glob.glob(str(ROOT / "state" / "kasen" / "tts_cache" / "*.wav")))
+    if not fs:
+        return JSONResponse({"error": "no cached wav"}, 404)
+    idx = int(os.environ.get("OPENVONS_SAMPLE_INDEX", "0")) % len(fs)
+    return Response(open(fs[idx], "rb").read(), media_type="audio/wav")
 
 
 @app.get("/api/commands")
@@ -113,6 +138,12 @@ def main() -> None:
     G["calibration"] = {"temperature": prof.get("temperature", 2.5), "none_bias": prof.get("none_bias", 4.0),
                         "len_bonus": prof.get("len_bonus", 1.4), "residual_penalty": prof.get("residual_penalty", 1.0)}
     G["server_asr"] = bool(args.server_asr)
+    from transformers import WhisperTokenizerFast
+    tk = WhisperTokenizerFast.from_pretrained(str(models / G["model_list"][0]))
+    G["prefix"] = tk.convert_tokens_to_ids(["<|startoftranscript|>", "<|ja|>", "<|transcribe|>", "<|notimestamps|>"])
+    G["eot"] = tk.eos_token_id
+    info = json.loads((models / G["model_list"][0] / "distill_info.json").read_text()) if (models / G["model_list"][0] / "distill_info.json").exists() else {}
+    G["suppress"] = info.get("suppress_tokens_kana_only", [])
     if args.server_asr:
         from openvons.core.none_calibration import Calibration
         from openvons.voice.asr import KanaASR
