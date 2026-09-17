@@ -30,7 +30,8 @@ uv venv --python 3.12 .venv && uv pip install --python .venv/bin/python -e ".[de
 ```bash
 docker run -d --name voicevox -p 127.0.0.1:50021:50021 voicevox/voicevox_engine:cpu-latest   # 事前学習用 TTS
 JEV_APP=examples.stations.app     scripts/serve_demo.sh start 2 8601   # 駅名で動く路線図 (一般向け)
-JEV_APP=examples.road_cameras.app scripts/serve_demo.sh start 2 8600   # 道路カメラ監視 (業務例)
+JEV_APP=examples.kasen.app        scripts/serve_demo.sh start 2 8603   # 河川ライブカメラ (関東地整、実画像)
+JEV_APP=examples.road_cameras.app scripts/serve_demo.sh start 2 8600   # 道路カメラ監視 (合成カタログ、業務例)
 ```
 
 マイクは https か localhost が必須 (`ssh -L 8601:localhost:8601 <host>`)。スマホはホーム画面に追加すると PWA として開ける。
@@ -39,7 +40,7 @@ JEV_APP=examples.road_cameras.app scripts/serve_demo.sh start 2 8600   # 道路�
 | デモ | 公開 URL | 中身 |
 |---|---|---|
 | 駅名で動く路線図 | https://eki.openvons.com | 8,987 駅 (station_database, CC BY 4.0)。駅名 → 寄る、次/前の駅、路線切替、お気に入り (要確認) |
-| 道路カメラ監視 (指令 / shirei) | https://shirei.openvons.com | 2,932 台の合成カタログ。カメラ名 → 拡大、PTZ、プリセット保存 (要確認) |
+| 河川ライブカメラ (kasen) | https://kasen.openvons.com | 関東地方整備局の河川ライブカメラ 199 地点 (利根川・荒川・那珂川・久慈川・渡良瀬川・霞ヶ浦)。地点名 → ライブ画像、上流 / 下流へ、更新、拡大、お気に入り (要確認) |
 | 顔と全身の属性 (画像) | https://kao.openvons.com | Web カメラか画像。顔ごとに年齢 9 区分・性別 (FairFace head)、全身の性別・年代・向き・荷物 (PA-100K head)。校正済み確率と 確定 / 要確認 / 不明 の 3 段。画像は保存しない |
 
 アプリは `examples/<name>/app.py` (意図・状態・実体) と `static/` だけで、認識・校正・事前学習・サーバーは共通。
@@ -75,7 +76,7 @@ openvons/lm/         models (backbone/heads/pooling/decision_model/hybrid_cache)
 openvons/vision/     vision_model (視覚単体), vlm_decision_model (小型 VLM), train_vision/train_vlm, server
 openvons/voice/      kana, lexicon (実体・担当範囲), grammar (状態別コマンド集合), asr (kana-whisper), engine, state, vad, synth (事前学習)
 openvons/tts/        TTS バックエンド (voicevox:// 既定、irodori://、openai://)
-examples/       stations (駅名で動く路線図)、road_cameras (道路カメラ監視) — app.py + static/ だけ
+examples/       stations (駅名で動く路線図)、kasen (河川ライブカメラ)、road_cameras (合成カタログの道路カメラ) — app.py + static/ だけ
 openvons/voice/demo_server.py  共通のデモサーバー (--app で差し替え)、openvons/voice/distill/ 小型 kana モデルの蒸留
 scripts/        lm_* (テキスト/画像の実験)、build_catalog / build_stations / eval_synthetic / refit_calibration (音声)、serve_demo.sh
 docs/           lm_* / vision_* / voice_* の設計・評価・調査、licensing.md

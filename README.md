@@ -30,7 +30,8 @@ uv venv --python 3.12 .venv && uv pip install --python .venv/bin/python -e ".[de
 ```bash
 docker run -d --name voicevox -p 127.0.0.1:50021:50021 voicevox/voicevox_engine:cpu-latest   # TTS used for pre-training
 JEV_APP=examples.stations.app     scripts/serve_demo.sh start 0 8601   # railway map driven by station names (general audience)
-JEV_APP=examples.road_cameras.app scripts/serve_demo.sh start 0 8600   # road camera monitoring (industrial example)
+JEV_APP=examples.kasen.app        scripts/serve_demo.sh start 0 8603   # river live cameras (MLIT Kanto, real images)
+JEV_APP=examples.road_cameras.app scripts/serve_demo.sh start 0 8600   # road camera monitoring (synthetic catalog, industrial example)
 ```
 
 The microphone requires https or localhost (`ssh -L 8601:localhost:8601 <host>`). On a phone, "Add to Home Screen" opens it as a PWA.
@@ -39,7 +40,7 @@ Utterances captured through the microphone are stored under `state/<app>/utts/` 
 | Demo | Live | What it does |
 |---|---|---|
 | Railway map by voice | https://eki.openvons.com | 8,987 stations (station_database, CC BY 4.0). Say a station to zoom; next / previous station; switch line; add favorite (asks for confirmation) |
-| Road camera monitoring (指令 / shirei) | https://shirei.openvons.com | 2,932 synthetic cameras. Say a camera name to enlarge; pan / tilt / zoom; save preset (asks for confirmation) |
+| River live cameras (kasen) | https://kasen.openvons.com | 199 live cameras of MLIT Kanto Regional Development Bureau (Tone, Arakawa, Naka, Kuji, Watarase, Kasumigaura). Say a site name to show its live image; move upstream / downstream; refresh; zoom; favorite (asks for confirmation) |
 | Face and body attributes (vision) | https://kao.openvons.com | Webcam or upload. Age (9 bins) and gender per face (FairFace head), gender / age group / orientation / baggage for the body (PA-100K head), each with calibrated probabilities and a decided / check / unknown level. Images are not stored |
 
 An application is just `examples/<name>/app.py` (intents, states, entities) plus `static/`; recognition, calibration, pre-training and the server are shared.
@@ -87,7 +88,7 @@ openvons/lm/        models (backbone/heads/pooling/decision_model/hybrid_cache),
 openvons/vision/    vision_model (encoder only), vlm_decision_model (small VLM), train_vision/train_vlm, server
 openvons/voice/     kana, lexicon (entities and scopes), grammar (state-dependent command sets), asr (kana-whisper), engine, state, vad, synth (pre-training)
 openvons/tts/       TTS backends (voicevox:// default, irodori://, openai://)
-examples/           stations (railway map), road_cameras (camera monitoring) — each is app.py + static/
+examples/           stations (railway map), kasen (river live cameras), road_cameras (synthetic camera monitoring) — each is app.py + static/
 openvons/voice/demo_server.py   shared demo server (--app selects the application); openvons/voice/distill/ distillation of the small kana model
 scripts/            lm_* (text / vision experiments), build_catalog / build_stations / eval_synthetic / refit_calibration (voice), serve_demo.sh
 docs/               design, evaluation and research notes (lm_*, vision_*, voice_*), licensing.md, jev_api.md, roadmap.md
@@ -98,6 +99,7 @@ Most documents under `docs/` are in Japanese for now.
 ## License
 
 Code is Apache-2.0. Third-party models and data are listed in [docs/licensing.md](docs/licensing.md): kana-whisper (MIT), Silero VAD (MIT),
-pyopenjtalk (MIT), station_database (CC BY 4.0), Japan Post postal-code data (no copyright claimed), Qwen3 (Apache-2.0).
+pyopenjtalk (MIT), station_database (CC BY 4.0), Japan Post postal-code data (no copyright claimed), Qwen3 (Apache-2.0),
+river camera list and images from the MLIT Kanto Regional Development Bureau website (Public Data License 1.0, edited; images fetched live and not stored), OpenStreetMap tiles (ODbL).
 
 openvons (open-Jev) is an independent implementation unrelated to TypeSafe AI and its product Jev. No output of their API is used anywhere in this project.

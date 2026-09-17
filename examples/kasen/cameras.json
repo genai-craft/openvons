@@ -1,0 +1,4667 @@
+[
+{
+"id": "kasen_0000",
+"label": "豊岡第一排水樋管",
+"kind": "camera",
+"readings": [
+"トヨオカダイイチハイスイトイカン",
+"トヨオカダイイチ"
+],
+"aliases": [],
+"attrs": {
+"river": "久慈川",
+"office": "常陸河川国道事務所",
+"pref": "茨城県那珂郡東海村豊岡",
+"lat": 36.4641734,
+"lng": 140.5832465,
+"geo_source": "nominatim:茨城県那珂郡東海村豊岡",
+"image_url": "https://www.ktr.mlit.go.jp/hitachi/bousai2/data/camera/latest/21271_30_7.jpg",
+"page_url": "https://www.ktr.mlit.go.jp/hitachi/bousai2/web_pub/camera/10401_10_1.html",
+"interval_min": 10,
+"order": 0,
+"route_label": "久慈川",
+"core": "豊岡第一"
+}
+},
+{
+"id": "kasen_0001",
+"label": "榊橋",
+"kind": "camera",
+"readings": [
+"サカキキョー"
+],
+"aliases": [],
+"attrs": {
+"river": "久慈川",
+"office": "常陸河川国道事務所",
+"pref": "茨城県日立市下土木内町",
+"lat": 36.4941518,
+"lng": 140.5682129,
+"geo_source": "nominatim:茨城県日立市 榊橋",
+"image_url": "https://www.ktr.mlit.go.jp/hitachi/bousai2/data/camera/latest/21271_30_6.jpg",
+"page_url": "https://www.ktr.mlit.go.jp/hitachi/bousai2/web_pub/camera/10401_10_1.html",
+"interval_min": 10,
+"order": 1,
+"route_label": "久慈川",
+"core": "榊橋"
+}
+},
+{
+"id": "kasen_0002",
+"label": "幸久橋",
+"kind": "camera",
+"readings": [
+"ユキヒサキョー"
+],
+"aliases": [],
+"attrs": {
+"river": "久慈川",
+"office": "常陸河川国道事務所",
+"pref": "茨城県常陸太田市上河合町",
+"lat": 36.5012212,
+"lng": 140.5224446,
+"geo_source": "nominatim:茨城県常陸太田市 幸久橋",
+"image_url": "https://www.ktr.mlit.go.jp/hitachi/bousai2/data/camera/latest/21271_30_5.jpg",
+"page_url": "https://www.ktr.mlit.go.jp/hitachi/bousai2/web_pub/camera/10401_10_1.html",
+"interval_min": 10,
+"order": 2,
+"route_label": "久慈川",
+"core": "幸久橋"
+}
+},
+{
+"id": "kasen_0003",
+"label": "山田川合流点",
+"kind": "camera",
+"readings": [
+"ヤマダカワゴーリューテン"
+],
+"aliases": [],
+"attrs": {
+"river": "久慈川",
+"office": "常陸河川国道事務所",
+"pref": "茨城県常陸太田市粟原町",
+"lat": 36.498362,
+"lng": 140.502365,
+"geo_source": "nominatim:茨城県常陸太田市粟原町",
+"image_url": "https://www.ktr.mlit.go.jp/hitachi/bousai2/data/camera/latest/21271_30_4.jpg",
+"page_url": "https://www.ktr.mlit.go.jp/hitachi/bousai2/web_pub/camera/10401_10_1.html",
+"interval_min": 10,
+"order": 3,
+"route_label": "久慈川",
+"core": "山田川合流点"
+}
+},
+{
+"id": "kasen_0004",
+"label": "木島大橋",
+"kind": "camera",
+"readings": [
+"キシマオーハシ"
+],
+"aliases": [],
+"attrs": {
+"river": "久慈川",
+"office": "常陸河川国道事務所",
+"pref": "茨城県常陸太田市小島町",
+"lat": 36.5089787,
+"lng": 140.5755871,
+"geo_source": "nominatim:茨城県常陸太田市 木島大橋",
+"image_url": "https://www.ktr.mlit.go.jp/hitachi/bousai2/data/camera/latest/21271_30_3.jpg",
+"page_url": "https://www.ktr.mlit.go.jp/hitachi/bousai2/web_pub/camera/10401_10_1.html",
+"interval_min": 10,
+"order": 4,
+"route_label": "久慈川",
+"core": "木島大橋"
+}
+},
+{
+"id": "kasen_0005",
+"label": "富岡橋",
+"kind": "camera",
+"readings": [
+"トミオカキョー"
+],
+"aliases": [],
+"attrs": {
+"river": "久慈川",
+"office": "常陸河川国道事務所",
+"pref": "茨城県常陸大宮市富岡",
+"lat": 36.5514324,
+"lng": 140.4249512,
+"geo_source": "nominatim:茨城県常陸大宮市 富岡橋",
+"image_url": "https://www.ktr.mlit.go.jp/hitachi/bousai2/data/camera/latest/21271_30_2.jpg",
+"page_url": "https://www.ktr.mlit.go.jp/hitachi/bousai2/web_pub/camera/10401_10_1.html",
+"interval_min": 10,
+"order": 5,
+"route_label": "久慈川",
+"core": "富岡橋"
+}
+},
+{
+"id": "kasen_0006",
+"label": "辰ノ口",
+"kind": "camera",
+"readings": [
+"タツノクチ"
+],
+"aliases": [],
+"attrs": {
+"river": "久慈川",
+"office": "常陸河川国道事務所",
+"pref": "茨城県常陸大宮市辰ノ口",
+"lat": 36.586049,
+"lng": 140.421898,
+"geo_source": "nominatim:茨城県常陸大宮市 辰ノ口",
+"image_url": "https://www.ktr.mlit.go.jp/hitachi/bousai2/data/camera/latest/21271_30_1.jpg",
+"page_url": "https://www.ktr.mlit.go.jp/hitachi/bousai2/web_pub/camera/10401_10_1.html",
+"interval_min": 10,
+"order": 6,
+"route_label": "久慈川",
+"core": "辰ノ口"
+}
+},
+{
+"id": "kasen_0007",
+"label": "機初水位観測所",
+"kind": "camera",
+"readings": [
+"キハツスイイカンソクショ",
+"キハツ"
+],
+"aliases": [],
+"attrs": {
+"river": "久慈川",
+"office": "常陸河川国道事務所",
+"pref": "茨城県常陸太田市幡町",
+"lat": 36.5541119,
+"lng": 140.5689345,
+"geo_source": "nominatim:茨城県常陸太田市 機初",
+"image_url": "https://www.ktr.mlit.go.jp/hitachi/bousai2/data/camera/latest/21271_30_9.jpg",
+"page_url": "https://www.ktr.mlit.go.jp/hitachi/bousai2/web_pub/camera/10401_10_1.html",
+"interval_min": 10,
+"order": 7,
+"route_label": "久慈川",
+"core": "機初"
+}
+},
+{
+"id": "kasen_0008",
+"label": "常井橋水位観測所",
+"kind": "camera",
+"readings": [
+"トコイキョースイイカンソクショ",
+"トコイキョー"
+],
+"aliases": [],
+"attrs": {
+"river": "久慈川",
+"office": "常陸河川国道事務所",
+"pref": "茨城県常陸太田市久米町",
+"lat": 36.5409854,
+"lng": 140.4718216,
+"geo_source": "nominatim:茨城県常陸太田市 常井橋",
+"image_url": "https://www.ktr.mlit.go.jp/hitachi/bousai2/data/camera/latest/21271_30_8.jpg",
+"page_url": "https://www.ktr.mlit.go.jp/hitachi/bousai2/web_pub/camera/10401_10_1.html",
+"interval_min": 10,
+"order": 8,
+"route_label": "久慈川",
+"core": "常井橋"
+}
+},
+{
+"id": "kasen_0009",
+"label": "海門橋",
+"kind": "camera",
+"readings": [
+"カイモンキョー"
+],
+"aliases": [],
+"attrs": {
+"river": "那珂川",
+"office": "常陸河川国道事務所",
+"pref": "茨城県東茨城郡大洗町磯浜町",
+"lat": 36.3368174,
+"lng": 140.5907257,
+"geo_source": "nominatim:茨城県東茨城郡 海門橋",
+"image_url": "https://www.ktr.mlit.go.jp/hitachi/bousai2/data/camera/latest/21271_30_28.jpg",
+"page_url": "https://www.ktr.mlit.go.jp/hitachi/bousai2/web_pub/camera/10401_10_1.html",
+"interval_min": 10,
+"order": 0,
+"route_label": "那珂川",
+"core": "海門橋"
+}
+},
+{
+"id": "kasen_0010",
+"label": "新那珂川大橋１(上流側)",
+"kind": "camera",
+"readings": [
+"シンナカガワオーハシイチジョーリューガワ",
+"シンナカガワオーハシイチ"
+],
+"aliases": [],
+"attrs": {
+"river": "那珂川",
+"office": "常陸河川国道事務所",
+"pref": "茨城県水戸市下大野町",
+"lat": 36.348695,
+"lng": 140.551153,
+"geo_source": "nominatim:茨城県水戸市下大野町",
+"image_url": "https://www.ktr.mlit.go.jp/hitachi/bousai2/data/camera/latest/21271_30_26.jpg",
+"page_url": "https://www.ktr.mlit.go.jp/hitachi/bousai2/web_pub/camera/10401_10_1.html",
+"interval_min": 10,
+"order": 1,
+"route_label": "那珂川",
+"core": "新那珂川大橋１"
+}
+},
+{
+"id": "kasen_0011",
+"label": "新那珂川大橋２(下流側)",
+"kind": "camera",
+"readings": [
+"シンナカガワオーハシニカリューガワ",
+"シンナカガワオーハシニ"
+],
+"aliases": [],
+"attrs": {
+"river": "那珂川",
+"office": "常陸河川国道事務所",
+"pref": "茨城県水戸市下大野町",
+"lat": 36.348695,
+"lng": 140.551153,
+"geo_source": "nominatim:茨城県水戸市下大野町",
+"image_url": "https://www.ktr.mlit.go.jp/hitachi/bousai2/data/camera/latest/21271_30_27.jpg",
+"page_url": "https://www.ktr.mlit.go.jp/hitachi/bousai2/web_pub/camera/10401_10_1.html",
+"interval_min": 10,
+"order": 2,
+"route_label": "那珂川",
+"core": "新那珂川大橋２"
+}
+},
+{
+"id": "kasen_0012",
+"label": "三の丸",
+"kind": "camera",
+"readings": [
+"サンノマル"
+],
+"aliases": [],
+"attrs": {
+"river": "那珂川",
+"office": "常陸河川国道事務所",
+"pref": "茨城県水戸市三の丸",
+"lat": 36.3739541,
+"lng": 140.4762601,
+"geo_source": "nominatim:茨城県水戸市 三の丸",
+"image_url": "https://www.ktr.mlit.go.jp/hitachi/bousai2/data/camera/latest/21271_30_25.jpg",
+"page_url": "https://www.ktr.mlit.go.jp/hitachi/bousai2/web_pub/camera/10401_10_1.html",
+"interval_min": 10,
+"order": 3,
+"route_label": "那珂川",
+"core": "三の丸"
+}
+},
+{
+"id": "kasen_0013",
+"label": "水府橋",
+"kind": "camera",
+"readings": [
+"スイフキョー"
+],
+"aliases": [],
+"attrs": {
+"river": "那珂川",
+"office": "常陸河川国道事務所",
+"pref": "茨城県水戸市水府町",
+"lat": 36.377686,
+"lng": 140.4826261,
+"geo_source": "nominatim:茨城県水戸市 水府橋",
+"image_url": "https://www.ktr.mlit.go.jp/hitachi/bousai2/data/camera/latest/21271_30_24.jpg",
+"page_url": "https://www.ktr.mlit.go.jp/hitachi/bousai2/web_pub/camera/10401_10_1.html",
+"interval_min": 10,
+"order": 4,
+"route_label": "那珂川",
+"core": "水府橋"
+}
+},
+{
+"id": "kasen_0014",
+"label": "内川水門",
+"kind": "camera",
+"readings": [
+"ウチカワスイモン",
+"ウチカワ"
+],
+"aliases": [],
+"attrs": {
+"river": "那珂川",
+"office": "常陸河川国道事務所",
+"pref": "茨城県水戸市青柳町上河原",
+"lat": 36.3913881,
+"lng": 140.4725226,
+"geo_source": "nominatim:茨城県水戸市 内川",
+"image_url": "https://www.ktr.mlit.go.jp/hitachi/bousai2/data/camera/latest/21271_30_23.jpg",
+"page_url": "https://www.ktr.mlit.go.jp/hitachi/bousai2/web_pub/camera/10401_10_1.html",
+"interval_min": 10,
+"order": 5,
+"route_label": "那珂川",
+"core": "内川"
+}
+},
+{
+"id": "kasen_0015",
+"label": "国田大橋",
+"kind": "camera",
+"readings": [
+"クニタオーハシ"
+],
+"aliases": [],
+"attrs": {
+"river": "那珂川",
+"office": "常陸河川国道事務所",
+"pref": "茨城県水戸市下国井町地先",
+"lat": 36.4181924,
+"lng": 140.4331416,
+"geo_source": "nominatim:茨城県水戸市 国田大橋",
+"image_url": "https://www.ktr.mlit.go.jp/hitachi/bousai2/data/camera/latest/21271_30_31.jpg",
+"page_url": "https://www.ktr.mlit.go.jp/hitachi/bousai2/web_pub/camera/10401_10_1.html",
+"interval_min": 10,
+"order": 6,
+"route_label": "那珂川",
+"core": "国田大橋"
+}
+},
+{
+"id": "kasen_0016",
+"label": "飯富（藤井川合流点）",
+"kind": "camera",
+"readings": [
+"オブフジイガワゴーリューテン",
+"オブ"
+],
+"aliases": [],
+"attrs": {
+"river": "那珂川",
+"office": "常陸河川国道事務所",
+"pref": "茨城県水戸市飯富町",
+"lat": 36.4369428,
+"lng": 140.4175032,
+"geo_source": "nominatim:茨城県水戸市 飯富",
+"image_url": "https://www.ktr.mlit.go.jp/hitachi/bousai2/data/camera/latest/21271_30_22.jpg",
+"page_url": "https://www.ktr.mlit.go.jp/hitachi/bousai2/web_pub/camera/10401_10_1.html",
+"interval_min": 10,
+"order": 7,
+"route_label": "那珂川",
+"core": "飯富"
+}
+},
+{
+"id": "kasen_0017",
+"label": "江川排水樋門",
+"kind": "camera",
+"readings": [
+"エガワハイスイトイモン"
+],
+"aliases": [],
+"attrs": {
+"river": "那珂川",
+"office": "常陸河川国道事務所",
+"pref": "茨城県東茨城郡城里町上泉",
+"lat": 36.481056,
+"lng": 140.40182,
+"geo_source": "nominatim:茨城県東茨城郡城里町上泉",
+"image_url": "https://www.ktr.mlit.go.jp/hitachi/bousai2/data/camera/latest/21271_30_21.jpg",
+"page_url": "https://www.ktr.mlit.go.jp/hitachi/bousai2/web_pub/camera/10401_10_1.html",
+"interval_min": 10,
+"order": 8,
+"route_label": "那珂川",
+"core": "江川排水樋門"
+}
+},
+{
+"id": "kasen_0018",
+"label": "野口水位観測所",
+"kind": "camera",
+"readings": [
+"ノグチスイイカンソクショ",
+"ノグチ"
+],
+"aliases": [],
+"attrs": {
+"river": "那珂川",
+"office": "常陸河川国道事務所",
+"pref": "茨城県常陸大宮市野口",
+"lat": 36.558484,
+"lng": 140.320951,
+"geo_source": "nominatim:茨城県常陸大宮市 野口",
+"image_url": "https://www.ktr.mlit.go.jp/hitachi/bousai2/data/camera/latest/21271_30_20.jpg",
+"page_url": "https://www.ktr.mlit.go.jp/hitachi/bousai2/web_pub/camera/10401_10_1.html",
+"interval_min": 10,
+"order": 9,
+"route_label": "那珂川",
+"core": "野口"
+}
+},
+{
+"id": "kasen_0019",
+"label": "新那珂川橋(逆川合流点)",
+"kind": "camera",
+"readings": [
+"シンナカガワキョーサカカワゴーリューテン",
+"シンナカガワキョー"
+],
+"aliases": [],
+"attrs": {
+"river": "那珂川",
+"office": "常陸河川国道事務所",
+"pref": "栃木県芳賀郡茂木町飯野",
+"lat": 36.5631016,
+"lng": 140.2424132,
+"geo_source": "nominatim:栃木県芳賀郡 新那珂川橋",
+"image_url": "https://www.ktr.mlit.go.jp/hitachi/bousai2/data/camera/latest/21271_30_19.jpg",
+"page_url": "https://www.ktr.mlit.go.jp/hitachi/bousai2/web_pub/camera/10401_10_1.html",
+"interval_min": 10,
+"order": 10,
+"route_label": "那珂川",
+"core": "新那珂川橋"
+}
+},
+{
+"id": "kasen_0020",
+"label": "大瀬橋",
+"kind": "camera",
+"readings": [
+"オーセキョー"
+],
+"aliases": [],
+"attrs": {
+"river": "那珂川",
+"office": "常陸河川国道事務所",
+"pref": "栃木県芳賀郡茂木町大瀬",
+"lat": 36.5725819,
+"lng": 140.189257,
+"geo_source": "nominatim:栃木県芳賀郡 大瀬橋",
+"image_url": "https://www.ktr.mlit.go.jp/hitachi/bousai2/data/camera/latest/21271_30_18.jpg",
+"page_url": "https://www.ktr.mlit.go.jp/hitachi/bousai2/web_pub/camera/10401_10_1.html",
+"interval_min": 10,
+"order": 11,
+"route_label": "那珂川",
+"core": "大瀬橋"
+}
+},
+{
+"id": "kasen_0021",
+"label": "下境(荒川合流点)",
+"kind": "camera",
+"readings": [
+"シモサカイアラカワゴーリューテン",
+"シモサカイ"
+],
+"aliases": [],
+"attrs": {
+"river": "那珂川",
+"office": "常陸河川国道事務所",
+"pref": "栃木県那須烏山市下境",
+"lat": 36.6224231,
+"lng": 140.1714989,
+"geo_source": "nominatim:栃木県那須烏山市 下境",
+"image_url": "https://www.ktr.mlit.go.jp/hitachi/bousai2/data/camera/latest/21271_30_17.jpg",
+"page_url": "https://www.ktr.mlit.go.jp/hitachi/bousai2/web_pub/camera/10401_10_1.html",
+"interval_min": 10,
+"order": 12,
+"route_label": "那珂川",
+"core": "下境"
+}
+},
+{
+"id": "kasen_0022",
+"label": "向田",
+"kind": "camera",
+"readings": [
+"ムカイダ"
+],
+"aliases": [],
+"attrs": {
+"river": "那珂川",
+"office": "常陸河川国道事務所",
+"pref": "栃木県那須烏山市野上",
+"lat": 36.6250994,
+"lng": 140.1466751,
+"geo_source": "nominatim:栃木県那須烏山市 向田",
+"image_url": "https://www.ktr.mlit.go.jp/hitachi/bousai2/data/camera/latest/21271_30_16.jpg",
+"page_url": "https://www.ktr.mlit.go.jp/hitachi/bousai2/web_pub/camera/10401_10_1.html",
+"interval_min": 10,
+"order": 13,
+"route_label": "那珂川",
+"core": "向田"
+}
+},
+{
+"id": "kasen_0023",
+"label": "滝田(興野大橋)",
+"kind": "camera",
+"readings": [
+"タキタオキノオーハシ",
+"タキタ"
+],
+"aliases": [],
+"attrs": {
+"river": "那珂川",
+"office": "常陸河川国道事務所",
+"pref": "栃木県那須烏山市滝田",
+"lat": 36.6703848,
+"lng": 140.1462711,
+"geo_source": "nominatim:栃木県那須烏山市 滝田",
+"image_url": "https://www.ktr.mlit.go.jp/hitachi/bousai2/data/camera/latest/21271_30_15.jpg",
+"page_url": "https://www.ktr.mlit.go.jp/hitachi/bousai2/web_pub/camera/10401_10_1.html",
+"interval_min": 10,
+"order": 14,
+"route_label": "那珂川",
+"core": "滝田"
+}
+},
+{
+"id": "kasen_0024",
+"label": "興野",
+"kind": "camera",
+"readings": [
+"オキノ"
+],
+"aliases": [],
+"attrs": {
+"river": "那珂川",
+"office": "常陸河川国道事務所",
+"pref": "栃木県那須烏山市興野",
+"lat": 36.6713558,
+"lng": 140.1642664,
+"geo_source": "nominatim:栃木県那須烏山市 興野",
+"image_url": "https://www.ktr.mlit.go.jp/hitachi/bousai2/data/camera/latest/21271_30_14.jpg",
+"page_url": "https://www.ktr.mlit.go.jp/hitachi/bousai2/web_pub/camera/10401_10_1.html",
+"interval_min": 10,
+"order": 15,
+"route_label": "那珂川",
+"core": "興野"
+}
+},
+{
+"id": "kasen_0025",
+"label": "大桶(八溝大橋）",
+"kind": "camera",
+"readings": [
+"オーオケハチミゾオーハシ"
+],
+"aliases": [],
+"attrs": {
+"river": "那珂川",
+"office": "常陸河川国道事務所",
+"pref": "栃木県那須烏山市大桶",
+"lat": 36.7219511,
+"lng": 140.1503938,
+"geo_source": "nominatim:栃木県那須烏山市 大桶(八溝大橋）",
+"image_url": "https://www.ktr.mlit.go.jp/hitachi/bousai2/data/camera/latest/21271_30_13.jpg",
+"page_url": "https://www.ktr.mlit.go.jp/hitachi/bousai2/web_pub/camera/10401_10_1.html",
+"interval_min": 10,
+"order": 16,
+"route_label": "那珂川",
+"core": "大桶(八溝大橋）"
+}
+},
+{
+"id": "kasen_0026",
+"label": "久那瀬(武茂川合流点)",
+"kind": "camera",
+"readings": [
+"クナセムモガワゴーリューテン",
+"クナセ"
+],
+"aliases": [],
+"attrs": {
+"river": "那珂川",
+"office": "常陸河川国道事務所",
+"pref": "栃木県那須郡那珂川町久那瀬",
+"lat": 36.7284629,
+"lng": 140.1542616,
+"geo_source": "nominatim:栃木県那須郡 久那瀬",
+"image_url": "https://www.ktr.mlit.go.jp/hitachi/bousai2/data/camera/latest/21271_30_12.jpg",
+"page_url": "https://www.ktr.mlit.go.jp/hitachi/bousai2/web_pub/camera/10401_10_1.html",
+"interval_min": 10,
+"order": 17,
+"route_label": "那珂川",
+"core": "久那瀬"
+}
+},
+{
+"id": "kasen_0027",
+"label": "若鮎大橋",
+"kind": "camera",
+"readings": [
+"ワカアユオーハシ"
+],
+"aliases": [],
+"attrs": {
+"river": "那珂川",
+"office": "常陸河川国道事務所",
+"pref": "栃木県那須郡那珂川町北向田",
+"lat": 36.7500149,
+"lng": 140.1394899,
+"geo_source": "nominatim:栃木県那須郡 若鮎大橋",
+"image_url": "https://www.ktr.mlit.go.jp/hitachi/bousai2/data/camera/latest/21271_30_11.jpg",
+"page_url": "https://www.ktr.mlit.go.jp/hitachi/bousai2/web_pub/camera/10401_10_1.html",
+"interval_min": 10,
+"order": 18,
+"route_label": "那珂川",
+"core": "若鮎大橋"
+}
+},
+{
+"id": "kasen_0028",
+"label": "小口水位観測所",
+"kind": "camera",
+"readings": [
+"オグチスイイカンソクショ",
+"オグチ"
+],
+"aliases": [],
+"attrs": {
+"river": "那珂川",
+"office": "常陸河川国道事務所",
+"pref": "栃木県那須郡那珂川町小口",
+"lat": 36.7758198,
+"lng": 140.1493692,
+"geo_source": "nominatim:栃木県那須郡 小口",
+"image_url": "https://www.ktr.mlit.go.jp/hitachi/bousai2/data/camera/latest/21271_30_10.jpg",
+"page_url": "https://www.ktr.mlit.go.jp/hitachi/bousai2/web_pub/camera/10401_10_1.html",
+"interval_min": 10,
+"order": 19,
+"route_label": "那珂川",
+"core": "小口"
+}
+},
+{
+"id": "kasen_0029",
+"label": "田中調節池下流",
+"kind": "camera",
+"readings": [
+"タナカチョーセツチカリュー"
+],
+"aliases": [],
+"attrs": {
+"river": "利根川",
+"office": "利根川上流河川事務所",
+"pref": "千葉県柏市布施",
+"lat": 35.905882,
+"lng": 140.009039,
+"geo_source": null,
+"image_url": "https://www.ktr.mlit.go.jp/tonejo/cctv/cameraimage/cam11_640.jpg",
+"page_url": "https://www.ktr.mlit.go.jp/tonejo/cctv/camview.htm?stname=cam11",
+"interval_min": 1,
+"order": 0,
+"route_label": "利根川",
+"core": "田中調節池下流"
+}
+},
+{
+"id": "kasen_0030",
+"label": "田中水位（我孫子市）",
+"kind": "camera",
+"readings": [
+"タナカスイイアビコシ",
+"タナカ"
+],
+"aliases": [],
+"attrs": {
+"river": "利根川",
+"office": "利根川上流河川事務所",
+"pref": "千葉県我孫子市北新田",
+"lat": 35.894964,
+"lng": 140.036865,
+"geo_source": null,
+"image_url": "https://www.ktr.mlit.go.jp/tonejo/cctv/cameraimage/cam43_640.jpg",
+"page_url": "https://www.ktr.mlit.go.jp/tonejo/cctv/camview.htm?stname=cam43",
+"interval_min": 1,
+"order": 1,
+"route_label": "利根川",
+"core": "田中"
+}
+},
+{
+"id": "kasen_0031",
+"label": "稲戸井越流堤下流（守谷市）",
+"kind": "camera",
+"readings": [
+"イネトイエツリューツツミシタリューモリヤシ",
+"イネトイエツリューツツミシタリュー"
+],
+"aliases": [],
+"attrs": {
+"river": "利根川",
+"office": "利根川上流河川事務所",
+"pref": "茨城県守谷市高野",
+"lat": 35.922371,
+"lng": 139.980665,
+"geo_source": null,
+"image_url": "https://www.ktr.mlit.go.jp/tonejo/cctv/cameraimage/cam44_640.jpg",
+"page_url": "https://www.ktr.mlit.go.jp/tonejo/cctv/camview.htm?stname=cam44",
+"interval_min": 1,
+"order": 2,
+"route_label": "利根川",
+"core": "稲戸井越流堤下流"
+}
+},
+{
+"id": "kasen_0032",
+"label": "菅生越流堤（野田市）",
+"kind": "camera",
+"readings": [
+"スゴーエツリューツツミノダシ",
+"スゴーエツリューツツミ"
+],
+"aliases": [],
+"attrs": {
+"river": "利根川",
+"office": "利根川上流河川事務所",
+"pref": "千葉県野田市木野崎",
+"lat": 35.960087,
+"lng": 139.930793,
+"geo_source": null,
+"image_url": "https://www.ktr.mlit.go.jp/tonejo/cctv/cameraimage/cam45_640.jpg",
+"page_url": "https://www.ktr.mlit.go.jp/tonejo/cctv/camview.htm?stname=cam45",
+"interval_min": 1,
+"order": 3,
+"route_label": "利根川",
+"core": "菅生越流堤"
+}
+},
+{
+"id": "kasen_0033",
+"label": "三ツ堀水位監視",
+"kind": "camera",
+"readings": [
+"ミツボリスイイカンシ",
+"ミツボリ"
+],
+"aliases": [],
+"attrs": {
+"river": "利根川",
+"office": "利根川上流河川事務所",
+"pref": "千葉県野田市三ツ堀",
+"lat": 35.942472,
+"lng": 139.932139,
+"geo_source": null,
+"image_url": "https://www.ktr.mlit.go.jp/tonejo/cctv/cameraimage/cam42_640.jpg",
+"page_url": "https://www.ktr.mlit.go.jp/tonejo/cctv/camview.htm?stname=cam42",
+"interval_min": 1,
+"order": 4,
+"route_label": "利根川",
+"core": "三ツ堀"
+}
+},
+{
+"id": "kasen_0034",
+"label": "むしろ打水位監視",
+"kind": "camera",
+"readings": [
+"ムシローチミズイカンシ"
+],
+"aliases": [
+"むしろ打"
+],
+"attrs": {
+"river": "利根川",
+"office": "利根川上流河川事務所",
+"pref": "茨城県坂東市莚打",
+"lat": 35.986228,
+"lng": 139.892733,
+"geo_source": null,
+"image_url": "https://www.ktr.mlit.go.jp/tonejo/cctv/cameraimage/cam28_640.jpg",
+"page_url": "https://www.ktr.mlit.go.jp/tonejo/cctv/camview.htm?stname=cam28",
+"interval_min": 1,
+"order": 5,
+"route_label": "利根川",
+"core": "むしろ打"
+}
+},
+{
+"id": "kasen_0035",
+"label": "芽吹橋",
+"kind": "camera",
+"readings": [
+"メフキキョー"
+],
+"aliases": [],
+"attrs": {
+"river": "利根川",
+"office": "利根川上流河川事務所",
+"pref": "千葉県野田市目吹",
+"lat": 35.980556,
+"lng": 139.891111,
+"geo_source": null,
+"image_url": "https://www.ktr.mlit.go.jp/tonejo/cctv/cameraimage/cam4_640.jpg",
+"page_url": "https://www.ktr.mlit.go.jp/tonejo/cctv/camview.htm?stname=cam4",
+"interval_min": 1,
+"order": 6,
+"route_label": "利根川",
+"core": "芽吹橋"
+}
+},
+{
+"id": "kasen_0036",
+"label": "下総利根大橋上流",
+"kind": "camera",
+"readings": [
+"シモーサリコンオーハシジョーリュー"
+],
+"aliases": [],
+"attrs": {
+"river": "利根川",
+"office": "利根川上流河川事務所",
+"pref": "千葉県野田市木間ヶ瀬",
+"lat": 36.03726,
+"lng": 139.837211,
+"geo_source": null,
+"image_url": "https://www.ktr.mlit.go.jp/tonejo/cctv/cameraimage/cam17_640.jpg",
+"page_url": "https://www.ktr.mlit.go.jp/tonejo/cctv/camview.htm?stname=cam17",
+"interval_min": 1,
+"order": 7,
+"route_label": "利根川",
+"core": "下総利根大橋上流"
+}
+},
+{
+"id": "kasen_0037",
+"label": "境大橋下流",
+"kind": "camera",
+"readings": [
+"サカイオーハシカリュー"
+],
+"aliases": [],
+"attrs": {
+"river": "利根川",
+"office": "利根川上流河川事務所",
+"pref": "茨城県猿島郡境町",
+"lat": 36.099079,
+"lng": 139.799039,
+"geo_source": null,
+"image_url": "https://www.ktr.mlit.go.jp/tonejo/cctv/cameraimage/cam26_640.jpg",
+"page_url": "https://www.ktr.mlit.go.jp/tonejo/cctv/camview.htm?stname=cam26",
+"interval_min": 1,
+"order": 8,
+"route_label": "利根川",
+"core": "境大橋下流"
+}
+},
+{
+"id": "kasen_0038",
+"label": "江戸川流頭部",
+"kind": "camera",
+"readings": [
+"エドガワリュートーブ"
+],
+"aliases": [],
+"attrs": {
+"river": "利根川",
+"office": "利根川上流河川事務所",
+"pref": "茨城県猿島郡五霞町山王",
+"lat": 36.106282,
+"lng": 139.772099,
+"geo_source": null,
+"image_url": "https://www.ktr.mlit.go.jp/tonejo/cctv/cameraimage/cam10_640.jpg",
+"page_url": "https://www.ktr.mlit.go.jp/tonejo/cctv/camview.htm?stname=cam10",
+"interval_min": 1,
+"order": 9,
+"route_label": "利根川",
+"core": "江戸川流頭部"
+}
+},
+{
+"id": "kasen_0039",
+"label": "栗橋水衝部",
+"kind": "camera",
+"readings": [
+"クリハシスイショーブ"
+],
+"aliases": [],
+"attrs": {
+"river": "利根川",
+"office": "利根川上流河川事務所",
+"pref": "茨城県猿島郡五霞町川妻",
+"lat": 36.133017,
+"lng": 139.713793,
+"geo_source": null,
+"image_url": "https://www.ktr.mlit.go.jp/tonejo/cctv/cameraimage/cam15_640.jpg",
+"page_url": "https://www.ktr.mlit.go.jp/tonejo/cctv/camview.htm?stname=cam15",
+"interval_min": 1,
+"order": 10,
+"route_label": "利根川",
+"core": "栗橋水衝部"
+}
+},
+{
+"id": "kasen_0040",
+"label": "渡良瀬川合流点",
+"kind": "camera",
+"readings": [
+"ワタラセガワゴーリューテン"
+],
+"aliases": [],
+"attrs": {
+"river": "利根川",
+"office": "利根川上流河川事務所",
+"pref": "埼玉県久喜市栗橋",
+"lat": 36.143261,
+"lng": 139.698647,
+"geo_source": null,
+"image_url": "https://www.ktr.mlit.go.jp/tonejo/cctv/cameraimage/cam3_640.jpg",
+"page_url": "https://www.ktr.mlit.go.jp/tonejo/cctv/camview.htm?stname=cam3",
+"interval_min": 1,
+"order": 11,
+"route_label": "利根川",
+"core": "渡良瀬川合流点"
+}
+},
+{
+"id": "kasen_0041",
+"label": "栗橋水位",
+"kind": "camera",
+"readings": [
+"クリハシスイイ",
+"クリハシ"
+],
+"aliases": [],
+"attrs": {
+"river": "利根川",
+"office": "利根川上流河川事務所",
+"pref": "埼玉県久喜市栗橋",
+"lat": 36.143144,
+"lng": 139.702136,
+"geo_source": null,
+"image_url": "https://www.ktr.mlit.go.jp/tonejo/cctv/cameraimage/cam16_640.jpg",
+"page_url": "https://www.ktr.mlit.go.jp/tonejo/cctv/camview.htm?stname=cam16",
+"interval_min": 1,
+"order": 12,
+"route_label": "利根川",
+"core": "栗橋"
+}
+},
+{
+"id": "kasen_0042",
+"label": "埼玉大橋下流",
+"kind": "camera",
+"readings": [
+"サイタマオーハシカリュー"
+],
+"aliases": [],
+"attrs": {
+"river": "利根川",
+"office": "利根川上流河川事務所",
+"pref": "埼玉県加須市麦倉",
+"lat": 36.17864,
+"lng": 139.650756,
+"geo_source": null,
+"image_url": "https://www.ktr.mlit.go.jp/tonejo/cctv/cameraimage/cam13_640.jpg",
+"page_url": "https://www.ktr.mlit.go.jp/tonejo/cctv/camview.htm?stname=cam13",
+"interval_min": 1,
+"order": 13,
+"route_label": "利根川",
+"core": "埼玉大橋下流"
+}
+},
+{
+"id": "kasen_0043",
+"label": "谷田川排水機場屋上",
+"kind": "camera",
+"readings": [
+"ヤタガワハイスイキジョーオクジョー",
+"ヤタガワ"
+],
+"aliases": [],
+"attrs": {
+"river": "利根川",
+"office": "利根川上流河川事務所",
+"pref": "邑楽郡板倉町飯野地先",
+"lat": 36.2125,
+"lng": 139.590556,
+"geo_source": null,
+"image_url": "https://www.ktr.mlit.go.jp/tonejo/cctv/cameraimage/cam35_640.jpg",
+"page_url": "https://www.ktr.mlit.go.jp/tonejo/cctv/camview.htm?stname=cam35",
+"interval_min": 1,
+"order": 14,
+"route_label": "利根川",
+"core": "谷田川"
+}
+},
+{
+"id": "kasen_0044",
+"label": "谷田川排水機場川表側",
+"kind": "camera",
+"readings": [
+"ヤタガワハイスイキジョーカワオモテガワ",
+"ヤタガワ"
+],
+"aliases": [],
+"attrs": {
+"river": "利根川",
+"office": "利根川上流河川事務所",
+"pref": "群馬県邑楽郡板倉町飯野",
+"lat": 36.211905,
+"lng": 139.590209,
+"geo_source": null,
+"image_url": "https://www.ktr.mlit.go.jp/tonejo/cctv/cameraimage/cam18_640.jpg",
+"page_url": "https://www.ktr.mlit.go.jp/tonejo/cctv/camview.htm?stname=cam18",
+"interval_min": 1,
+"order": 15,
+"route_label": "利根川",
+"core": "谷田川"
+}
+},
+{
+"id": "kasen_0045",
+"label": "昭和橋上流（羽生市）",
+"kind": "camera",
+"readings": [
+"ショーワキョージョーリューハブシ",
+"ショーワキョージョーリュー"
+],
+"aliases": [],
+"attrs": {
+"river": "利根川",
+"office": "利根川上流河川事務所",
+"pref": "埼玉県羽生市上新郷",
+"lat": 36.190075,
+"lng": 139.506986,
+"geo_source": null,
+"image_url": "https://www.ktr.mlit.go.jp/tonejo/cctv/cameraimage/cam30_640.jpg",
+"page_url": "https://www.ktr.mlit.go.jp/tonejo/cctv/camview.htm?stname=cam30",
+"interval_min": 1,
+"order": 16,
+"route_label": "利根川",
+"core": "昭和橋上流"
+}
+},
+{
+"id": "kasen_0046",
+"label": "川俣",
+"kind": "camera",
+"readings": [
+"カワマタ"
+],
+"aliases": [],
+"attrs": {
+"river": "利根川",
+"office": "利根川上流河川事務所",
+"pref": "群馬県邑楽郡明和町",
+"lat": 36.194722,
+"lng": 139.515278,
+"geo_source": null,
+"image_url": "https://www.ktr.mlit.go.jp/tonejo/cctv/cameraimage/cam2_640.jpg",
+"page_url": "https://www.ktr.mlit.go.jp/tonejo/cctv/camview.htm?stname=cam2",
+"interval_min": 1,
+"order": 17,
+"route_label": "利根川",
+"core": "川俣"
+}
+},
+{
+"id": "kasen_0047",
+"label": "福川水門上流側",
+"kind": "camera",
+"readings": [
+"フクカワスイモンジョーリューガワ"
+],
+"aliases": [
+"福川 上流側"
+],
+"attrs": {
+"river": "利根川",
+"office": "利根川上流河川事務所",
+"pref": "埼玉県行田市北河原",
+"lat": 36.193535,
+"lng": 139.438655,
+"geo_source": null,
+"image_url": "https://www.ktr.mlit.go.jp/tonejo/cctv/cameraimage/cam19_640.jpg",
+"page_url": "https://www.ktr.mlit.go.jp/tonejo/cctv/camview.htm?stname=cam19",
+"interval_min": 1,
+"order": 18,
+"route_label": "利根川",
+"core": "福川 上流側"
+}
+},
+{
+"id": "kasen_0048",
+"label": "休泊川排水門対岸",
+"kind": "camera",
+"readings": [
+"キュートマリカワハイスイモンタイガン"
+],
+"aliases": [
+"休泊川排対岸"
+],
+"attrs": {
+"river": "利根川",
+"office": "利根川上流河川事務所",
+"pref": "埼玉県熊谷市葛和田",
+"lat": 36.212111,
+"lng": 139.416175,
+"geo_source": null,
+"image_url": "https://www.ktr.mlit.go.jp/tonejo/cctv/cameraimage/cam22_640.jpg",
+"page_url": "https://www.ktr.mlit.go.jp/tonejo/cctv/camview.htm?stname=cam22",
+"interval_min": 1,
+"order": 19,
+"route_label": "利根川",
+"core": "休泊川排対岸"
+}
+},
+{
+"id": "kasen_0049",
+"label": "古戸水位",
+"kind": "camera",
+"readings": [
+"コドスイイ",
+"コド"
+],
+"aliases": [],
+"attrs": {
+"river": "利根川",
+"office": "利根川上流河川事務所",
+"pref": "群馬県太田市古戸",
+"lat": 36.241559,
+"lng": 139.382044,
+"geo_source": null,
+"image_url": "https://www.ktr.mlit.go.jp/tonejo/cctv/cameraimage/cam12_640.jpg",
+"page_url": "https://www.ktr.mlit.go.jp/tonejo/cctv/camview.htm?stname=cam12",
+"interval_min": 1,
+"order": 20,
+"route_label": "利根川",
+"core": "古戸"
+}
+},
+{
+"id": "kasen_0050",
+"label": "石田川合流点",
+"kind": "camera",
+"readings": [
+"イシダガワゴーリューテン"
+],
+"aliases": [],
+"attrs": {
+"river": "利根川",
+"office": "利根川上流河川事務所",
+"pref": "埼玉県熊谷市妻沼小島地先",
+"lat": 36.24625,
+"lng": 139.367583,
+"geo_source": null,
+"image_url": "https://www.ktr.mlit.go.jp/tonejo/cctv/cameraimage/cam36_640.jpg",
+"page_url": "https://www.ktr.mlit.go.jp/tonejo/cctv/camview.htm?stname=cam36",
+"interval_min": 1,
+"order": 21,
+"route_label": "利根川",
+"core": "石田川合流点"
+}
+},
+{
+"id": "kasen_0051",
+"label": "刀水橋上流",
+"kind": "camera",
+"readings": [
+"カタナミズハシジョーリュー"
+],
+"aliases": [],
+"attrs": {
+"river": "利根川",
+"office": "利根川上流河川事務所",
+"pref": "埼玉県熊谷市妻沼台",
+"lat": 36.239406,
+"lng": 139.362854,
+"geo_source": null,
+"image_url": "https://www.ktr.mlit.go.jp/tonejo/cctv/cameraimage/cam23_640.jpg",
+"page_url": "https://www.ktr.mlit.go.jp/tonejo/cctv/camview.htm?stname=cam23",
+"interval_min": 1,
+"order": 22,
+"route_label": "利根川",
+"core": "刀水橋上流"
+}
+},
+{
+"id": "kasen_0052",
+"label": "新上武大橋上流",
+"kind": "camera",
+"readings": [
+"シンジョーブダイキョージョーリュー"
+],
+"aliases": [],
+"attrs": {
+"river": "利根川",
+"office": "利根川上流河川事務所",
+"pref": "群馬県太田市武蔵島町",
+"lat": 36.241536,
+"lng": 139.310444,
+"geo_source": null,
+"image_url": "https://www.ktr.mlit.go.jp/tonejo/cctv/cameraimage/cam21_640.jpg",
+"page_url": "https://www.ktr.mlit.go.jp/tonejo/cctv/camview.htm?stname=cam21",
+"interval_min": 1,
+"order": 23,
+"route_label": "利根川",
+"core": "新上武大橋上流"
+}
+},
+{
+"id": "kasen_0053",
+"label": "上武大橋下流",
+"kind": "camera",
+"readings": [
+"ジョーブダイキョーカリュー"
+],
+"aliases": [],
+"attrs": {
+"river": "利根川",
+"office": "利根川上流河川事務所",
+"pref": "埼玉県深谷市中瀬",
+"lat": 36.244068,
+"lng": 139.273554,
+"geo_source": null,
+"image_url": "https://www.ktr.mlit.go.jp/tonejo/cctv/cameraimage/cam25_640.jpg",
+"page_url": "https://www.ktr.mlit.go.jp/tonejo/cctv/camview.htm?stname=cam25",
+"interval_min": 1,
+"order": 24,
+"route_label": "利根川",
+"core": "上武大橋下流"
+}
+},
+{
+"id": "kasen_0054",
+"label": "八斗島水位",
+"kind": "camera",
+"readings": [
+"ヤッタジマスイイ",
+"ヤッタジマ"
+],
+"aliases": [],
+"attrs": {
+"river": "利根川",
+"office": "利根川上流河川事務所",
+"pref": "群馬県伊勢崎市",
+"lat": 36.264722,
+"lng": 139.197778,
+"geo_source": null,
+"image_url": "https://www.ktr.mlit.go.jp/tonejo/cctv/cameraimage/cam1_640.jpg",
+"page_url": "https://www.ktr.mlit.go.jp/tonejo/cctv/camview.htm?stname=cam1",
+"interval_min": 1,
+"order": 25,
+"route_label": "利根川",
+"core": "八斗島"
+}
+},
+{
+"id": "kasen_0055",
+"label": "御陣場川合流点",
+"kind": "camera",
+"readings": [
+"ゴジンバガワゴーリューテン"
+],
+"aliases": [],
+"attrs": {
+"river": "利根川",
+"office": "利根川上流河川事務所",
+"pref": "埼玉県本庄市山王堂",
+"lat": 36.261309,
+"lng": 139.185092,
+"geo_source": null,
+"image_url": "https://www.ktr.mlit.go.jp/tonejo/cctv/cameraimage/cam32_640.jpg",
+"page_url": "https://www.ktr.mlit.go.jp/tonejo/cctv/camview.htm?stname=cam32",
+"interval_min": 1,
+"order": 26,
+"route_label": "利根川",
+"core": "御陣場川合流点"
+}
+},
+{
+"id": "kasen_0056",
+"label": "烏川合流点",
+"kind": "camera",
+"readings": [
+"カラスカワゴーリューテン"
+],
+"aliases": [],
+"attrs": {
+"river": "利根川",
+"office": "利根川上流河川事務所",
+"pref": "群馬県伊勢崎市福島町",
+"lat": 36.274726,
+"lng": 139.180853,
+"geo_source": null,
+"image_url": "https://www.ktr.mlit.go.jp/tonejo/cctv/cameraimage/cam20_640.jpg",
+"page_url": "https://www.ktr.mlit.go.jp/tonejo/cctv/camview.htm?stname=cam20",
+"interval_min": 1,
+"order": 27,
+"route_label": "利根川",
+"core": "烏川合流点"
+}
+},
+{
+"id": "kasen_0057",
+"label": "五料橋",
+"kind": "camera",
+"readings": [
+"ゴリョーキョー"
+],
+"aliases": [],
+"attrs": {
+"river": "利根川",
+"office": "利根川上流河川事務所",
+"pref": "群馬県伊勢崎市芝町",
+"lat": 36.290387,
+"lng": 139.165876,
+"geo_source": null,
+"image_url": "https://www.ktr.mlit.go.jp/tonejo/cctv/cameraimage/cam27_640.jpg",
+"page_url": "https://www.ktr.mlit.go.jp/tonejo/cctv/camview.htm?stname=cam27",
+"interval_min": 1,
+"order": 28,
+"route_label": "利根川",
+"core": "五料橋"
+}
+},
+{
+"id": "kasen_0058",
+"label": "渡良瀬遊水池",
+"kind": "camera",
+"readings": [
+"ワタラセユースイチ"
+],
+"aliases": [],
+"attrs": {
+"river": "渡良瀬川",
+"office": "利根川上流河川事務所",
+"pref": "群馬県邑楽郡板倉町",
+"lat": 36.228056,
+"lng": 139.659444,
+"geo_source": null,
+"image_url": "https://www.ktr.mlit.go.jp/tonejo/cctv/cameraimage/cam8_640.jpg",
+"page_url": "https://www.ktr.mlit.go.jp/tonejo/cctv/camview.htm?stname=cam8",
+"interval_min": 1,
+"order": 0,
+"route_label": "渡良瀬川",
+"core": "渡良瀬遊水池"
+}
+},
+{
+"id": "kasen_0059",
+"label": "本郷水位",
+"kind": "camera",
+"readings": [
+"ホンゴースイイ",
+"ホンゴー"
+],
+"aliases": [],
+"attrs": {
+"river": "渡良瀬川",
+"office": "利根川上流河川事務所",
+"pref": "埼玉県加須市本郷",
+"lat": 36.165456,
+"lng": 139.691554,
+"geo_source": null,
+"image_url": "https://www.ktr.mlit.go.jp/tonejo/cctv/cameraimage/cam24_640.jpg",
+"page_url": "https://www.ktr.mlit.go.jp/tonejo/cctv/camview.htm?stname=cam24",
+"interval_min": 1,
+"order": 1,
+"route_label": "渡良瀬川",
+"core": "本郷"
+}
+},
+{
+"id": "kasen_0060",
+"label": "古河",
+"kind": "camera",
+"readings": [
+"フルカワ"
+],
+"aliases": [],
+"attrs": {
+"river": "渡良瀬川",
+"office": "利根川上流河川事務所",
+"pref": "茨城県古河市",
+"lat": 36.1925,
+"lng": 139.695833,
+"geo_source": null,
+"image_url": "https://www.ktr.mlit.go.jp/tonejo/cctv/cameraimage/cam5_640.jpg",
+"page_url": "https://www.ktr.mlit.go.jp/tonejo/cctv/camview.htm?stname=cam5",
+"interval_min": 1,
+"order": 2,
+"route_label": "渡良瀬川",
+"core": "古河"
+}
+},
+{
+"id": "kasen_0061",
+"label": "高津戸水位観測所",
+"kind": "camera",
+"readings": [
+"タカツドスイイカンソクショ",
+"タカツド"
+],
+"aliases": [],
+"attrs": {
+"river": "渡良瀬川",
+"office": "渡良瀬川河川事務所",
+"pref": "群馬県みどり市東川窪",
+"lat": 36.4327805,
+"lng": 139.2864085,
+"geo_source": "nominatim:群馬県みどり市 高津戸",
+"image_url": "https://www.ktr.mlit.go.jp/river/cctv/C01337.jpg",
+"page_url": "https://www.ktr.mlit.go.jp/watarase/watarase00410.html",
+"interval_min": 10,
+"order": 3,
+"route_label": "渡良瀬川",
+"core": "高津戸"
+}
+},
+{
+"id": "kasen_0062",
+"label": "赤岩橋上流",
+"kind": "camera",
+"readings": [
+"アカイワキョージョーリュー"
+],
+"aliases": [],
+"attrs": {
+"river": "渡良瀬川",
+"office": "渡良瀬川河川事務所",
+"pref": "群馬県桐生市堤町",
+"lat": 36.4156572,
+"lng": 139.3159066,
+"geo_source": "nominatim:群馬県桐生市 赤岩橋",
+"image_url": "https://www.ktr.mlit.go.jp/river/cctv/C05677.jpg",
+"page_url": "https://www.ktr.mlit.go.jp/watarase/watarase00410.html",
+"interval_min": 10,
+"order": 4,
+"route_label": "渡良瀬川",
+"core": "赤岩橋上流"
+}
+},
+{
+"id": "kasen_0063",
+"label": "赤岩橋下流",
+"kind": "camera",
+"readings": [
+"アカイワキョーカリュー"
+],
+"aliases": [],
+"attrs": {
+"river": "渡良瀬川",
+"office": "渡良瀬川河川事務所",
+"pref": "群馬県桐生市堤町",
+"lat": 36.4156572,
+"lng": 139.3159066,
+"geo_source": "nominatim:群馬県桐生市 赤岩橋",
+"image_url": "https://www.ktr.mlit.go.jp/river/cctv/C02720.jpg",
+"page_url": "https://www.ktr.mlit.go.jp/watarase/watarase00410.html",
+"interval_min": 10,
+"order": 5,
+"route_label": "渡良瀬川",
+"core": "赤岩橋下流"
+}
+},
+{
+"id": "kasen_0064",
+"label": "広見橋水位観測所",
+"kind": "camera",
+"readings": [
+"ヒロミキョースイイカンソクショ",
+"ヒロミキョー"
+],
+"aliases": [],
+"attrs": {
+"river": "渡良瀬川",
+"office": "渡良瀬川河川事務所",
+"pref": "群馬県桐生市東五丁目",
+"lat": 36.4110539,
+"lng": 139.3343656,
+"geo_source": "nominatim:群馬県桐生市 広見橋",
+"image_url": "https://www.ktr.mlit.go.jp/river/cctv/C01368.jpg",
+"page_url": "https://www.ktr.mlit.go.jp/watarase/watarase00410.html",
+"interval_min": 10,
+"order": 6,
+"route_label": "渡良瀬川",
+"core": "広見橋"
+}
+},
+{
+"id": "kasen_0065",
+"label": "文三樋管",
+"kind": "camera",
+"readings": [
+"ブンサントイカン",
+"ブンサン"
+],
+"aliases": [],
+"attrs": {
+"river": "渡良瀬川",
+"office": "渡良瀬川河川事務所",
+"pref": "栃木県足利市小俣町",
+"lat": 36.399002,
+"lng": 139.38551,
+"geo_source": "nominatim:栃木県足利市小俣町",
+"image_url": "https://www.ktr.mlit.go.jp/river/cctv/C05895.jpg",
+"page_url": "https://www.ktr.mlit.go.jp/watarase/watarase00410.html",
+"interval_min": 10,
+"order": 7,
+"route_label": "渡良瀬川",
+"core": "文三"
+}
+},
+{
+"id": "kasen_0066",
+"label": "松原橋上流",
+"kind": "camera",
+"readings": [
+"マツバラキョージョーリュー"
+],
+"aliases": [],
+"attrs": {
+"river": "渡良瀬川",
+"office": "渡良瀬川河川事務所",
+"pref": "群馬県桐生市広沢町六丁目",
+"lat": 36.3744542,
+"lng": 139.3597288,
+"geo_source": "nominatim:群馬県桐生市 松原橋",
+"image_url": "https://www.ktr.mlit.go.jp/river/cctv/C01331.jpg",
+"page_url": "https://www.ktr.mlit.go.jp/watarase/watarase00410.html",
+"interval_min": 10,
+"order": 8,
+"route_label": "渡良瀬川",
+"core": "松原橋上流"
+}
+},
+{
+"id": "kasen_0067",
+"label": "葉鹿橋下流",
+"kind": "camera",
+"readings": [
+"ハジカキョーカリュー"
+],
+"aliases": [],
+"attrs": {
+"river": "渡良瀬川",
+"office": "渡良瀬川河川事務所",
+"pref": "群馬県太田市原宿町",
+"lat": 36.3573208,
+"lng": 139.3792236,
+"geo_source": "nominatim:群馬県太田市 葉鹿橋",
+"image_url": "https://www.ktr.mlit.go.jp/river/cctv/C01330.jpg",
+"page_url": "https://www.ktr.mlit.go.jp/watarase/watarase00410.html",
+"interval_min": 10,
+"order": 9,
+"route_label": "渡良瀬川",
+"core": "葉鹿橋下流"
+}
+},
+{
+"id": "kasen_0068",
+"label": "鹿島橋上流",
+"kind": "camera",
+"readings": [
+"カシマキョージョーリュー"
+],
+"aliases": [],
+"attrs": {
+"river": "渡良瀬川",
+"office": "渡良瀬川河川事務所",
+"pref": "栃木県足利市鹿島町",
+"lat": 36.3420376,
+"lng": 139.4044514,
+"geo_source": "nominatim:栃木県足利市 鹿島橋",
+"image_url": "https://www.ktr.mlit.go.jp/river/cctv/C05676.jpg",
+"page_url": "https://www.ktr.mlit.go.jp/watarase/watarase00410.html",
+"interval_min": 10,
+"order": 10,
+"route_label": "渡良瀬川",
+"core": "鹿島橋上流"
+}
+},
+{
+"id": "kasen_0069",
+"label": "足利水位観測所",
+"kind": "camera",
+"readings": [
+"アシカガスイイカンソクショ",
+"アシカガ"
+],
+"aliases": [],
+"attrs": {
+"river": "渡良瀬川",
+"office": "渡良瀬川河川事務所",
+"pref": "栃木県足利市通三丁目",
+"lat": 36.3319671,
+"lng": 139.4562493,
+"geo_source": "nominatim:栃木県足利市 足利",
+"image_url": "https://www.ktr.mlit.go.jp/river/cctv/C01325.jpg",
+"page_url": "https://www.ktr.mlit.go.jp/watarase/watarase00410.html",
+"interval_min": 10,
+"order": 11,
+"route_label": "渡良瀬川",
+"core": "足利"
+}
+},
+{
+"id": "kasen_0070",
+"label": "中橋右岸",
+"kind": "camera",
+"readings": [
+"ナカハシウガン"
+],
+"aliases": [],
+"attrs": {
+"river": "渡良瀬川",
+"office": "渡良瀬川河川事務所",
+"pref": "栃木県足利市南町",
+"lat": 36.3318563,
+"lng": 139.4486799,
+"geo_source": "nominatim:栃木県足利市 中橋",
+"image_url": "https://www.ktr.mlit.go.jp/river/cctv/C05675.jpg",
+"page_url": "https://www.ktr.mlit.go.jp/watarase/watarase00410.html",
+"interval_min": 10,
+"order": 12,
+"route_label": "渡良瀬川",
+"core": "中橋右岸"
+}
+},
+{
+"id": "kasen_0071",
+"label": "中橋上流",
+"kind": "camera",
+"readings": [
+"ナカハシジョーリュー"
+],
+"aliases": [],
+"attrs": {
+"river": "渡良瀬川",
+"office": "渡良瀬川河川事務所",
+"pref": "栃木県足利市南町",
+"lat": 36.3318563,
+"lng": 139.4486799,
+"geo_source": "nominatim:栃木県足利市 中橋",
+"image_url": "https://www.ktr.mlit.go.jp/river/cctv/C01384.jpg",
+"page_url": "https://www.ktr.mlit.go.jp/watarase/watarase00410.html",
+"interval_min": 10,
+"order": 13,
+"route_label": "渡良瀬川",
+"core": "中橋上流"
+}
+},
+{
+"id": "kasen_0072",
+"label": "岩井水位観測所",
+"kind": "camera",
+"readings": [
+"イワイスイイカンソクショ",
+"イワイ"
+],
+"aliases": [],
+"attrs": {
+"river": "渡良瀬川",
+"office": "渡良瀬川河川事務所",
+"pref": "栃木県足利市岩井町",
+"lat": 36.317682,
+"lng": 139.469684,
+"geo_source": "nominatim:栃木県足利市 岩井",
+"image_url": "https://www.ktr.mlit.go.jp/river/cctv/C01373.jpg",
+"page_url": "https://www.ktr.mlit.go.jp/watarase/watarase00410.html",
+"interval_min": 10,
+"order": 14,
+"route_label": "渡良瀬川",
+"core": "岩井"
+}
+},
+{
+"id": "kasen_0073",
+"label": "早川田上水位観測所",
+"kind": "camera",
+"readings": [
+"ハヤカワタウエスイイカンソクショ",
+"ハヤカワタウエ"
+],
+"aliases": [],
+"attrs": {
+"river": "渡良瀬川",
+"office": "渡良瀬川河川事務所",
+"pref": "栃木県足利市野田町",
+"lat": 36.292662,
+"lng": 139.5098063,
+"geo_source": "nominatim:栃木県足利市野田町",
+"image_url": "https://www.ktr.mlit.go.jp/river/cctv/C01323.jpg",
+"page_url": "https://www.ktr.mlit.go.jp/watarase/watarase00410.html",
+"interval_min": 10,
+"order": 15,
+"route_label": "渡良瀬川",
+"core": "早川田上"
+}
+},
+{
+"id": "kasen_0074",
+"label": "藤川橋",
+"kind": "camera",
+"readings": [
+"フジカワキョー"
+],
+"aliases": [],
+"attrs": {
+"river": "渡良瀬川",
+"office": "渡良瀬川河川事務所",
+"pref": "群馬県邑楽郡邑楽町",
+"lat": 36.2753153,
+"lng": 139.4520008,
+"geo_source": "nominatim:群馬県邑楽郡 藤川橋",
+"image_url": "https://www.ktr.mlit.go.jp/river/cctv/C05671.jpg",
+"page_url": "https://www.ktr.mlit.go.jp/watarase/watarase00410.html",
+"interval_min": 10,
+"order": 16,
+"route_label": "渡良瀬川",
+"core": "藤川橋"
+}
+},
+{
+"id": "kasen_0075",
+"label": "足森橋水位観測所",
+"kind": "camera",
+"readings": [
+"アシモリキョースイイカンソクショ",
+"アシモリキョー"
+],
+"aliases": [],
+"attrs": {
+"river": "渡良瀬川",
+"office": "渡良瀬川河川事務所",
+"pref": "栃木県足利市高松町",
+"lat": 36.4028236,
+"lng": 138.9841377,
+"geo_source": "nominatim:栃木県足利市 足森橋",
+"image_url": "https://www.ktr.mlit.go.jp/river/cctv/C01357.jpg",
+"page_url": "https://www.ktr.mlit.go.jp/watarase/watarase00410.html",
+"interval_min": 10,
+"order": 17,
+"route_label": "渡良瀬川",
+"core": "足森橋"
+}
+},
+{
+"id": "kasen_0076",
+"label": "江川橋上流",
+"kind": "camera",
+"readings": [
+"エガワキョージョーリュー"
+],
+"aliases": [],
+"attrs": {
+"river": "渡良瀬川",
+"office": "渡良瀬川河川事務所",
+"pref": "群馬県館林市水戸町",
+"lat": 36.2763892,
+"lng": 139.5130901,
+"geo_source": "nominatim:群馬県館林市 江川橋",
+"image_url": "https://www.ktr.mlit.go.jp/river/cctv/C01378.jpg",
+"page_url": "https://www.ktr.mlit.go.jp/watarase/watarase00410.html",
+"interval_min": 10,
+"order": 18,
+"route_label": "渡良瀬川",
+"core": "江川橋上流"
+}
+},
+{
+"id": "kasen_0077",
+"label": "高田橋上流",
+"kind": "camera",
+"readings": [
+"タカダキョージョーリュー"
+],
+"aliases": [],
+"attrs": {
+"river": "渡良瀬川",
+"office": "渡良瀬川河川事務所",
+"pref": "栃木県佐野市村上町",
+"lat": 36.3546706,
+"lng": 139.574948,
+"geo_source": "nominatim:栃木県佐野市 高田橋",
+"image_url": "https://www.ktr.mlit.go.jp/river/cctv/C05674.jpg",
+"page_url": "https://www.ktr.mlit.go.jp/watarase/watarase00410.html",
+"interval_min": 10,
+"order": 19,
+"route_label": "渡良瀬川",
+"core": "高田橋上流"
+}
+},
+{
+"id": "kasen_0078",
+"label": "渡良瀬大橋",
+"kind": "camera",
+"readings": [
+"ワタラセオーハシ"
+],
+"aliases": [],
+"attrs": {
+"river": "渡良瀬川",
+"office": "渡良瀬川河川事務所",
+"pref": "栃木県佐野市船津川町",
+"lat": 36.2722128,
+"lng": 139.5627594,
+"geo_source": "nominatim:栃木県佐野市船津川町",
+"image_url": "https://www.ktr.mlit.go.jp/river/cctv/C05670.jpg",
+"page_url": "https://www.ktr.mlit.go.jp/watarase/watarase00410.html",
+"interval_min": 10,
+"order": 20,
+"route_label": "渡良瀬川",
+"core": "渡良瀬大橋"
+}
+},
+{
+"id": "kasen_0079",
+"label": "伊保内新橋水位観測所",
+"kind": "camera",
+"readings": [
+"イボーチシンバシスイイカンソクショ",
+"イボーチシンバシ"
+],
+"aliases": [],
+"attrs": {
+"river": "渡良瀬川",
+"office": "渡良瀬川河川事務所",
+"pref": "栃木県佐野市伊保内町",
+"lat": 36.282419,
+"lng": 139.580321,
+"geo_source": "nominatim:栃木県佐野市伊保内町",
+"image_url": "https://www.ktr.mlit.go.jp/river/cctv/C01354.jpg",
+"page_url": "https://www.ktr.mlit.go.jp/watarase/watarase00410.html",
+"interval_min": 10,
+"order": 21,
+"route_label": "渡良瀬川",
+"core": "伊保内新橋"
+}
+},
+{
+"id": "kasen_0080",
+"label": "大島水位観測所",
+"kind": "camera",
+"readings": [
+"オーシマスイイカンソクショ",
+"オーシマ"
+],
+"aliases": [],
+"attrs": {
+"river": "渡良瀬川",
+"office": "渡良瀬川河川事務所",
+"pref": "群馬県館林市大島町",
+"lat": 36.2978568,
+"lng": 139.3644306,
+"geo_source": "nominatim:群馬県館林市 大島",
+"image_url": "https://www.ktr.mlit.go.jp/river/cctv/C01353.jpg",
+"page_url": "https://www.ktr.mlit.go.jp/watarase/watarase00410.html",
+"interval_min": 10,
+"order": 22,
+"route_label": "渡良瀬川",
+"core": "大島"
+}
+},
+{
+"id": "kasen_0081",
+"label": "高取樋管",
+"kind": "camera",
+"readings": [
+"タカトリトイカン",
+"タカトリ"
+],
+"aliases": [],
+"attrs": {
+"river": "渡良瀬川",
+"office": "渡良瀬川河川事務所",
+"pref": "栃木県栃木市藤岡",
+"lat": 36.2690838,
+"lng": 139.6378382,
+"geo_source": "nominatim:栃木県栃木市 高取",
+"image_url": "https://www.ktr.mlit.go.jp/river/cctv/C01352.jpg",
+"page_url": "https://www.ktr.mlit.go.jp/watarase/watarase00410.html",
+"interval_min": 10,
+"order": 23,
+"route_label": "渡良瀬川",
+"core": "高取"
+}
+},
+{
+"id": "kasen_0082",
+"label": "乙女",
+"kind": "camera",
+"readings": [
+"オトメ"
+],
+"aliases": [],
+"attrs": {
+"river": "思川",
+"office": "利根川上流河川事務所",
+"pref": "栃木県小山市乙女",
+"lat": 36.261944,
+"lng": 139.7475,
+"geo_source": null,
+"image_url": "https://www.ktr.mlit.go.jp/tonejo/cctv/cameraimage/cam6_640.jpg",
+"page_url": "https://www.ktr.mlit.go.jp/tonejo/cctv/camview.htm?stname=cam6",
+"interval_min": 1,
+"order": 0,
+"route_label": "思川",
+"core": "乙女"
+}
+},
+{
+"id": "kasen_0083",
+"label": "松原大橋上流水位監視",
+"kind": "camera",
+"readings": [
+"マツバラオーハシジョーリュースイイカンシ",
+"マツバラオーハシジョーリュー"
+],
+"aliases": [],
+"attrs": {
+"river": "思川",
+"office": "利根川上流河川事務所",
+"pref": "栃木県下都賀郡野木町友沼",
+"lat": 36.243242,
+"lng": 139.722411,
+"geo_source": null,
+"image_url": "https://www.ktr.mlit.go.jp/tonejo/cctv/cameraimage/cam31_640.jpg",
+"page_url": "https://www.ktr.mlit.go.jp/tonejo/cctv/camview.htm?stname=cam31",
+"interval_min": 1,
+"order": 1,
+"route_label": "思川",
+"core": "松原大橋上流"
+}
+},
+{
+"id": "kasen_0084",
+"label": "松原大橋左岸上流",
+"kind": "camera",
+"readings": [
+"マツバラオーハシサガンジョーリュー"
+],
+"aliases": [],
+"attrs": {
+"river": "思川",
+"office": "利根川上流河川事務所",
+"pref": "下都賀郡野木町友沼地先",
+"lat": 36.238611,
+"lng": 139.7265,
+"geo_source": null,
+"image_url": "https://www.ktr.mlit.go.jp/tonejo/cctv/cameraimage/cam41_640.jpg",
+"page_url": "https://www.ktr.mlit.go.jp/tonejo/cctv/camview.htm?stname=cam41",
+"interval_min": 1,
+"order": 2,
+"route_label": "思川",
+"core": "松原大橋左岸上流"
+}
+},
+{
+"id": "kasen_0085",
+"label": "中里",
+"kind": "camera",
+"readings": [
+"ナカサト"
+],
+"aliases": [],
+"attrs": {
+"river": "巴波川",
+"office": "利根川上流河川事務所",
+"pref": "栃木県小山市中里",
+"lat": 36.2925,
+"lng": 139.7325,
+"geo_source": null,
+"image_url": "https://www.ktr.mlit.go.jp/tonejo/cctv/cameraimage/cam7_640.jpg",
+"page_url": "https://www.ktr.mlit.go.jp/tonejo/cctv/camview.htm?stname=cam7",
+"interval_min": 1,
+"order": 0,
+"route_label": "巴波川",
+"core": "中里"
+}
+},
+{
+"id": "kasen_0086",
+"label": "帯刀水位上流",
+"kind": "camera",
+"readings": [
+"タイトースイイジョーリュー"
+],
+"aliases": [
+"帯刀上流"
+],
+"attrs": {
+"river": "巴波川",
+"office": "利根川上流河川事務所",
+"pref": "栃木県栃木市藤岡町帯刀",
+"lat": 36.263565,
+"lng": 139.69444,
+"geo_source": null,
+"image_url": "https://www.ktr.mlit.go.jp/tonejo/cctv/cameraimage/cam14_640.jpg",
+"page_url": "https://www.ktr.mlit.go.jp/tonejo/cctv/camview.htm?stname=cam14",
+"interval_min": 1,
+"order": 1,
+"route_label": "巴波川",
+"core": "帯刀上流"
+}
+},
+{
+"id": "kasen_0087",
+"label": "常陸川水門上流全体",
+"kind": "camera",
+"readings": [
+"ヒタチガワスイモンジョーリューゼンタイ"
+],
+"aliases": [
+"常陸川上流全体"
+],
+"attrs": {
+"river": "常陸川",
+"office": "霞ヶ浦河川事務所",
+"pref": "茨城県神栖市太田",
+"lat": 35.8219663,
+"lng": 140.7341888,
+"geo_source": "nominatim:茨城県神栖市太田",
+"image_url": "https://www.ktr.mlit.go.jp/river/cctv/C03139.jpg",
+"page_url": "https://www.ktr.mlit.go.jp/kasumi/kasumi00591.html",
+"interval_min": 10,
+"order": 0,
+"route_label": "常陸川",
+"core": "常陸川上流全体"
+}
+},
+{
+"id": "kasen_0088",
+"label": "常陸川水門左岸下流",
+"kind": "camera",
+"readings": [
+"ヒタチガワスイモンサガンカリュー"
+],
+"aliases": [
+"常陸川左岸下流"
+],
+"attrs": {
+"river": "常陸川",
+"office": "霞ヶ浦河川事務所",
+"pref": "茨城県神栖市太田",
+"lat": 35.8598571,
+"lng": 140.6581243,
+"geo_source": "nominatim:茨城県神栖市 常陸川",
+"image_url": "https://www.ktr.mlit.go.jp/river/cctv/C03137.jpg",
+"page_url": "https://www.ktr.mlit.go.jp/kasumi/kasumi00835.html",
+"interval_min": 10,
+"order": 1,
+"route_label": "常陸川",
+"core": "常陸川左岸下流"
+}
+},
+{
+"id": "kasen_0089",
+"label": "波崎出張所鉄塔",
+"kind": "camera",
+"readings": [
+"ハサキシュッチョーショテットー"
+],
+"aliases": [],
+"attrs": {
+"river": "常陸川",
+"office": "霞ヶ浦河川事務所",
+"pref": "茨城県神栖市太田",
+"lat": 35.8219663,
+"lng": 140.7341888,
+"geo_source": "nominatim:茨城県神栖市太田",
+"image_url": "https://www.ktr.mlit.go.jp/river/cctv/C03136.jpg",
+"page_url": "https://www.ktr.mlit.go.jp/kasumi/kasumi00836.html",
+"interval_min": 10,
+"order": 2,
+"route_label": "常陸川",
+"core": "波崎出張所鉄塔"
+}
+},
+{
+"id": "kasen_0090",
+"label": "常陸川水門No.3堰柱上流向き",
+"kind": "camera",
+"readings": [
+"ヒタチガワスイモンナンバーサンセキバシラジョーリュームキ"
+],
+"aliases": [
+"常陸川No.3柱上流向き"
+],
+"attrs": {
+"river": "常陸川",
+"office": "霞ヶ浦河川事務所",
+"pref": "茨城県神栖市太田",
+"lat": 35.8219663,
+"lng": 140.7341888,
+"geo_source": "nominatim:茨城県神栖市太田",
+"image_url": "https://www.ktr.mlit.go.jp/river/cctv/C03133.jpg",
+"page_url": "https://www.ktr.mlit.go.jp/kasumi/kasumi00837.html",
+"interval_min": 10,
+"order": 3,
+"route_label": "常陸川",
+"core": "常陸川No.3柱上流向き"
+}
+},
+{
+"id": "kasen_0091",
+"label": "常陸川水門No.5堰柱下流向き",
+"kind": "camera",
+"readings": [
+"ヒタチガワスイモンナンバーゴセキバシラカリュームキ"
+],
+"aliases": [
+"常陸川No.5柱下流向き"
+],
+"attrs": {
+"river": "常陸川",
+"office": "霞ヶ浦河川事務所",
+"pref": "茨城県神栖市太田",
+"lat": 35.8219663,
+"lng": 140.7341888,
+"geo_source": "nominatim:茨城県神栖市太田",
+"image_url": "https://www.ktr.mlit.go.jp/river/cctv/C03134.jpg",
+"page_url": "https://www.ktr.mlit.go.jp/kasumi/kasumi00838.html",
+"interval_min": 10,
+"order": 4,
+"route_label": "常陸川",
+"core": "常陸川No.5柱下流向き"
+}
+},
+{
+"id": "kasen_0092",
+"label": "常陸川水門No.7堰柱上流向き",
+"kind": "camera",
+"readings": [
+"ヒタチガワスイモンナンバーナナセキバシラジョーリュームキ"
+],
+"aliases": [
+"常陸川No.7柱上流向き"
+],
+"attrs": {
+"river": "常陸川",
+"office": "霞ヶ浦河川事務所",
+"pref": "茨城県神栖市太田",
+"lat": 35.8219663,
+"lng": 140.7341888,
+"geo_source": "nominatim:茨城県神栖市太田",
+"image_url": "https://www.ktr.mlit.go.jp/river/cctv/C03135.jpg",
+"page_url": "https://www.ktr.mlit.go.jp/kasumi/kasumi00839.html",
+"interval_min": 10,
+"order": 5,
+"route_label": "常陸川",
+"core": "常陸川No.7柱上流向き"
+}
+},
+{
+"id": "kasen_0093",
+"label": "常陸川水門左岸上流",
+"kind": "camera",
+"readings": [
+"ヒタチガワスイモンサガンジョーリュー"
+],
+"aliases": [
+"常陸川左岸上流"
+],
+"attrs": {
+"river": "常陸川",
+"office": "霞ヶ浦河川事務所",
+"pref": "茨城県神栖市横瀬",
+"lat": 35.8598571,
+"lng": 140.6581243,
+"geo_source": "nominatim:茨城県神栖市 常陸川",
+"image_url": "https://www.ktr.mlit.go.jp/river/cctv/C03138.jpg",
+"page_url": "https://www.ktr.mlit.go.jp/kasumi/kasumi00841.html",
+"interval_min": 10,
+"order": 6,
+"route_label": "常陸川",
+"core": "常陸川左岸上流"
+}
+},
+{
+"id": "kasen_0094",
+"label": "常陸川水門右岸下流",
+"kind": "camera",
+"readings": [
+"ヒタチガワスイモンウガンカリュー"
+],
+"aliases": [
+"常陸川右岸下流"
+],
+"attrs": {
+"river": "常陸川",
+"office": "霞ヶ浦河川事務所",
+"pref": "茨城県神栖市太田",
+"lat": 35.8598571,
+"lng": 140.6581243,
+"geo_source": "nominatim:茨城県神栖市 常陸川",
+"image_url": "https://www.ktr.mlit.go.jp/river/cctv/C03131.jpg",
+"page_url": "https://www.ktr.mlit.go.jp/kasumi/kasumi00842.html",
+"interval_min": 10,
+"order": 7,
+"route_label": "常陸川",
+"core": "常陸川右岸下流"
+}
+},
+{
+"id": "kasen_0095",
+"label": "常陸川水門右岸上流",
+"kind": "camera",
+"readings": [
+"ヒタチガワスイモンウガンジョーリュー"
+],
+"aliases": [
+"常陸川右岸上流"
+],
+"attrs": {
+"river": "常陸川",
+"office": "霞ヶ浦河川事務所",
+"pref": "茨城県神栖市太田",
+"lat": 35.8598571,
+"lng": 140.6581243,
+"geo_source": "nominatim:茨城県神栖市 常陸川",
+"image_url": "https://www.ktr.mlit.go.jp/river/cctv/C03132.jpg",
+"page_url": "https://www.ktr.mlit.go.jp/kasumi/kasumi00843.html",
+"interval_min": 10,
+"order": 8,
+"route_label": "常陸川",
+"core": "常陸川右岸上流"
+}
+},
+{
+"id": "kasen_0096",
+"label": "永山",
+"kind": "camera",
+"readings": [
+"ナガヤマ"
+],
+"aliases": [],
+"attrs": {
+"river": "西浦",
+"office": "霞ヶ浦河川事務所",
+"pref": "茨城県潮来市永山 ",
+"lat": 35.9733072,
+"lng": 140.5039547,
+"geo_source": "nominatim:茨城県潮来市 永山",
+"image_url": "https://www.ktr.mlit.go.jp/river/cctv/C03160.jpg",
+"page_url": "https://www.ktr.mlit.go.jp/kasumi/kasumi00798.html",
+"interval_min": 10,
+"order": 0,
+"route_label": "西浦",
+"core": "永山"
+}
+},
+{
+"id": "kasen_0097",
+"label": "天王崎",
+"kind": "camera",
+"readings": [
+"テンノーザキ"
+],
+"aliases": [],
+"attrs": {
+"river": "西浦",
+"office": "霞ヶ浦河川事務所",
+"pref": "茨城県行方市麻生",
+"lat": 35.9902453,
+"lng": 140.4732998,
+"geo_source": "nominatim:茨城県行方市 天王崎",
+"image_url": "https://www.ktr.mlit.go.jp/river/cctv/C03157.jpg",
+"page_url": "https://www.ktr.mlit.go.jp/kasumi/kasumi00799.html",
+"interval_min": 10,
+"order": 1,
+"route_label": "西浦",
+"core": "天王崎"
+}
+},
+{
+"id": "kasen_0098",
+"label": "小高",
+"kind": "camera",
+"readings": [
+"オダカ"
+],
+"aliases": [],
+"attrs": {
+"river": "西浦",
+"office": "霞ヶ浦河川事務所",
+"pref": "茨城県行方市小高",
+"lat": 36.0326146,
+"lng": 140.490136,
+"geo_source": "nominatim:茨城県行方市 小高",
+"image_url": "https://www.ktr.mlit.go.jp/river/cctv/C03158.jpg",
+"page_url": "https://www.ktr.mlit.go.jp/kasumi/kasumi00801.html",
+"interval_min": 10,
+"order": 2,
+"route_label": "西浦",
+"core": "小高"
+}
+},
+{
+"id": "kasen_0099",
+"label": "五町田",
+"kind": "camera",
+"readings": [
+"ゴチョーダ"
+],
+"aliases": [],
+"attrs": {
+"river": "西浦",
+"office": "霞ヶ浦河川事務所",
+"pref": "茨城県行方市五町田",
+"lat": 36.048522,
+"lng": 140.4440585,
+"geo_source": "nominatim:茨城県行方市 五町田",
+"image_url": "https://www.ktr.mlit.go.jp/river/cctv/C03159.jpg",
+"page_url": "https://www.ktr.mlit.go.jp/kasumi/kasumi00802.html",
+"interval_min": 10,
+"order": 3,
+"route_label": "西浦",
+"core": "五町田"
+}
+},
+{
+"id": "kasen_0100",
+"label": "井上",
+"kind": "camera",
+"readings": [
+"イノーエ"
+],
+"aliases": [],
+"attrs": {
+"river": "西浦",
+"office": "霞ヶ浦河川事務所",
+"pref": "茨城県行方市井上",
+"lat": 36.0645497,
+"lng": 140.4444131,
+"geo_source": "nominatim:茨城県行方市 井上",
+"image_url": "https://www.ktr.mlit.go.jp/river/cctv/C03146.jpg",
+"page_url": "https://www.ktr.mlit.go.jp/kasumi/kasumi00803.html",
+"interval_min": 10,
+"order": 4,
+"route_label": "西浦",
+"core": "井上"
+}
+},
+{
+"id": "kasen_0101",
+"label": "麻生湖岸",
+"kind": "camera",
+"readings": [
+"アソーコガン"
+],
+"aliases": [],
+"attrs": {
+"river": "西浦",
+"office": "霞ヶ浦河川事務所",
+"pref": "茨城県潮来市永山",
+"lat": 35.9733072,
+"lng": 140.5039547,
+"geo_source": "nominatim:茨城県潮来市永山",
+"image_url": "https://www.ktr.mlit.go.jp/river/cctv/C03119.jpg",
+"page_url": "https://www.ktr.mlit.go.jp/kasumi/kasumi00804.html",
+"interval_min": 10,
+"order": 5,
+"route_label": "西浦",
+"core": "麻生湖岸"
+}
+},
+{
+"id": "kasen_0102",
+"label": "西浦耕地",
+"kind": "camera",
+"readings": [
+"ニシウラコーチ"
+],
+"aliases": [],
+"attrs": {
+"river": "西浦",
+"office": "霞ヶ浦河川事務所",
+"pref": "茨城県稲敷市浮島",
+"lat": 35.97126,
+"lng": 140.432077,
+"geo_source": "nominatim:茨城県稲敷市浮島",
+"image_url": "https://www.ktr.mlit.go.jp/river/cctv/C03154.jpg",
+"page_url": "https://www.ktr.mlit.go.jp/kasumi/kasumi00805.html",
+"interval_min": 10,
+"order": 6,
+"route_label": "西浦",
+"core": "西浦耕地"
+}
+},
+{
+"id": "kasen_0103",
+"label": "妙岐ノ鼻",
+"kind": "camera",
+"readings": [
+"ミョーギノハナ"
+],
+"aliases": [],
+"attrs": {
+"river": "西浦",
+"office": "霞ヶ浦河川事務所",
+"pref": "茨城県稲敷市浮島",
+"lat": 35.97126,
+"lng": 140.432077,
+"geo_source": "nominatim:茨城県稲敷市浮島",
+"image_url": "https://www.ktr.mlit.go.jp/river/cctv/C03128.jpg",
+"page_url": "https://www.ktr.mlit.go.jp/kasumi/kasumi00806.html",
+"interval_min": 10,
+"order": 7,
+"route_label": "西浦",
+"core": "妙岐ノ鼻"
+}
+},
+{
+"id": "kasen_0104",
+"label": "浮島",
+"kind": "camera",
+"readings": [
+"ウキシマ"
+],
+"aliases": [],
+"attrs": {
+"river": "西浦",
+"office": "霞ヶ浦河川事務所",
+"pref": "茨城県稲敷市浮島",
+"lat": 35.97126,
+"lng": 140.432077,
+"geo_source": "nominatim:茨城県稲敷市 浮島",
+"image_url": "https://www.ktr.mlit.go.jp/river/cctv/C03127.jpg",
+"page_url": "https://www.ktr.mlit.go.jp/kasumi/kasumi00807.html",
+"interval_min": 10,
+"order": 8,
+"route_label": "西浦",
+"core": "浮島"
+}
+},
+{
+"id": "kasen_0105",
+"label": "浮島（上）",
+"kind": "camera",
+"readings": [
+"ウキシマウエ",
+"ウキシマ"
+],
+"aliases": [],
+"attrs": {
+"river": "西浦",
+"office": "霞ヶ浦河川事務所",
+"pref": "茨城県稲敷市浮島",
+"lat": 35.97126,
+"lng": 140.432077,
+"geo_source": "nominatim:茨城県稲敷市 浮島",
+"image_url": "https://www.ktr.mlit.go.jp/river/cctv/C03153.jpg",
+"page_url": "https://www.ktr.mlit.go.jp/kasumi/kasumi00808.html",
+"interval_min": 10,
+"order": 9,
+"route_label": "西浦",
+"core": "浮島"
+}
+},
+{
+"id": "kasen_0106",
+"label": "西の洲(下)",
+"kind": "camera",
+"readings": [
+"ニシノシューシタ",
+"ニシノシュー"
+],
+"aliases": [],
+"attrs": {
+"river": "西浦",
+"office": "霞ヶ浦河川事務所",
+"pref": "茨城県稲敷市浮島",
+"lat": 35.979841,
+"lng": 140.412355,
+"geo_source": "nominatim:茨城県稲敷市 西の洲",
+"image_url": "https://www.ktr.mlit.go.jp/river/cctv/C03126.jpg",
+"page_url": "https://www.ktr.mlit.go.jp/kasumi/kasumi00809.html",
+"interval_min": 10,
+"order": 10,
+"route_label": "西浦",
+"core": "西の洲"
+}
+},
+{
+"id": "kasen_0107",
+"label": "西の洲",
+"kind": "camera",
+"readings": [
+"ニシノシュー"
+],
+"aliases": [],
+"attrs": {
+"river": "西浦",
+"office": "霞ヶ浦河川事務所",
+"pref": "茨城県稲敷市浮島",
+"lat": 35.979841,
+"lng": 140.412355,
+"geo_source": "nominatim:茨城県稲敷市 西の洲",
+"image_url": "https://www.ktr.mlit.go.jp/river/cctv/C03144.jpg",
+"page_url": "https://www.ktr.mlit.go.jp/kasumi/kasumi00810.html",
+"interval_min": 10,
+"order": 11,
+"route_label": "西浦",
+"core": "西の洲"
+}
+},
+{
+"id": "kasen_0108",
+"label": "古渡",
+"kind": "camera",
+"readings": [
+"コワタリ"
+],
+"aliases": [],
+"attrs": {
+"river": "西浦",
+"office": "霞ヶ浦河川事務所",
+"pref": "茨城県稲敷市古渡",
+"lat": 35.979025,
+"lng": 140.359924,
+"geo_source": "nominatim:茨城県稲敷市 古渡",
+"image_url": "https://www.ktr.mlit.go.jp/river/cctv/C03143.jpg",
+"page_url": "https://www.ktr.mlit.go.jp/kasumi/kasumi00812.html",
+"interval_min": 10,
+"order": 12,
+"route_label": "西浦",
+"core": "古渡"
+}
+},
+{
+"id": "kasen_0109",
+"label": "信太古渡",
+"kind": "camera",
+"readings": [
+"シダコワタリ"
+],
+"aliases": [],
+"attrs": {
+"river": "西浦",
+"office": "霞ヶ浦河川事務所",
+"pref": "茨城県稲敷市古渡",
+"lat": 35.980154,
+"lng": 140.341899,
+"geo_source": "nominatim:茨城県稲敷市 信太古渡",
+"image_url": "https://www.ktr.mlit.go.jp/river/cctv/C03163.jpg",
+"page_url": "https://www.ktr.mlit.go.jp/kasumi/kasumi00813.html",
+"interval_min": 10,
+"order": 13,
+"route_label": "西浦",
+"core": "信太古渡"
+}
+},
+{
+"id": "kasen_0110",
+"label": "大山(下)",
+"kind": "camera",
+"readings": [
+"オーヤマシタ",
+"オーヤマ"
+],
+"aliases": [],
+"attrs": {
+"river": "西浦",
+"office": "霞ヶ浦河川事務所",
+"pref": "茨城県稲敷郡美浦村大山",
+"lat": 36.0062838,
+"lng": 140.3663566,
+"geo_source": "nominatim:茨城県稲敷郡 大山",
+"image_url": "https://www.ktr.mlit.go.jp/river/cctv/C03142.jpg",
+"page_url": "https://www.ktr.mlit.go.jp/kasumi/kasumi00814.html",
+"interval_min": 10,
+"order": 14,
+"route_label": "西浦",
+"core": "大山"
+}
+},
+{
+"id": "kasen_0111",
+"label": "大山",
+"kind": "camera",
+"readings": [
+"オーヤマ"
+],
+"aliases": [],
+"attrs": {
+"river": "西浦",
+"office": "霞ヶ浦河川事務所",
+"pref": "茨城県稲敷郡美浦村大山",
+"lat": 36.0062838,
+"lng": 140.3663566,
+"geo_source": "nominatim:茨城県稲敷郡 大山",
+"image_url": "https://www.ktr.mlit.go.jp/river/cctv/C03125.jpg",
+"page_url": "https://www.ktr.mlit.go.jp/kasumi/kasumi00815.html",
+"interval_min": 10,
+"order": 15,
+"route_label": "西浦",
+"core": "大山"
+}
+},
+{
+"id": "kasen_0112",
+"label": "牛込",
+"kind": "camera",
+"readings": [
+"ウシゴメ"
+],
+"aliases": [],
+"attrs": {
+"river": "西浦",
+"office": "霞ヶ浦河川事務所",
+"pref": "茨城県稲敷郡美浦村牛込",
+"lat": 36.025736,
+"lng": 140.342075,
+"geo_source": "nominatim:茨城県稲敷郡 牛込",
+"image_url": "https://www.ktr.mlit.go.jp/river/cctv/C03162.jpg",
+"page_url": "https://www.ktr.mlit.go.jp/kasumi/kasumi00816.html",
+"interval_min": 10,
+"order": 16,
+"route_label": "西浦",
+"core": "牛込"
+}
+},
+{
+"id": "kasen_0113",
+"label": "木原",
+"kind": "camera",
+"readings": [
+"キハラ"
+],
+"aliases": [],
+"attrs": {
+"river": "西浦",
+"office": "霞ヶ浦河川事務所",
+"pref": "茨城県稲敷郡美浦村木原",
+"lat": 36.014515,
+"lng": 140.290861,
+"geo_source": "nominatim:茨城県稲敷郡 木原",
+"image_url": "https://www.ktr.mlit.go.jp/river/cctv/C03123.jpg",
+"page_url": "https://www.ktr.mlit.go.jp/kasumi/kasumi00817.html",
+"interval_min": 10,
+"order": 17,
+"route_label": "西浦",
+"core": "木原"
+}
+},
+{
+"id": "kasen_0114",
+"label": "舟子",
+"kind": "camera",
+"readings": [
+"フナコ"
+],
+"aliases": [],
+"attrs": {
+"river": "西浦",
+"office": "霞ヶ浦河川事務所",
+"pref": "茨城県稲敷郡美浦村舟子",
+"lat": 36.0285379,
+"lng": 140.2765596,
+"geo_source": "nominatim:茨城県稲敷郡 舟子",
+"image_url": "https://www.ktr.mlit.go.jp/river/cctv/C03141.jpg",
+"page_url": "https://www.ktr.mlit.go.jp/kasumi/kasumi00818.html",
+"interval_min": 10,
+"order": 18,
+"route_label": "西浦",
+"core": "舟子"
+}
+},
+{
+"id": "kasen_0115",
+"label": "沖宿",
+"kind": "camera",
+"readings": [
+"オキジク"
+],
+"aliases": [],
+"attrs": {
+"river": "西浦",
+"office": "霞ヶ浦河川事務所",
+"pref": "茨城県土浦市沖宿",
+"lat": 36.075299,
+"lng": 140.256579,
+"geo_source": "nominatim:茨城県土浦市 沖宿",
+"image_url": "https://www.ktr.mlit.go.jp/river/cctv/C03152.jpg",
+"page_url": "https://www.ktr.mlit.go.jp/kasumi/kasumi00819.html",
+"interval_min": 10,
+"order": 19,
+"route_label": "西浦",
+"core": "沖宿"
+}
+},
+{
+"id": "kasen_0116",
+"label": "崎浜",
+"kind": "camera",
+"readings": [
+"サキハマ"
+],
+"aliases": [],
+"attrs": {
+"river": "西浦",
+"office": "霞ヶ浦河川事務所",
+"pref": "茨城県かすみがうら市加茂",
+"lat": 36.076129,
+"lng": 140.29566,
+"geo_source": "nominatim:茨城県かすみがうら市加茂",
+"image_url": "https://www.ktr.mlit.go.jp/river/cctv/C03161.jpg",
+"page_url": "https://www.ktr.mlit.go.jp/kasumi/kasumi00820.html",
+"interval_min": 10,
+"order": 20,
+"route_label": "西浦",
+"core": "崎浜"
+}
+},
+{
+"id": "kasen_0117",
+"label": "牛渡",
+"kind": "camera",
+"readings": [
+"ウシワタ"
+],
+"aliases": [],
+"attrs": {
+"river": "西浦",
+"office": "霞ヶ浦河川事務所",
+"pref": "茨城県かすみがうら市牛渡",
+"lat": 36.073599,
+"lng": 140.329579,
+"geo_source": "nominatim:茨城県かすみがうら市 牛渡",
+"image_url": "https://www.ktr.mlit.go.jp/river/cctv/C03151.jpg",
+"page_url": "https://www.ktr.mlit.go.jp/kasumi/kasumi00821.html",
+"interval_min": 10,
+"order": 21,
+"route_label": "西浦",
+"core": "牛渡"
+}
+},
+{
+"id": "kasen_0118",
+"label": "出島",
+"kind": "camera",
+"readings": [
+"デジマ"
+],
+"aliases": [],
+"attrs": {
+"river": "西浦",
+"office": "霞ヶ浦河川事務所",
+"pref": "茨城県かすみがうら市坂",
+"lat": 36.1295228,
+"lng": 140.194698,
+"geo_source": "nominatim:茨城県かすみがうら市 出島",
+"image_url": "https://www.ktr.mlit.go.jp/river/cctv/C03148.jpg",
+"page_url": "https://www.ktr.mlit.go.jp/kasumi/kasumi00822.html",
+"interval_min": 10,
+"order": 22,
+"route_label": "西浦",
+"core": "出島"
+}
+},
+{
+"id": "kasen_0119",
+"label": "沖ノ内",
+"kind": "camera",
+"readings": [
+"オキノーチ"
+],
+"aliases": [],
+"attrs": {
+"river": "西浦",
+"office": "霞ヶ浦河川事務所",
+"pref": "茨城県かすみがうら市田伏",
+"lat": 36.085113,
+"lng": 140.377829,
+"geo_source": "nominatim:茨城県かすみがうら市田伏",
+"image_url": "https://www.ktr.mlit.go.jp/river/cctv/C03150.jpg",
+"page_url": "https://www.ktr.mlit.go.jp/kasumi/kasumi00823.html",
+"interval_min": 10,
+"order": 23,
+"route_label": "西浦",
+"core": "沖ノ内"
+}
+},
+{
+"id": "kasen_0120",
+"label": "土浦港",
+"kind": "camera",
+"readings": [
+"ツチウラコー"
+],
+"aliases": [],
+"attrs": {
+"river": "西浦",
+"office": "霞ヶ浦河川事務所",
+"pref": "茨城県土浦市港町",
+"lat": 36.0958165,
+"lng": 140.2339663,
+"geo_source": "nominatim:茨城県土浦市 土浦港",
+"image_url": "https://www.ktr.mlit.go.jp/river/cctv/C03121.jpg",
+"page_url": "https://www.ktr.mlit.go.jp/kasumi/kasumi00824.html",
+"interval_min": 10,
+"order": 24,
+"route_label": "西浦",
+"core": "土浦港"
+}
+},
+{
+"id": "kasen_0121",
+"label": "麻生沖",
+"kind": "camera",
+"readings": [
+"アソーオキ"
+],
+"aliases": [],
+"attrs": {
+"river": "西浦",
+"office": "霞ヶ浦河川事務所",
+"pref": "茨城県行方市麻生沖",
+"lat": 35.9901895,
+"lng": 140.4888826,
+"geo_source": "nominatim:茨城県行方市",
+"image_url": "https://www.ktr.mlit.go.jp/river/cctv/C03120.jpg",
+"page_url": "https://www.ktr.mlit.go.jp/kasumi/kasumi00825.html",
+"interval_min": 10,
+"order": 25,
+"route_label": "西浦",
+"core": "麻生沖"
+}
+},
+{
+"id": "kasen_0122",
+"label": "湖心",
+"kind": "camera",
+"readings": [
+"コシン"
+],
+"aliases": [],
+"attrs": {
+"river": "西浦",
+"office": "霞ヶ浦河川事務所",
+"pref": "茨城県行方市井上湖心",
+"lat": 35.9901895,
+"lng": 140.4888826,
+"geo_source": "nominatim:茨城県行方市",
+"image_url": "https://www.ktr.mlit.go.jp/river/cctv/C03124.jpg",
+"page_url": "https://www.ktr.mlit.go.jp/kasumi/kasumi00826.html",
+"interval_min": 10,
+"order": 26,
+"route_label": "西浦",
+"core": "湖心"
+}
+},
+{
+"id": "kasen_0123",
+"label": "土浦出張所鉄塔",
+"kind": "camera",
+"readings": [
+"ツチウラシュッチョーショテットー"
+],
+"aliases": [],
+"attrs": {
+"river": "西浦",
+"office": "霞ヶ浦河川事務所",
+"pref": "茨城県土浦市蓮河原町",
+"lat": 36.072391,
+"lng": 140.215565,
+"geo_source": "nominatim:茨城県土浦市蓮河原町",
+"image_url": "https://www.ktr.mlit.go.jp/river/cctv/C03122.jpg",
+"page_url": "https://www.ktr.mlit.go.jp/kasumi/kasumi00846.html",
+"interval_min": 10,
+"order": 27,
+"route_label": "西浦",
+"core": "土浦出張所鉄塔"
+}
+},
+{
+"id": "kasen_0124",
+"label": "神宮橋",
+"kind": "camera",
+"readings": [
+"ジングーバシ"
+],
+"aliases": [],
+"attrs": {
+"river": "北浦",
+"office": "霞ヶ浦河川事務所",
+"pref": "茨城県鹿嶋市大船津",
+"lat": 35.9605055,
+"lng": 140.6065378,
+"geo_source": "nominatim:茨城県鹿嶋市 神宮橋",
+"image_url": "https://www.ktr.mlit.go.jp/river/cctv/C03145.jpg",
+"page_url": "https://www.ktr.mlit.go.jp/kasumi/kasumi00827.html",
+"interval_min": 10,
+"order": 0,
+"route_label": "北浦",
+"core": "神宮橋"
+}
+},
+{
+"id": "kasen_0125",
+"label": "田中川水門",
+"kind": "camera",
+"readings": [
+"タナカカワスイモン",
+"タナカカワ"
+],
+"aliases": [],
+"attrs": {
+"river": "北浦",
+"office": "霞ヶ浦河川事務所",
+"pref": "茨城県鉾田市烟田",
+"lat": 36.1640108,
+"lng": 140.3610135,
+"geo_source": "nominatim:茨城県鉾田市 田中川",
+"image_url": "https://www.ktr.mlit.go.jp/river/cctv/C04927.jpg",
+"page_url": "https://www.ktr.mlit.go.jp/kasumi/kasumi00828.html",
+"interval_min": 10,
+"order": 1,
+"route_label": "北浦",
+"core": "田中川"
+}
+},
+{
+"id": "kasen_0126",
+"label": "水原洲吠崎",
+"kind": "camera",
+"readings": [
+"ミズハラシューホエサキ"
+],
+"aliases": [],
+"attrs": {
+"river": "北浦",
+"office": "霞ヶ浦河川事務所",
+"pref": "茨城県潮来市水原",
+"lat": 35.9812682,
+"lng": 140.575593,
+"geo_source": "nominatim:茨城県潮来市水原",
+"image_url": "https://www.ktr.mlit.go.jp/river/cctv/C03156.jpg",
+"page_url": "https://www.ktr.mlit.go.jp/kasumi/kasumi00829.html",
+"interval_min": 10,
+"order": 2,
+"route_label": "北浦",
+"core": "水原洲吠崎"
+}
+},
+{
+"id": "kasen_0127",
+"label": "白浜",
+"kind": "camera",
+"readings": [
+"シラハマ"
+],
+"aliases": [],
+"attrs": {
+"river": "北浦",
+"office": "霞ヶ浦河川事務所",
+"pref": "茨城県行方市白浜",
+"lat": 36.0293449,
+"lng": 140.5559315,
+"geo_source": "nominatim:茨城県行方市 白浜",
+"image_url": "https://www.ktr.mlit.go.jp/river/cctv/C03149.jpg",
+"page_url": "https://www.ktr.mlit.go.jp/kasumi/kasumi00830.html",
+"interval_min": 10,
+"order": 3,
+"route_label": "北浦",
+"core": "白浜"
+}
+},
+{
+"id": "kasen_0128",
+"label": "霞ヶ浦河川事務所鉄塔",
+"kind": "camera",
+"readings": [
+"カスミガウラカセンジムショテットー"
+],
+"aliases": [],
+"attrs": {
+"river": "北利根川",
+"office": "霞ヶ浦河川事務所",
+"pref": "茨城県潮来市潮来",
+"lat": 35.9370775,
+"lng": 140.5495746,
+"geo_source": "nominatim:茨城県潮来市潮来",
+"image_url": "https://www.ktr.mlit.go.jp/river/cctv/C03118.jpg",
+"page_url": "https://www.ktr.mlit.go.jp/kasumi/kasumi00832.html",
+"interval_min": 10,
+"order": 0,
+"route_label": "北利根川",
+"core": "霞ヶ浦河川事務所鉄塔"
+}
+},
+{
+"id": "kasen_0129",
+"label": "前川水門",
+"kind": "camera",
+"readings": [
+"マエカワスイモン",
+"マエカワ"
+],
+"aliases": [],
+"attrs": {
+"river": "北利根川",
+"office": "霞ヶ浦河川事務所",
+"pref": "茨城県潮来市潮来",
+"lat": 35.945554,
+"lng": 140.582834,
+"geo_source": "nominatim:茨城県潮来市 前川",
+"image_url": "https://www.ktr.mlit.go.jp/river/cctv/C03129.jpg",
+"page_url": "https://www.ktr.mlit.go.jp/kasumi/kasumi00833.html",
+"interval_min": 10,
+"order": 1,
+"route_label": "北利根川",
+"core": "前川"
+}
+},
+{
+"id": "kasen_0130",
+"label": "加藤洲",
+"kind": "camera",
+"readings": [
+"カトーズ"
+],
+"aliases": [],
+"attrs": {
+"river": "北利根川",
+"office": "霞ヶ浦河川事務所",
+"pref": "千葉県香取市加藤洲",
+"lat": 35.929334,
+"lng": 140.549859,
+"geo_source": "nominatim:千葉県香取市 加藤洲",
+"image_url": "https://www.ktr.mlit.go.jp/river/cctv/C03164.jpg",
+"page_url": "https://www.ktr.mlit.go.jp/kasumi/kasumi00834.html",
+"interval_min": 10,
+"order": 2,
+"route_label": "北利根川",
+"core": "加藤洲"
+}
+},
+{
+"id": "kasen_0131",
+"label": "掘割川",
+"kind": "camera",
+"readings": [
+"ホリワリカワ"
+],
+"aliases": [],
+"attrs": {
+"river": "鰐川",
+"office": "霞ヶ浦河川事務所",
+"pref": "茨城県鹿嶋市鰐川",
+"lat": 35.9484835,
+"lng": 140.6139017,
+"geo_source": "nominatim:茨城県鹿嶋市鰐川",
+"image_url": "https://www.ktr.mlit.go.jp/river/cctv/C03166.jpg",
+"page_url": "https://www.ktr.mlit.go.jp/kasumi/kasumi00844.html",
+"interval_min": 10,
+"order": 0,
+"route_label": "鰐川",
+"core": "掘割川"
+}
+},
+{
+"id": "kasen_0132",
+"label": "トンボ公園",
+"kind": "camera",
+"readings": [
+"トンボコーエン"
+],
+"aliases": [],
+"attrs": {
+"river": "外浪逆浦",
+"office": "霞ヶ浦河川事務所",
+"pref": "茨城県潮来市徳島",
+"lat": 35.9248455,
+"lng": 140.6103309,
+"geo_source": "nominatim:茨城県潮来市徳島",
+"image_url": "https://www.ktr.mlit.go.jp/river/cctv/C03155.jpg",
+"page_url": "https://www.ktr.mlit.go.jp/kasumi/kasumi00845.html",
+"interval_min": 10,
+"order": 0,
+"route_label": "外浪逆浦",
+"core": "トンボ公園"
+}
+},
+{
+"id": "kasen_0133",
+"label": "新横利根閘門",
+"kind": "camera",
+"readings": [
+"シンヨコリコンコーモン"
+],
+"aliases": [],
+"attrs": {
+"river": "横利根川",
+"office": "霞ヶ浦河川事務所",
+"pref": "千葉県香取市大島",
+"lat": 35.953227,
+"lng": 140.509983,
+"geo_source": "nominatim:千葉県香取市大島",
+"image_url": "https://www.ktr.mlit.go.jp/river/cctv/C03130.jpg",
+"page_url": "https://www.ktr.mlit.go.jp/kasumi/kasumi00831.html",
+"interval_min": 10,
+"order": 0,
+"route_label": "横利根川",
+"core": "新横利根閘門"
+}
+},
+{
+"id": "kasen_0134",
+"label": "矢場川水門屋上",
+"kind": "camera",
+"readings": [
+"ヤバガワスイモンオクジョー",
+"ヤバガワ"
+],
+"aliases": [],
+"attrs": {
+"river": "矢場川",
+"office": "渡良瀬川河川事務所",
+"pref": "栃木県足利市野田町",
+"lat": 36.292662,
+"lng": 139.5098063,
+"geo_source": "nominatim:栃木県足利市野田町",
+"image_url": "https://www.ktr.mlit.go.jp/river/cctv/C01319.jpg",
+"page_url": "https://www.ktr.mlit.go.jp/watarase/watarase00410.html",
+"interval_min": 10,
+"order": 0,
+"route_label": "矢場川",
+"core": "矢場川"
+}
+},
+{
+"id": "kasen_0135",
+"label": "出流川水門",
+"kind": "camera",
+"readings": [
+"イズルガワスイモン",
+"イズルガワ"
+],
+"aliases": [],
+"attrs": {
+"river": "出流川",
+"office": "渡良瀬川河川事務所",
+"pref": "栃木県佐野市村上町",
+"lat": 36.343977,
+"lng": 139.531357,
+"geo_source": "nominatim:栃木県佐野市 出流川",
+"image_url": "https://www.ktr.mlit.go.jp/river/cctv/C05673.jpg",
+"page_url": "https://www.ktr.mlit.go.jp/watarase/watarase00410.html",
+"interval_min": 10,
+"order": 0,
+"route_label": "出流川",
+"core": "出流川"
+}
+},
+{
+"id": "kasen_0136",
+"label": "神子内川黒沢川合流点",
+"kind": "camera",
+"readings": [
+"カミコーチカワクロサワガワゴーリューテン"
+],
+"aliases": [],
+"attrs": {
+"river": "神子内川",
+"office": "渡良瀬川河川事務所",
+"pref": "栃木県日光市足尾町",
+"lat": 36.665745,
+"lng": 139.47447,
+"geo_source": "nominatim:栃木県日光市足尾町",
+"image_url": "https://www.ktr.mlit.go.jp/river/cctv/C01343.jpg",
+"page_url": "https://www.ktr.mlit.go.jp/watarase/watarase00412.html",
+"interval_min": 10,
+"order": 0,
+"route_label": "神子内川",
+"core": "神子内川黒沢川合流点"
+}
+},
+{
+"id": "kasen_0137",
+"label": "松木川上流",
+"kind": "camera",
+"readings": [
+"マツギガワジョーリュー"
+],
+"aliases": [],
+"attrs": {
+"river": "松木川",
+"office": "渡良瀬川河川事務所",
+"pref": "栃木県日光市足尾町",
+"lat": 36.6948591,
+"lng": 139.4067934,
+"geo_source": "nominatim:栃木県日光市 松木川",
+"image_url": "https://www.ktr.mlit.go.jp/river/cctv/C01344.jpg",
+"page_url": "https://www.ktr.mlit.go.jp/watarase/watarase00412.html",
+"interval_min": 10,
+"order": 0,
+"route_label": "松木川",
+"core": "松木川上流"
+}
+},
+{
+"id": "kasen_0138",
+"label": "足尾ダム左岸２",
+"kind": "camera",
+"readings": [
+"アシオダムサガンニ"
+],
+"aliases": [],
+"attrs": {
+"river": "その他",
+"office": "渡良瀬川河川事務所",
+"pref": "栃木県日光市足尾町",
+"lat": 36.665745,
+"lng": 139.47447,
+"geo_source": "nominatim:栃木県日光市足尾町",
+"image_url": "https://www.ktr.mlit.go.jp/river/cctv/C04999.jpg",
+"page_url": "https://www.ktr.mlit.go.jp/watarase/watarase00412.html",
+"interval_min": 10,
+"order": 0,
+"route_label": "その他",
+"core": "足尾ダム左岸２"
+}
+},
+{
+"id": "kasen_0139",
+"label": "足尾ダム右岸",
+"kind": "camera",
+"readings": [
+"アシオダムーガン"
+],
+"aliases": [],
+"attrs": {
+"river": "その他",
+"office": "渡良瀬川河川事務所",
+"pref": "栃木県日光市足尾町",
+"lat": 36.665745,
+"lng": 139.47447,
+"geo_source": "nominatim:栃木県日光市足尾町",
+"image_url": "https://www.ktr.mlit.go.jp/river/cctv/C01341.jpg",
+"page_url": "https://www.ktr.mlit.go.jp/watarase/watarase00412.html",
+"interval_min": 10,
+"order": 1,
+"route_label": "その他",
+"core": "足尾ダム右岸"
+}
+},
+{
+"id": "kasen_0140",
+"label": "通洞大橋",
+"kind": "camera",
+"readings": [
+"ツードーオーハシ"
+],
+"aliases": [],
+"attrs": {
+"river": "その他",
+"office": "渡良瀬川河川事務所",
+"pref": "栃木県日光市足尾町",
+"lat": 36.6334429,
+"lng": 139.4408616,
+"geo_source": "nominatim:栃木県日光市 通洞大橋",
+"image_url": "https://www.ktr.mlit.go.jp/river/cctv/C01351.jpg",
+"page_url": "https://www.ktr.mlit.go.jp/watarase/watarase00412.html",
+"interval_min": 10,
+"order": 2,
+"route_label": "その他",
+"core": "通洞大橋"
+}
+},
+{
+"id": "kasen_0141",
+"label": "上神梅砂防ダム",
+"kind": "camera",
+"readings": [
+"カミカンバイサボーダム"
+],
+"aliases": [],
+"attrs": {
+"river": "その他",
+"office": "渡良瀬川河川事務所",
+"pref": "群馬県みどり市大間々町上神梅",
+"lat": 36.475122,
+"lng": 139.251086,
+"geo_source": "nominatim:群馬県みどり市大間々町上神梅",
+"image_url": "https://www.ktr.mlit.go.jp/river/cctv/C01345.jpg",
+"page_url": "https://www.ktr.mlit.go.jp/watarase/watarase00412.html",
+"interval_min": 10,
+"order": 3,
+"route_label": "その他",
+"core": "上神梅砂防ダム"
+}
+},
+{
+"id": "kasen_0142",
+"label": "黒坂石川合流点",
+"kind": "camera",
+"readings": [
+"クロサカイシカワゴーリューテン"
+],
+"aliases": [],
+"attrs": {
+"river": "黒坂石川",
+"office": "渡良瀬川河川事務所",
+"pref": "群馬県みどり市東町沢入",
+"lat": 36.58305,
+"lng": 139.419236,
+"geo_source": "nominatim:群馬県みどり市東町沢入",
+"image_url": "https://www.ktr.mlit.go.jp/river/cctv/C01348.jpg",
+"page_url": "https://www.ktr.mlit.go.jp/watarase/watarase00412.html",
+"interval_min": 10,
+"order": 0,
+"route_label": "黒坂石川",
+"core": "黒坂石川合流点"
+}
+},
+{
+"id": "kasen_0143",
+"label": "小中川下流砂防堰堤",
+"kind": "camera",
+"readings": [
+"コナカガワカリューサボーエンテー"
+],
+"aliases": [
+"小中川下流砂防堤"
+],
+"attrs": {
+"river": "小中川",
+"office": "渡良瀬川河川事務所",
+"pref": "群馬県みどり市東町小中",
+"lat": 36.584002,
+"lng": 139.331763,
+"geo_source": "nominatim:群馬県みどり市東町小中",
+"image_url": "https://www.ktr.mlit.go.jp/river/cctv/C05681.jpg",
+"page_url": "https://www.ktr.mlit.go.jp/watarase/watarase00412.html",
+"interval_min": 10,
+"order": 0,
+"route_label": "小中川",
+"core": "小中川下流砂防堤"
+}
+},
+{
+"id": "kasen_0144",
+"label": "小黒川合流点",
+"kind": "camera",
+"readings": [
+"オグロガワゴーリューテン"
+],
+"aliases": [],
+"attrs": {
+"river": "小黒川",
+"office": "渡良瀬川河川事務所",
+"pref": "群馬県みどり市東町荻原",
+"lat": 36.518931,
+"lng": 139.297322,
+"geo_source": "nominatim:群馬県みどり市東町荻原",
+"image_url": "https://www.ktr.mlit.go.jp/river/cctv/C01382.jpg",
+"page_url": "https://www.ktr.mlit.go.jp/watarase/watarase00412.html",
+"interval_min": 10,
+"order": 0,
+"route_label": "小黒川",
+"core": "小黒川合流点"
+}
+},
+{
+"id": "kasen_0145",
+"label": "川口川下流砂防堰堤",
+"kind": "camera",
+"readings": [
+"カワグチガワシタルサボーエンテー"
+],
+"aliases": [
+"川口川下流砂防堤"
+],
+"attrs": {
+"river": "川口川",
+"office": "渡良瀬川河川事務所",
+"pref": "群馬県桐生市黒保根町",
+"lat": 36.502516,
+"lng": 139.28862,
+"geo_source": "nominatim:群馬県桐生市黒保根町",
+"image_url": "https://www.ktr.mlit.go.jp/river/cctv/C01350.jpg",
+"page_url": "https://www.ktr.mlit.go.jp/watarase/watarase00412.html",
+"interval_min": 10,
+"order": 0,
+"route_label": "川口川",
+"core": "川口川下流砂防堤"
+}
+},
+{
+"id": "kasen_0146",
+"label": "栃久保沢砂防堰堤",
+"kind": "camera",
+"readings": [
+"トチクボサワサボーエンテー"
+],
+"aliases": [
+"栃久保沢砂防堤"
+],
+"attrs": {
+"river": "栃久保沢",
+"office": "渡良瀬川河川事務所",
+"pref": "群馬県桐生市川内町",
+"lat": 36.4057374,
+"lng": 139.3308366,
+"geo_source": "nominatim:群馬県桐生市",
+"image_url": "https://www.ktr.mlit.go.jp/river/cctv/C05679.jpg",
+"page_url": "https://www.ktr.mlit.go.jp/watarase/watarase00412.html",
+"interval_min": 10,
+"order": 0,
+"route_label": "栃久保沢",
+"core": "栃久保沢砂防堤"
+}
+},
+{
+"id": "kasen_0147",
+"label": "寺尾",
+"kind": "camera",
+"readings": [
+"テラオ"
+],
+"aliases": [],
+"attrs": {
+"river": "烏川",
+"office": "高崎河川国道事務所",
+"pref": "群馬県",
+"lat": 36.52198,
+"lng": 139.033483,
+"geo_source": "nominatim:群馬県",
+"image_url": "https://www.ktr.mlit.go.jp/river/cctv/C02023.jpg",
+"page_url": "https://www.ktr.mlit.go.jp/takasaki/takasaki00486.html",
+"interval_min": 10,
+"order": 0,
+"route_label": "烏川",
+"core": "寺尾"
+}
+},
+{
+"id": "kasen_0148",
+"label": "岩鼻",
+"kind": "camera",
+"readings": [
+"イワハナ"
+],
+"aliases": [],
+"attrs": {
+"river": "烏川",
+"office": "高崎河川国道事務所",
+"pref": "群馬県",
+"lat": 36.52198,
+"lng": 139.033483,
+"geo_source": "nominatim:群馬県",
+"image_url": "https://www.ktr.mlit.go.jp/river/cctv/C02019.jpg",
+"page_url": "https://www.ktr.mlit.go.jp/takasaki/takasaki00489.html",
+"interval_min": 10,
+"order": 1,
+"route_label": "烏川",
+"core": "岩鼻"
+}
+},
+{
+"id": "kasen_0149",
+"label": "下茂木",
+"kind": "camera",
+"readings": [
+"シモモギ"
+],
+"aliases": [],
+"attrs": {
+"river": "烏川",
+"office": "高崎河川国道事務所",
+"pref": "群馬県",
+"lat": 36.52198,
+"lng": 139.033483,
+"geo_source": "nominatim:群馬県",
+"image_url": "https://www.ktr.mlit.go.jp/river/cctv/C02056.jpg",
+"page_url": "https://www.ktr.mlit.go.jp/takasaki/takasaki00490.html",
+"interval_min": 10,
+"order": 2,
+"route_label": "烏川",
+"core": "下茂木"
+}
+},
+{
+"id": "kasen_0150",
+"label": "八町河原",
+"kind": "camera",
+"readings": [
+"ハッチョーガワラ"
+],
+"aliases": [],
+"attrs": {
+"river": "烏川",
+"office": "高崎河川国道事務所",
+"pref": "群馬県",
+"lat": 36.52198,
+"lng": 139.033483,
+"geo_source": "nominatim:群馬県",
+"image_url": "https://www.ktr.mlit.go.jp/river/cctv/C02025.jpg",
+"page_url": "https://www.ktr.mlit.go.jp/takasaki/takasaki00491.html",
+"interval_min": 10,
+"order": 3,
+"route_label": "烏川",
+"core": "八町河原"
+}
+},
+{
+"id": "kasen_0151",
+"label": "城南",
+"kind": "camera",
+"readings": [
+"ジョーナン"
+],
+"aliases": [],
+"attrs": {
+"river": "烏川",
+"office": "高崎河川国道事務所",
+"pref": "群馬県",
+"lat": 36.52198,
+"lng": 139.033483,
+"geo_source": "nominatim:群馬県",
+"image_url": "https://www.ktr.mlit.go.jp/river/cctv/C02030.jpg",
+"page_url": "https://www.ktr.mlit.go.jp/takasaki/takasaki00485.html",
+"interval_min": 10,
+"order": 4,
+"route_label": "烏川",
+"core": "城南"
+}
+},
+{
+"id": "kasen_0152",
+"label": "山名",
+"kind": "camera",
+"readings": [
+"ヤマナ"
+],
+"aliases": [],
+"attrs": {
+"river": "鏑川",
+"office": "高崎河川国道事務所",
+"pref": "群馬県",
+"lat": 36.52198,
+"lng": 139.033483,
+"geo_source": "nominatim:群馬県",
+"image_url": "https://www.ktr.mlit.go.jp/river/cctv/C02042.jpg",
+"page_url": "https://www.ktr.mlit.go.jp/takasaki/takasaki00492.html",
+"interval_min": 10,
+"order": 0,
+"route_label": "鏑川",
+"core": "山名"
+}
+},
+{
+"id": "kasen_0153",
+"label": "阿久津",
+"kind": "camera",
+"readings": [
+"アクツ"
+],
+"aliases": [],
+"attrs": {
+"river": "鏑川",
+"office": "高崎河川国道事務所",
+"pref": "群馬県",
+"lat": 36.52198,
+"lng": 139.033483,
+"geo_source": "nominatim:群馬県",
+"image_url": "https://www.ktr.mlit.go.jp/river/cctv/C03604.jpg",
+"page_url": "https://www.ktr.mlit.go.jp/takasaki/takasaki00493.html",
+"interval_min": 10,
+"order": 1,
+"route_label": "鏑川",
+"core": "阿久津"
+}
+},
+{
+"id": "kasen_0154",
+"label": "若泉",
+"kind": "camera",
+"readings": [
+"ワカイズミ"
+],
+"aliases": [],
+"attrs": {
+"river": "神流川",
+"office": "高崎河川国道事務所",
+"pref": "群馬県",
+"lat": 36.52198,
+"lng": 139.033483,
+"geo_source": "nominatim:群馬県",
+"image_url": "https://www.ktr.mlit.go.jp/river/cctv/C02039.jpg",
+"page_url": "https://www.ktr.mlit.go.jp/takasaki/takasaki00494.html",
+"interval_min": 10,
+"order": 0,
+"route_label": "神流川",
+"core": "若泉"
+}
+},
+{
+"id": "kasen_0155",
+"label": "肥土",
+"kind": "camera",
+"readings": [
+"ヒド"
+],
+"aliases": [],
+"attrs": {
+"river": "神流川",
+"office": "高崎河川国道事務所",
+"pref": "群馬県",
+"lat": 36.52198,
+"lng": 139.033483,
+"geo_source": "nominatim:群馬県",
+"image_url": "https://www.ktr.mlit.go.jp/river/cctv/C02060.jpg",
+"page_url": "https://www.ktr.mlit.go.jp/takasaki/takasaki00495.html",
+"interval_min": 10,
+"order": 1,
+"route_label": "神流川",
+"core": "肥土"
+}
+},
+{
+"id": "kasen_0156",
+"label": "治水橋",
+"kind": "camera",
+"readings": [
+"チスイキョー"
+],
+"aliases": [],
+"attrs": {
+"river": "荒川",
+"office": "荒川上流河川事務所",
+"pref": "埼玉県さいたま市飯田新田",
+"lat": 35.8925588,
+"lng": 139.5638067,
+"geo_source": "nominatim:埼玉県さいたま市 治水橋",
+"image_url": "https://www.ktr.mlit.go.jp/arajo/realtime/cam/cam02.jpg",
+"page_url": "https://www.ktr.mlit.go.jp/arajo/live/camera02.html",
+"interval_min": 10,
+"order": 0,
+"route_label": "荒川",
+"core": "治水橋"
+}
+},
+{
+"id": "kasen_0157",
+"label": "ＪＲ川越線",
+"kind": "camera",
+"readings": [
+"ジェーアールカワゴエセン"
+],
+"aliases": [],
+"attrs": {
+"river": "荒川",
+"office": "荒川上流河川事務所",
+"pref": "埼玉県川越市古谷本郷",
+"lat": 35.9052476,
+"lng": 139.5393167,
+"geo_source": "nominatim:埼玉県川越市古谷本郷",
+"image_url": "https://www.ktr.mlit.go.jp/arajo/realtime/cam/cam03.jpg",
+"page_url": "https://www.ktr.mlit.go.jp/arajo/live/camera03.html",
+"interval_min": 10,
+"order": 1,
+"route_label": "荒川",
+"core": "ＪＲ川越線"
+}
+},
+{
+"id": "kasen_0158",
+"label": "上江橋",
+"kind": "camera",
+"readings": [
+"ウワエキョー"
+],
+"aliases": [],
+"attrs": {
+"river": "荒川",
+"office": "荒川上流河川事務所",
+"pref": "埼玉県川越市古谷本郷",
+"lat": 35.9154074,
+"lng": 139.547142,
+"geo_source": "nominatim:埼玉県川越市 上江橋",
+"image_url": "https://www.ktr.mlit.go.jp/arajo/realtime/cam/cam04.jpg",
+"page_url": "https://www.ktr.mlit.go.jp/arajo/live/camera04.html",
+"interval_min": 10,
+"order": 2,
+"route_label": "荒川",
+"core": "上江橋"
+}
+},
+{
+"id": "kasen_0159",
+"label": "武蔵水路合流点(糠田橋)",
+"kind": "camera",
+"readings": [
+"ムサシスイロゴーリューテンヌカタキョー",
+"ムサシスイロゴーリューテン"
+],
+"aliases": [],
+"attrs": {
+"river": "荒川",
+"office": "荒川上流河川事務所",
+"pref": "埼玉県吉見町明秋",
+"lat": 36.0544565,
+"lng": 139.4790563,
+"geo_source": "nominatim:埼玉県吉見町明秋",
+"image_url": "https://www.ktr.mlit.go.jp/arajo/realtime/cam/cam06.jpg",
+"page_url": "https://www.ktr.mlit.go.jp/arajo/live/camera06.html",
+"interval_min": 10,
+"order": 3,
+"route_label": "荒川",
+"core": "武蔵水路合流点"
+}
+},
+{
+"id": "kasen_0160",
+"label": "大芦橋",
+"kind": "camera",
+"readings": [
+"オーアシキョー"
+],
+"aliases": [],
+"attrs": {
+"river": "荒川",
+"office": "荒川上流河川事務所",
+"pref": "埼玉県熊谷市小八林",
+"lat": 36.0865031,
+"lng": 139.4375075,
+"geo_source": "nominatim:埼玉県熊谷市 大芦橋",
+"image_url": "https://www.ktr.mlit.go.jp/arajo/realtime/cam/cam07.jpg",
+"page_url": "https://www.ktr.mlit.go.jp/arajo/live/camera07.html",
+"interval_min": 10,
+"order": 4,
+"route_label": "荒川",
+"core": "大芦橋"
+}
+},
+{
+"id": "kasen_0161",
+"label": "荒川大橋",
+"kind": "camera",
+"readings": [
+"アラカワオーハシ"
+],
+"aliases": [],
+"attrs": {
+"river": "荒川",
+"office": "荒川上流河川事務所",
+"pref": "埼玉県熊谷市榎町",
+"lat": 36.1338149,
+"lng": 139.3784298,
+"geo_source": "nominatim:埼玉県熊谷市 荒川大橋",
+"image_url": "https://www.ktr.mlit.go.jp/arajo/realtime/cam/cam08.jpg",
+"page_url": "https://www.ktr.mlit.go.jp/arajo/live/camera08.html",
+"interval_min": 10,
+"order": 5,
+"route_label": "荒川",
+"core": "荒川大橋"
+}
+},
+{
+"id": "kasen_0162",
+"label": "笹目橋",
+"kind": "camera",
+"readings": [
+"ササメキョー"
+],
+"aliases": [],
+"attrs": {
+"river": "荒川",
+"office": "荒川上流河川事務所",
+"pref": "埼玉県和光市下新倉",
+"lat": 35.7993203,
+"lng": 139.6467355,
+"geo_source": "nominatim:埼玉県和光市 笹目橋",
+"image_url": "https://www.ktr.mlit.go.jp/arajo/realtime/cam/cam20.jpg",
+"page_url": "https://www.ktr.mlit.go.jp/arajo/live/camera20.html",
+"interval_min": 10,
+"order": 6,
+"route_label": "荒川",
+"core": "笹目橋"
+}
+},
+{
+"id": "kasen_0163",
+"label": "羽根倉橋",
+"kind": "camera",
+"readings": [
+"ハネクラハシ"
+],
+"aliases": [],
+"attrs": {
+"river": "荒川",
+"office": "荒川上流河川事務所",
+"pref": "埼玉県志木市上宗岡",
+"lat": 35.8560152,
+"lng": 139.5905694,
+"geo_source": "nominatim:埼玉県志木市 羽根倉橋",
+"image_url": "https://www.ktr.mlit.go.jp/arajo/realtime/cam/cam21.jpg",
+"page_url": "https://www.ktr.mlit.go.jp/arajo/live/camera21.html",
+"interval_min": 10,
+"order": 7,
+"route_label": "荒川",
+"core": "羽根倉橋"
+}
+},
+{
+"id": "kasen_0164",
+"label": "久下橋",
+"kind": "camera",
+"readings": [
+"クゲキョー"
+],
+"aliases": [],
+"attrs": {
+"river": "荒川",
+"office": "荒川上流河川事務所",
+"pref": "埼玉県熊谷市久下",
+"lat": 36.1183578,
+"lng": 139.4079909,
+"geo_source": "nominatim:埼玉県熊谷市 久下橋",
+"image_url": "https://www.ktr.mlit.go.jp/arajo/realtime/cam/cam22.jpg",
+"page_url": "https://www.ktr.mlit.go.jp/arajo/live/camera22.html",
+"interval_min": 10,
+"order": 8,
+"route_label": "荒川",
+"core": "久下橋"
+}
+},
+{
+"id": "kasen_0165",
+"label": "熊谷大橋",
+"kind": "camera",
+"readings": [
+"クマガイオーハシ"
+],
+"aliases": [],
+"attrs": {
+"river": "荒川",
+"office": "荒川上流河川事務所",
+"pref": "埼玉県熊谷市押切",
+"lat": 36.1418461,
+"lng": 139.346966,
+"geo_source": "nominatim:埼玉県熊谷市 熊谷大橋",
+"image_url": "https://www.ktr.mlit.go.jp/arajo/realtime/cam/cam23.jpg",
+"page_url": "https://www.ktr.mlit.go.jp/arajo/live/camera23.html",
+"interval_min": 10,
+"order": 9,
+"route_label": "荒川",
+"core": "熊谷大橋"
+}
+},
+{
+"id": "kasen_0166",
+"label": "植松橋",
+"kind": "camera",
+"readings": [
+"ウエマツキョー"
+],
+"aliases": [],
+"attrs": {
+"river": "荒川",
+"office": "荒川上流河川事務所",
+"pref": "埼玉県深谷市川本町本田",
+"lat": 36.1344559,
+"lng": 139.2791252,
+"geo_source": "nominatim:埼玉県深谷市 植松橋",
+"image_url": "https://www.ktr.mlit.go.jp/arajo/realtime/cam/cam24.jpg",
+"page_url": "https://www.ktr.mlit.go.jp/arajo/live/camera24.html",
+"interval_min": 10,
+"order": 10,
+"route_label": "荒川",
+"core": "植松橋"
+}
+},
+{
+"id": "kasen_0167",
+"label": "寄居水位観測所",
+"kind": "camera",
+"readings": [
+"ヨリイスイイカンソクショ",
+"ヨリイ"
+],
+"aliases": [],
+"attrs": {
+"river": "荒川",
+"office": "荒川上流河川事務所",
+"pref": "埼玉県寄居町寄居",
+"lat": 36.1177399,
+"lng": 139.1939396,
+"geo_source": "nominatim:埼玉県寄居町 寄居",
+"image_url": "https://www.ktr.mlit.go.jp/arajo/realtime/cam/cam25.jpg",
+"page_url": "https://www.ktr.mlit.go.jp/arajo/live/camera25.html",
+"interval_min": 10,
+"order": 11,
+"route_label": "荒川",
+"core": "寄居"
+}
+},
+{
+"id": "kasen_0168",
+"label": "第一調節池(越流提)",
+"kind": "camera",
+"readings": [
+"ダイイチチョーセツチエツリューヒサゲ",
+"ダイイチチョーセツチ"
+],
+"aliases": [],
+"attrs": {
+"river": "荒川",
+"office": "荒川上流河川事務所",
+"pref": "埼玉県さいたま市桜区上大久保",
+"lat": 36.2470991,
+"lng": 139.6587781,
+"geo_source": "nominatim:埼玉県さいたま市 第一調節池",
+"image_url": "https://www.ktr.mlit.go.jp/arajo/realtime/cam/cam28.jpg",
+"page_url": "https://www.ktr.mlit.go.jp/arajo/live/camera28.html",
+"interval_min": 10,
+"order": 12,
+"route_label": "荒川",
+"core": "第一調節池"
+}
+},
+{
+"id": "kasen_0169",
+"label": "第一調節池(警報塔)",
+"kind": "camera",
+"readings": [
+"ダイイチチョーセツチケーホートー",
+"ダイイチチョーセツチ"
+],
+"aliases": [],
+"attrs": {
+"river": "荒川",
+"office": "荒川上流河川事務所",
+"pref": "埼玉県戸田市重瀬",
+"lat": 35.824334,
+"lng": 139.626518,
+"geo_source": "nominatim:埼玉県戸田市重瀬",
+"image_url": "https://www.ktr.mlit.go.jp/arajo/realtime/cam/cam29.jpg",
+"page_url": "https://www.ktr.mlit.go.jp/arajo/live/camera29.html",
+"interval_min": 10,
+"order": 13,
+"route_label": "荒川",
+"core": "第一調節池"
+}
+},
+{
+"id": "kasen_0170",
+"label": "南畑水質観測所",
+"kind": "camera",
+"readings": [
+"ミナミハタスイシツカンソクショ",
+"ミナミハタスイシツ"
+],
+"aliases": [],
+"attrs": {
+"river": "荒川",
+"office": "荒川上流河川事務所",
+"pref": "埼玉県富士見市南畑新田",
+"lat": 35.8635123,
+"lng": 139.575833,
+"geo_source": "nominatim:埼玉県富士見市南畑新田",
+"image_url": "https://www.ktr.mlit.go.jp/arajo/realtime/cam/cam01.jpg",
+"page_url": "https://www.ktr.mlit.go.jp/arajo/live/camera01.html",
+"interval_min": 10,
+"order": 14,
+"route_label": "荒川",
+"core": "南畑水質"
+}
+},
+{
+"id": "kasen_0171",
+"label": "新荒川大橋",
+"kind": "camera",
+"readings": [
+"シンアラカワオーハシ"
+],
+"aliases": [],
+"attrs": {
+"river": "荒川",
+"office": "荒川下流河川事務所",
+"pref": "東京都",
+"lat": 35.6768601,
+"lng": 139.7638947,
+"geo_source": "nominatim:東京都",
+"image_url": "https://www.ktr.mlit.go.jp/arage/live-camera/shinarakawa.jpg",
+"page_url": "https://www.ktr.mlit.go.jp/arage/arage00206.html",
+"interval_min": 1,
+"order": 15,
+"route_label": "荒川",
+"core": "新荒川大橋"
+}
+},
+{
+"id": "kasen_0172",
+"label": "岩淵水門",
+"kind": "camera",
+"readings": [
+"イワブチスイモン",
+"イワブチ"
+],
+"aliases": [],
+"attrs": {
+"river": "荒川",
+"office": "荒川下流河川事務所",
+"pref": "東京都",
+"lat": 35.6768601,
+"lng": 139.7638947,
+"geo_source": "nominatim:東京都",
+"image_url": "https://www.ktr.mlit.go.jp/arage/live-camera/iwabuchi.jpg",
+"page_url": "https://www.ktr.mlit.go.jp/arage/arage00207.html",
+"interval_min": 1,
+"order": 16,
+"route_label": "荒川",
+"core": "岩淵"
+}
+},
+{
+"id": "kasen_0173",
+"label": "五色桜大橋",
+"kind": "camera",
+"readings": [
+"ゴシキサクラオーハシ"
+],
+"aliases": [],
+"attrs": {
+"river": "荒川",
+"office": "荒川下流河川事務所",
+"pref": "東京都",
+"lat": 35.6768601,
+"lng": 139.7638947,
+"geo_source": "nominatim:東京都",
+"image_url": "https://www.ktr.mlit.go.jp/arage/live-camera/goshikizakura.jpg",
+"page_url": "https://www.ktr.mlit.go.jp/arage/arage00208.html",
+"interval_min": 1,
+"order": 17,
+"route_label": "荒川",
+"core": "五色桜大橋"
+}
+},
+{
+"id": "kasen_0174",
+"label": "西新井橋上流",
+"kind": "camera",
+"readings": [
+"ニシアライキョージョーリュー"
+],
+"aliases": [],
+"attrs": {
+"river": "荒川",
+"office": "荒川下流河川事務所",
+"pref": "東京都",
+"lat": 35.6768601,
+"lng": 139.7638947,
+"geo_source": "nominatim:東京都",
+"image_url": "https://www.ktr.mlit.go.jp/arage/live-camera/nishiarai.jpg",
+"page_url": "https://www.ktr.mlit.go.jp/arage/arage00209.html",
+"interval_min": 1,
+"order": 18,
+"route_label": "荒川",
+"core": "西新井橋上流"
+}
+},
+{
+"id": "kasen_0175",
+"label": "堀切緊急用船着場",
+"kind": "camera",
+"readings": [
+"ホリキリキンキューヨーフナツキバ"
+],
+"aliases": [],
+"attrs": {
+"river": "荒川",
+"office": "荒川下流河川事務所",
+"pref": "東京都",
+"lat": 35.6768601,
+"lng": 139.7638947,
+"geo_source": "nominatim:東京都",
+"image_url": "https://www.ktr.mlit.go.jp/arage/live-camera/horikiri.jpg",
+"page_url": "https://www.ktr.mlit.go.jp/arage/arage00210.html",
+"interval_min": 1,
+"order": 19,
+"route_label": "荒川",
+"core": "堀切緊急用船着場"
+}
+},
+{
+"id": "kasen_0176",
+"label": "平井大橋上流",
+"kind": "camera",
+"readings": [
+"ヒライオーハシジョーリュー"
+],
+"aliases": [],
+"attrs": {
+"river": "荒川",
+"office": "荒川下流河川事務所",
+"pref": "東京都",
+"lat": 35.6768601,
+"lng": 139.7638947,
+"geo_source": "nominatim:東京都",
+"image_url": "https://www.ktr.mlit.go.jp/arage/live-camera/hirai.jpg",
+"page_url": "https://www.ktr.mlit.go.jp/arage/arage00211.html",
+"interval_min": 1,
+"order": 20,
+"route_label": "荒川",
+"core": "平井大橋上流"
+}
+},
+{
+"id": "kasen_0177",
+"label": "首都高7号線下流",
+"kind": "camera",
+"readings": [
+"シュトダカナナゴーセンカリュー"
+],
+"aliases": [],
+"attrs": {
+"river": "荒川",
+"office": "荒川下流河川事務所",
+"pref": "東京都",
+"lat": 35.6768601,
+"lng": 139.7638947,
+"geo_source": "nominatim:東京都",
+"image_url": "https://www.ktr.mlit.go.jp/arage/live-camera/shutoko7.jpg",
+"page_url": "https://www.ktr.mlit.go.jp/arage/arage00212.html",
+"interval_min": 1,
+"order": 21,
+"route_label": "荒川",
+"core": "首都高7号線下流"
+}
+},
+{
+"id": "kasen_0178",
+"label": "小松川緊急用船着場",
+"kind": "camera",
+"readings": [
+"コマツガワキンキューヨーフナツキバ"
+],
+"aliases": [],
+"attrs": {
+"river": "荒川",
+"office": "荒川下流河川事務所",
+"pref": "東京都",
+"lat": 35.6768601,
+"lng": 139.7638947,
+"geo_source": "nominatim:東京都",
+"image_url": "https://www.ktr.mlit.go.jp/arage/live-camera/komatsugawa.jpg",
+"page_url": "https://www.ktr.mlit.go.jp/arage/arage00213.html",
+"interval_min": 1,
+"order": 22,
+"route_label": "荒川",
+"core": "小松川緊急用船着場"
+}
+},
+{
+"id": "kasen_0179",
+"label": "新砂緊急用船着場",
+"kind": "camera",
+"readings": [
+"シンスナキンキューヨーフナツキバ"
+],
+"aliases": [],
+"attrs": {
+"river": "荒川",
+"office": "荒川下流河川事務所",
+"pref": "東京都",
+"lat": 35.6768601,
+"lng": 139.7638947,
+"geo_source": "nominatim:東京都",
+"image_url": "https://www.ktr.mlit.go.jp/arage/live-camera/shinsuna.jpg",
+"page_url": "https://www.ktr.mlit.go.jp/arage/arage00214.html",
+"interval_min": 1,
+"order": 23,
+"route_label": "荒川",
+"core": "新砂緊急用船着場"
+}
+},
+{
+"id": "kasen_0180",
+"label": "岩淵水門（上）水位観測所",
+"kind": "camera",
+"readings": [
+"イワブチスイモンウエスイイカンソクショ",
+"イワブチ"
+],
+"aliases": [],
+"attrs": {
+"river": "荒川",
+"office": "荒川下流河川事務所",
+"pref": "東京都",
+"lat": 35.6768601,
+"lng": 139.7638947,
+"geo_source": "nominatim:東京都",
+"image_url": "https://www.ktr.mlit.go.jp/arage/live-camera/iwabuchikami.jpg",
+"page_url": "https://www.ktr.mlit.go.jp/arage/arage00563.html",
+"interval_min": 1,
+"order": 24,
+"route_label": "荒川",
+"core": "岩淵"
+}
+},
+{
+"id": "kasen_0181",
+"label": "笹目橋(2)",
+"kind": "camera",
+"readings": [
+"ササメキョーニ",
+"ササメキョー"
+],
+"aliases": [],
+"attrs": {
+"river": "荒川",
+"office": "荒川下流河川事務所",
+"pref": "東京都/埼玉県",
+"lat": 35.7619768,
+"lng": 139.5188835,
+"geo_source": "nominatim:東京都/埼玉県",
+"image_url": "https://www.ktr.mlit.go.jp/arage/live-camera/sasame.jpg",
+"page_url": "https://www.ktr.mlit.go.jp/arage/arage00197.html",
+"interval_min": 1,
+"order": 25,
+"route_label": "荒川",
+"core": "笹目橋"
+}
+},
+{
+"id": "kasen_0182",
+"label": "神明堰",
+"kind": "camera",
+"readings": [
+"シンメーセキ",
+"シンメー"
+],
+"aliases": [],
+"attrs": {
+"river": "市野川",
+"office": "荒川上流河川事務所",
+"pref": "埼玉県川島町東野",
+"lat": 34.8829839,
+"lng": 136.9239122,
+"geo_source": "nominatim:埼玉県川島町 神明堰",
+"image_url": "https://www.ktr.mlit.go.jp/arajo/realtime/cam/cam05.jpg",
+"page_url": "https://www.ktr.mlit.go.jp/arajo/live/camera05.html",
+"interval_min": 10,
+"order": 0,
+"route_label": "市野川",
+"core": "神明"
+}
+},
+{
+"id": "kasen_0183",
+"label": "菅間水位観測所",
+"kind": "camera",
+"readings": [
+"スガマスイイカンソクショ",
+"スガマ"
+],
+"aliases": [],
+"attrs": {
+"river": "入間川",
+"office": "荒川上流河川事務所",
+"pref": "埼玉県川越市芳野台",
+"lat": 35.86458,
+"lng": 139.5624149,
+"geo_source": "nominatim:埼玉県川越市 菅間",
+"image_url": "https://www.ktr.mlit.go.jp/arajo/realtime/cam/cam10.jpg",
+"page_url": "https://www.ktr.mlit.go.jp/arajo/live/camera10.html",
+"interval_min": 10,
+"order": 0,
+"route_label": "入間川",
+"core": "菅間"
+}
+},
+{
+"id": "kasen_0184",
+"label": "小ヶ谷水位観測所",
+"kind": "camera",
+"readings": [
+"ショーケタニスイイカンソクショ",
+"ショーケタニ"
+],
+"aliases": [],
+"attrs": {
+"river": "入間川",
+"office": "荒川上流河川事務所",
+"pref": "埼玉県川越市小ヶ谷",
+"lat": 35.921487,
+"lng": 139.457673,
+"geo_source": "nominatim:埼玉県川越市 小ヶ谷",
+"image_url": "https://www.ktr.mlit.go.jp/arajo/realtime/cam/cam11.jpg",
+"page_url": "https://www.ktr.mlit.go.jp/arajo/live/camera11.html",
+"interval_min": 10,
+"order": 1,
+"route_label": "入間川",
+"core": "小ヶ谷"
+}
+},
+{
+"id": "kasen_0185",
+"label": "初雁橋",
+"kind": "camera",
+"readings": [
+"ハツカリキョー"
+],
+"aliases": [],
+"attrs": {
+"river": "入間川",
+"office": "荒川上流河川事務所",
+"pref": "埼玉県川越市的場",
+"lat": 35.9189686,
+"lng": 139.4520048,
+"geo_source": "nominatim:埼玉県川越市 初雁橋",
+"image_url": "https://www.ktr.mlit.go.jp/arajo/realtime/cam/cam12.jpg",
+"page_url": "https://www.ktr.mlit.go.jp/arajo/live/camera12.html",
+"interval_min": 10,
+"order": 2,
+"route_label": "入間川",
+"core": "初雁橋"
+}
+},
+{
+"id": "kasen_0186",
+"label": "とげ橋",
+"kind": "camera",
+"readings": [
+"トゲキョー"
+],
+"aliases": [],
+"attrs": {
+"river": "小畔川",
+"office": "荒川上流河川事務所",
+"pref": "埼玉県川越市小坂",
+"lat": 35.9499364,
+"lng": 139.4535609,
+"geo_source": "nominatim:埼玉県川越市小坂",
+"image_url": "https://www.ktr.mlit.go.jp/arajo/realtime/cam/cam13.jpg",
+"page_url": "https://www.ktr.mlit.go.jp/arajo/live/camera13.html",
+"interval_min": 10,
+"order": 0,
+"route_label": "小畔川",
+"core": "とげ橋"
+}
+},
+{
+"id": "kasen_0187",
+"label": "八幡橋",
+"kind": "camera",
+"readings": [
+"ハチマンバシ"
+],
+"aliases": [],
+"attrs": {
+"river": "小畔川",
+"office": "荒川上流河川事務所",
+"pref": "埼玉県川越市大字小堤字八幡",
+"lat": 35.9353773,
+"lng": 139.4423959,
+"geo_source": "nominatim:埼玉県川越市 八幡橋",
+"image_url": "https://www.ktr.mlit.go.jp/arajo/realtime/cam/cam14.jpg",
+"page_url": "https://www.ktr.mlit.go.jp/arajo/live/camera14.html",
+"interval_min": 10,
+"order": 1,
+"route_label": "小畔川",
+"core": "八幡橋"
+}
+},
+{
+"id": "kasen_0188",
+"label": "坂戸水位観測所",
+"kind": "camera",
+"readings": [
+"サカドスイイカンソクショ",
+"サカド"
+],
+"aliases": [],
+"attrs": {
+"river": "高麗川",
+"office": "荒川上流河川事務所",
+"pref": "埼玉県坂戸市上吉田",
+"lat": 35.9569488,
+"lng": 139.3939065,
+"geo_source": "nominatim:埼玉県坂戸市 坂戸",
+"image_url": "https://www.ktr.mlit.go.jp/arajo/realtime/cam/cam15.jpg",
+"page_url": "https://www.ktr.mlit.go.jp/arajo/live/camera15.html",
+"interval_min": 10,
+"order": 0,
+"route_label": "高麗川",
+"core": "坂戸"
+}
+},
+{
+"id": "kasen_0189",
+"label": "高麗川橋",
+"kind": "camera",
+"readings": [
+"コーライガワキョー"
+],
+"aliases": [],
+"attrs": {
+"river": "高麗川",
+"office": "荒川上流河川事務所",
+"pref": "埼玉県坂戸市中里",
+"lat": 35.9604031,
+"lng": 139.3812578,
+"geo_source": "nominatim:埼玉県坂戸市 高麗川橋",
+"image_url": "https://www.ktr.mlit.go.jp/arajo/realtime/cam/cam27.jpg",
+"page_url": "https://www.ktr.mlit.go.jp/arajo/live/camera27.html",
+"interval_min": 10,
+"order": 1,
+"route_label": "高麗川",
+"core": "高麗川橋"
+}
+},
+{
+"id": "kasen_0190",
+"label": "野本水位観測所",
+"kind": "camera",
+"readings": [
+"ノモトスイイカンソクショ",
+"ノモト"
+],
+"aliases": [],
+"attrs": {
+"river": "都幾川",
+"office": "荒川上流河川事務所",
+"pref": "埼玉県東松山市下押垂",
+"lat": 36.0205901,
+"lng": 139.4233575,
+"geo_source": "nominatim:埼玉県東松山市 野本",
+"image_url": "https://www.ktr.mlit.go.jp/arajo/realtime/cam/cam16.jpg",
+"page_url": "https://www.ktr.mlit.go.jp/arajo/live/camera16.html",
+"interval_min": 10,
+"order": 0,
+"route_label": "都幾川",
+"core": "野本"
+}
+},
+{
+"id": "kasen_0191",
+"label": "東松山橋",
+"kind": "camera",
+"readings": [
+"ヒガシマツヤマキョー"
+],
+"aliases": [],
+"attrs": {
+"river": "都幾川",
+"office": "荒川上流河川事務所",
+"pref": "埼玉県東松山市下押垂",
+"lat": 36.0114194,
+"lng": 139.400645,
+"geo_source": "nominatim:埼玉県東松山市 東松山橋",
+"image_url": "https://www.ktr.mlit.go.jp/arajo/realtime/cam/cam17.jpg",
+"page_url": "https://www.ktr.mlit.go.jp/arajo/live/camera17.html",
+"interval_min": 10,
+"order": 1,
+"route_label": "都幾川",
+"core": "東松山橋"
+}
+},
+{
+"id": "kasen_0192",
+"label": "葛川合流点",
+"kind": "camera",
+"readings": [
+"クズカワゴーリューテン"
+],
+"aliases": [],
+"attrs": {
+"river": "葛川",
+"office": "荒川上流河川事務所",
+"pref": "埼玉県坂戸市新ケ谷",
+"lat": 35.980413,
+"lng": 139.389947,
+"geo_source": "nominatim:埼玉県坂戸市新ケ谷",
+"image_url": "https://www.ktr.mlit.go.jp/arajo/realtime/cam/cam18.jpg",
+"page_url": "https://www.ktr.mlit.go.jp/arajo/live/camera18.html",
+"interval_min": 10,
+"order": 0,
+"route_label": "葛川",
+"core": "葛川合流点"
+}
+},
+{
+"id": "kasen_0193",
+"label": "九十九川合流点",
+"kind": "camera",
+"readings": [
+"ツクモガワゴーリューテン"
+],
+"aliases": [],
+"attrs": {
+"river": "九十九川",
+"office": "荒川上流河川事務所",
+"pref": "埼玉県東松山市正代",
+"lat": 36.0006114,
+"lng": 139.4116795,
+"geo_source": "nominatim:埼玉県東松山市正代",
+"image_url": "https://www.ktr.mlit.go.jp/arajo/realtime/cam/cam19.jpg",
+"page_url": "https://www.ktr.mlit.go.jp/arajo/live/camera19.html",
+"interval_min": 10,
+"order": 0,
+"route_label": "九十九川",
+"core": "九十九川合流点"
+}
+},
+{
+"id": "kasen_0194",
+"label": "入西水位観測所",
+"kind": "camera",
+"readings": [
+"ニッサイスイイカンソクショ",
+"ニッサイ"
+],
+"aliases": [],
+"attrs": {
+"river": "越辺川",
+"office": "荒川上流河川事務所",
+"pref": "埼玉県坂戸市沢木",
+"lat": 35.9642327,
+"lng": 139.3554397,
+"geo_source": "nominatim:埼玉県坂戸市 入西",
+"image_url": "https://www.ktr.mlit.go.jp/arajo/realtime/cam/cam26.jpg",
+"page_url": "https://www.ktr.mlit.go.jp/arajo/live/camera26.html",
+"interval_min": 10,
+"order": 0,
+"route_label": "越辺川",
+"core": "入西"
+}
+},
+{
+"id": "kasen_0195",
+"label": "浅間山東",
+"kind": "camera",
+"readings": [
+"アサマヤマヒガシ"
+],
+"aliases": [],
+"attrs": {
+"river": "浅間山",
+"office": "利根川水系砂防事務所",
+"pref": "群馬県吾妻郡長野原町大字北軽井沢地先",
+"lat": 36.471726,
+"lng": 138.587857,
+"geo_source": "nominatim:群馬県吾妻郡長野原町北軽井沢",
+"image_url": "https://strm-r.kannet.ne.jp/asama-east.html",
+"page_url": "https://www.ktr.mlit.go.jp/tonesui/tonesui00021.html",
+"interval_min": null,
+"order": 0,
+"route_label": "浅間山",
+"core": "浅間山東"
+}
+},
+{
+"id": "kasen_0196",
+"label": "浅間山西",
+"kind": "camera",
+"readings": [
+"アサマヤマニシ"
+],
+"aliases": [],
+"attrs": {
+"river": "浅間山",
+"office": "利根川水系砂防事務所",
+"pref": "群馬県吾妻郡嬬恋村大字田代地先",
+"lat": 36.4895424,
+"lng": 138.4561684,
+"geo_source": "nominatim:群馬県吾妻郡嬬恋村田代",
+"image_url": "https://strm-r.kannet.ne.jp/asama-west.html",
+"page_url": "https://www.ktr.mlit.go.jp/tonesui/tonesui00022.html",
+"interval_min": null,
+"order": 1,
+"route_label": "浅間山",
+"core": "浅間山西"
+}
+},
+{
+"id": "kasen_0197",
+"label": "黒斑山",
+"kind": "camera",
+"readings": [
+"クロフヤマ"
+],
+"aliases": [],
+"attrs": {
+"river": "浅間山",
+"office": "利根川水系砂防事務所",
+"pref": "群馬県吾妻郡嬬恋村大字鎌原地先",
+"lat": 36.4639462,
+"lng": 138.5585773,
+"geo_source": "nominatim:群馬県吾妻郡嬬恋村鎌原",
+"image_url": "https://strm-r.kannet.ne.jp/kurofu.html",
+"page_url": "https://www.ktr.mlit.go.jp/tonesui/tonesui00065.html",
+"interval_min": null,
+"order": 2,
+"route_label": "浅間山",
+"core": "黒斑山"
+}
+},
+{
+"id": "kasen_0198",
+"label": "（臨時）草津カメラ",
+"kind": "camera",
+"readings": [
+"リンジクサツカメラ"
+],
+"aliases": [
+"草津"
+],
+"attrs": {
+"river": "草津白根山",
+"office": "利根川水系砂防事務所",
+"pref": "群馬県吾妻郡草津町",
+"lat": 36.6185291,
+"lng": 138.6048651,
+"geo_source": "nominatim:群馬県吾妻郡 草津",
+"image_url": "https://strm-r.kannet.ne.jp/rinji.html",
+"page_url": "https://www.ktr.mlit.go.jp/tonesui/tonesui00023.html",
+"interval_min": null,
+"order": 0,
+"route_label": "草津白根山",
+"core": "草津"
+}
+}
+]

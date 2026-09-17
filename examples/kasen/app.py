@@ -63,16 +63,20 @@ SLOT = "camera"
 SELECT_INTENT = "select_camera"
 DATA_FILE = "cameras.json"
 TITLE = "河川ライブカメラを声で見る"
+TTS_HINTS = {"下流": "かりゅう", "上流": "じょうりゅう", "水位": "すいい", "排水機場": "はいすいきじょう", "樋管": "ひかん"}
 ATTRIBUTION = "出典：関東地方整備局ウェブサイト (https://www.ktr.mlit.go.jp/river/bousai/river_bousai00000080.html) を加工して作成"
 
 
 def default_scopes(lex: Lexicon) -> list[Scope]:
     rivers = lex.values_of("river")
     offices = lex.values_of("office")
-    out = [Scope("all", "関東地整 全カメラ", filters={"office": offices})]
-    for r in ["利根川", "荒川", "多摩川"]:
-        if r in rivers:
-            out.append(Scope(f"river_{r}", f"{r}", filters={"river": [r]}))
+    out = [Scope("tone", "利根川 (上流河川事務所)", filters={"office": ["利根川上流河川事務所"]})]
+    for rid, name, rs in [("arakawa", "荒川 (上流・下流)", ["荒川", "入間川", "越辺川", "都幾川", "高麗川", "小畔川"]), ("hitachi", "久慈川・那珂川", ["久慈川", "那珂川"]),
+                          ("kasumi", "霞ヶ浦 (西浦・北浦・常陸川)", ["西浦", "北浦", "常陸川", "北利根川"]), ("watarase", "渡良瀬川", ["渡良瀬川", "思川", "巴波川"])]:
+        rs = [r for r in rs if r in rivers]
+        if rs:
+            out.append(Scope(rid, name, filters={"river": rs}))
+    out.append(Scope("all", "関東地整 全カメラ", filters={"office": offices}))
     return out
 
 

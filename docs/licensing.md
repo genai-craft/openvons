@@ -11,6 +11,9 @@
 | 日本郵便 郵便番号データ (KEN_ALL) | 著作権主張なし・自由利用 | 全国の町域名と読み (合成カタログ) | 都道府県別 zip を取得 |
 | VOICEVOX ENGINE + 各キャラクター | ENGINE は LGPL-3.0 (別途利用規約)、音声はキャラごとの利用規約 | 事前学習の合成音声 (既定) | 合成音声を配布する場合はクレジット表記が要るキャラがある。デモは合成音声を保存・配布しない |
 | Aratako/Irodori-TTS-v4.1-Small | HF のモデルカードを確認 (docs/voice_research.md) | 事前学習の合成音声 (任意バックエンド) | 既定ではない |
+| 関東地方整備局 河川ライブカメラ (一覧・画像) | 公共データ利用規約 PDL1.0 (CC BY 4.0 互換) | examples/kasen のカタログ (加工) とライブ画像の表示 | 出典表記「出典：関東地方整備局ウェブサイト (URL) を加工して作成」を UI に常時表示。画像は 10 分キャッシュのみで保存しない。座標の無い地点は住所から Nominatim (OSM, ODbL) で補完 |
+| OpenStreetMap タイル・Nominatim | ODbL / タイル利用ポリシー | 地図表示・地理コーディング | 帰属表示あり。アクセスは軽量 (デモ) |
+| Seo-4d696b75/station_database | CC BY 4.0 (駅データ.jp 由来) | examples/stations の駅カタログ | UI と README に帰属表示 |
 | Qwen3 / Qwen3-VL (Qwen/…) | Apache-2.0 | テキスト・画像の Decision Model のバックボーン | |
 | FairFace / PA-100K / MASSIVE / tweet_eval / Yelp / glaive | 各データセットの規約 | 評価・学習 (再配布しない) | docs/lm_benchmark.md |
 

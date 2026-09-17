@@ -20,7 +20,7 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 from openvons.voice import kana as K  # noqa: E402
 
-STRIP = re.compile(r"(水位観測所|観測所|排水機場|排水樋管|樋管|水門|堰|付近|カメラ|地点|局|上流|下流|左岸|右岸|（.*?）|\(.*?\))")
+STRIP = re.compile(r"(水位観測所|水位監視|水位|観測所|排水機場|排水樋管|樋管|水門|堰|付近|カメラ|地点|局|屋上|川表側|川裏側|（.*?）|\(.*?\))")
 
 
 def main() -> None:
@@ -29,6 +29,22 @@ def main() -> None:
     ap.add_argument("--out", default=str(ROOT / "examples" / "kasen"))
     args = ap.parse_args()
     rows = json.load(open(args.src, encoding="utf-8"))
+    # 画像 URL の無い地点 (京浜 = 外部サイトへのリンクのみ、砂防 = 動画サイト) は声で選んでも見せるものが無いので外す
+    rows = [r for r in rows if r.get("image_url")]
+    # 上流→下流の順: 距離標 (河口からの km) があればそれで (大きい = 上流)、無ければ掲載順
+    def km(r):
+        m = re.search(r"距離標=[^;]*?([0-9.]+)km", r.get("notes") or "")
+        return float(m.group(1)) if m else None
+    by_river: dict[str, list] = defaultdict(list)
+    for r in rows:
+        by_river[(r.get("river") or "その他")].append(r)
+    ordered = []
+    for river, lst in by_river.items():
+        kms = [km(r) for r in lst]
+        if all(k is not None for k in kms) and len(lst) > 1:
+            lst = sorted(lst, key=lambda r: -km(r))
+        ordered.extend(lst)
+    rows = ordered
     ents = []
     per_river: dict[str, int] = defaultdict(int)
     hier: dict[str, dict[str, dict]] = defaultdict(dict)
@@ -44,12 +60,22 @@ def main() -> None:
         if seen_labels[label] > 1:
             label = f"{label}({seen_labels[label]})"
         core = STRIP.sub("", name).strip() or name
-        readings = [K.g2p(label)]
-        aliases = [core] if core != label else []
+        label_reading = K.g2p(label)
+        readings = [label_reading]
+        aliases: list[str] = []
+        if core != label:
+            # 別名 (地名だけ) の読みは、表示名の読みから接尾語の読みを削って作る。別名を単独で G2P すると
+            # 連濁が変わる (栗橋水位 = クリハシスイイ だが 栗橋 単独 = クリバシ) ので、表示名の読みを正とする
+            suffix = label[len(core):] if label.startswith(core) else ""
+            suffix_reading = K.g2p(suffix) if suffix else ""
+            if suffix_reading and label_reading.endswith(suffix_reading) and len(label_reading) > len(suffix_reading):
+                readings.append(label_reading[: -len(suffix_reading)])
+            else:
+                aliases.append(core)
         order = per_river[river]; per_river[river] += 1
         ents.append({
             "id": f"kasen_{len(ents):04d}", "label": label, "kind": "camera", "readings": readings, "aliases": aliases,
-            "attrs": {"river": river, "office": office, "pref": r.get("pref") or "", "lat": r.get("lat"), "lng": r.get("lng"),
+            "attrs": {"river": river, "office": office, "pref": r.get("pref") or "", "lat": r.get("lat"), "lng": r.get("lng"), "geo_source": r.get("geo_source"),
                       "image_url": r.get("image_url"), "page_url": r.get("page_url"), "interval_min": r.get("interval_min"),
                       "order": order, "route_label": river, "core": core},
         })

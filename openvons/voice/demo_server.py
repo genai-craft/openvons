@@ -167,6 +167,8 @@ async def add_reading(cid: str, body: dict):
 def list_scopes():
     st: ScopeStore = G["scopes"]
     lex: Lexicon = G["lexicon"]
+    if not st.scopes:
+        default_scope()
     return [{"id": s.id, "name": s.name, "filters": s.filters, "ids": s.ids, "exclude_ids": s.exclude_ids,
              "n_cameras": len(APP.AppClass(lex, s).entities()), "profile": s.profile} for s in st.scopes.values()]
 
@@ -222,6 +224,8 @@ async def say(body: dict):
         for e in sorted(sess.app.entities(), key=lambda e: -len(e.label)):
             if e.label and e.label in text:
                 text = text.replace(e.label, e.primary_readings()[0])
+        for word, reading in getattr(APP, "TTS_HINTS", {}).items():   # TTS が誤読する一般語 (下流 → カリウエ 等)
+            text = text.replace(word, reading)
     wav = await asyncio.to_thread(tts.synth, text, int(body.get("seed", 1)))
     t_tts = (time.time() - t0) * 1000
     if body.get("snr_db") is not None:
