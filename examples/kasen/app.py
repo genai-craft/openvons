@@ -25,6 +25,8 @@ from openvons.voice.state import StateDef, StateMachine
 
 CONFIRM_TIMEOUT_SEC = 8.0
 ZOOM_STEP = 1.5
+DEFAULT_ZOOM = 1.5     # 表示直後は一段拡大した状態から (ユーザー要望)
+MAX_ZOOM = 6.0
 
 INTENTS = [
     Intent("select_camera", ["{camera}[を](表示|出して|見せて|映して|お願い)", "{camera}[に](切り替え|切り替えて)", "{camera}"], description="地点のカメラを表示"),
@@ -170,7 +172,7 @@ class KasenApp:
             return {"intent": intent, "speech": "取り消しました"}
         cid = self.sm.context.get("camera")
         if intent == "select_camera":
-            e = self.lexicon.get(slots[SLOT]); self.view.zoom = 1.0; self.view.refreshed_at = time.time()
+            e = self.lexicon.get(slots[SLOT]); self.view.zoom = DEFAULT_ZOOM; self.view.refreshed_at = time.time()
             self.sm.goto("CAMERA", camera=e.id, pending=None)
             return {"intent": intent, "camera": e.id, "speech": f"{e.label}、{e.attrs.get('river', '')} です"}
         if intent == "back":
@@ -184,11 +186,11 @@ class KasenApp:
             nb = self._neighbor(cid, -1 if intent == "upstream" else 1)
             if nb is None:
                 return {"intent": intent, "speech": "この先にカメラはありません"}
-            self.sm.context["camera"] = nb.id; self.view.zoom = 1.0; self.view.refreshed_at = time.time()
+            self.sm.context["camera"] = nb.id; self.view.zoom = DEFAULT_ZOOM; self.view.refreshed_at = time.time()
             return {"intent": intent, "camera": nb.id, "speech": f"{nb.label}"}
         if intent == "refresh":
             self.view.refreshed_at = time.time(); return {"intent": intent, "camera": cid, "speech": "画像を更新します"}
-        if intent == "zoom_in": self.view.zoom = min(self.view.zoom * ZOOM_STEP, 4.0)
+        if intent == "zoom_in": self.view.zoom = min(self.view.zoom * ZOOM_STEP, MAX_ZOOM)
         elif intent == "zoom_out": self.view.zoom = max(self.view.zoom / ZOOM_STEP, 1.0)
         elif intent == "favorite":
             if cid not in self.view.favorites:

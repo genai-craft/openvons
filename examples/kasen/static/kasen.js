@@ -56,7 +56,7 @@ function bar(text, p, cls) { return `<div class="row"><div class="bar ${cls}"><i
 function speak(text) { if (!('speechSynthesis' in window)) return; speechSynthesis.cancel(); const u = new SpeechSynthesisUtterance(text); u.lang = 'ja-JP'; u.rate = 1.1; state.muteUntil = Date.now() + Math.min(4000, 400 + text.length * 120); speechSynthesis.speak(u); }
 
 /* ---------------- カメラデータ・地図 (Leaflet + OpenStreetMap) ---------------- */
-const map = L.map('map', { zoomControl: true, attributionControl: true }).setView([36.0, 139.6], 8);
+const map = L.map('map', { zoomControl: true, attributionControl: true, scrollWheelZoom: true }).setView([36.0, 139.6], 8);
 L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19, attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors' }).addTo(map);
 const layers = { lines: L.layerGroup().addTo(map), cams: L.layerGroup().addTo(map) };
 const PALETTE = ['#4cc2ff', '#3fb950', '#d29922', '#f85149', '#a371f7', '#79c0ff', '#ff7b72', '#56d364', '#e3b341', '#f778ba'];
@@ -102,12 +102,20 @@ function renderCard(s) {
   const stamp = Math.floor((s.view.refreshed_at || 0) * 1000);
   if (c.attrs.image_url) { img.hidden = false; img.src = `/api/image/${c.id}?t=${stamp}`; $('#imgNote').textContent = `ライブ画像 (約 ${c.attrs.interval_min || 10} 分ごとに更新)。出典: 関東地方整備局 ${c.attrs.office}`; }
   else { img.hidden = true; $('#imgNote').textContent = 'この地点は画像 URL が未登録です'; }
-  img.style.transform = `scale(${s.view.zoom || 1})`;
+  localZoom = null; img.style.transform = `scale(${s.view.zoom || 1})`;
   const same = all.filter(x => x.attrs.river === c.attrs.river).sort((a, b) => a.attrs.order - b.attrs.order);
   const i = same.findIndex(x => x.id === c.id); const up = same[i - 1], down = same[i + 1];
   $('#camNeighbors').innerHTML = `上流 ${up ? '▲ ' + up.label + yomi(up) : '（最上流）'}　<span class="cur">${c.label}</span>　下流 ${down ? down.label + yomi(down) + ' ▼' : '（最下流）'}`;
 }
 window.addEventListener('resize', () => map.invalidateSize());
+/* ライブ画像の上でマウスホイール → 拡大/縮小 (音声の「寄って / 引いて」と同じ状態機械を通す)。ローカルでも即時に反映して待ち時間を隠す */
+let wheelAt = 0, localZoom = null;
+$('#camImg').parentElement.addEventListener('wheel', (e) => {
+  e.preventDefault(); const now = Date.now();
+  const img = $('#camImg'); const cur = localZoom ?? (state.snap && state.snap.view ? state.snap.view.zoom : 1);
+  localZoom = Math.min(6, Math.max(1, cur * (e.deltaY < 0 ? 1.5 : 1 / 1.5))); img.style.transform = `scale(${localZoom})`;
+  if (now - wheelAt > 250) { wheelAt = now; send({ type: 'intent', intent: e.deltaY < 0 ? 'zoom_in' : 'zoom_out' }); }
+}, { passive: false });
 /* ---------------- マイク ---------------- */
 async function toggleMic() {
   if (state.mic) { stopMic(); return; }
