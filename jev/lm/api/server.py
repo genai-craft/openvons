@@ -17,6 +17,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
+from fastapi.responses import JSONResponse
 from fastapi import FastAPI, HTTPException
 
 from jev.lm.api.schemas import DecisionRequest, DecisionResponse
@@ -84,11 +85,6 @@ async def decide(req: DecisionRequest):
     return DecisionResponse(results=results, backend=name, latency_ms=(time.perf_counter() - t0) * 1000, meta=meta)
 
 
-if __name__ == "__main__":
-    import uvicorn
-    uvicorn.run(app, host=os.environ.get("DM_HOST", "127.0.0.1"), port=int(os.environ.get("DM_PORT", "8400")))
-
-
 # ---------------------------------------------------------------- TypeSafe Jev 互換 (POST /v1/systemone)
 from jev.lm.api import systemone as _so  # noqa: E402
 
@@ -103,6 +99,14 @@ async def systemone(body: dict):
     if not qs:
         return JSONResponse({"error": {"type": "invalid_request_error", "message": "questions is empty"}}, 422)
     state = _so.state_to_text(body.get("state", ""))
-    probs = await run_backend(state, qs)          # 既存の /v1/decision と同じバックエンド
-    answers = {q.key: _so.answer(q, p) for q, p in zip(qs, probs)}
-    return {"model": body.get("model") or MODEL_NAME, "answers": answers, "usage": {"input_tokens": len(state) // 3, "output_tokens": 0}}
+    name = "model" if "model" in BACKENDS else "llm"       # 学習済み Decision Model があればそれ、無ければ LLM 基準
+    if name not in BACKENDS:
+        return JSONResponse({"error": {"type": "overloaded_error", "message": "no backend loaded"}}, 529)
+    decs = await BACKENDS[name].adecide(state, qs)
+    answers = {q.key: _so.answer(q, list(d.probs)) for q, d in zip(qs, decs)}
+    return {"model": f"open-jev/{name}", "answers": answers, "usage": {"input_tokens": len(state) // 3, "output_tokens": 0}}
+
+
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run(app, host=os.environ.get("DM_HOST", "127.0.0.1"), port=int(os.environ.get("DM_PORT", "8400")))

@@ -53,10 +53,11 @@ def main() -> None:
         reading = K.normalize(s["name_kana"])
         ls = st_lines[sc]
         companies = sorted({company_of(lines[l["line_code"]]) for l in ls})
+        label = s["original_name"] if s.get("original_name") and s["original_name"] != "NULL" else s["name"]
         entities.append({
-            "id": f"st_{sc}", "label": s["name"], "kind": "station",
+            "id": f"st_{sc}", "label": label, "kind": "station",
             "readings": [reading], "aliases": [],
-            "attrs": {"pref": pref, "lines": [l["line"] for l in ls], "line_codes": [l["line_code"] for l in ls], "positions": ls,
+            "attrs": {"display": s["name"], "pref": pref, "lines": [l["line"] for l in ls], "line_codes": [l["line_code"] for l in ls], "positions": ls,
                       "companies": companies, "company": companies[0], "lat": float(s["lat"]), "lng": float(s["lng"]),
                       "route_label": " / ".join(l["line"] for l in ls[:2]) + (" ほか" if len(ls) > 2 else "")},
         })

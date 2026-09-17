@@ -84,9 +84,16 @@ class KanaASR:
         f = self.processor(wav, sampling_rate=SR, return_tensors="pt").input_features
         return f.to(self.device, self.dtype)
 
+    MIN_SEC = 1.0    # これより短い音声は末尾を無音で伸ばす (短い単語で反復ハルシネーションが出るため)
+
     @torch.no_grad()
     def encode(self, wav: np.ndarray) -> Encoded:
         t0 = time.perf_counter()
+        wav = np.asarray(wav, dtype=np.float32)
+        if wav.ndim > 1:
+            wav = wav.mean(1)
+        if len(wav) < int(self.MIN_SEC * SR):
+            wav = np.concatenate([wav, np.zeros(int(self.MIN_SEC * SR) - len(wav), dtype=np.float32)])
         with self._lock:
             enc = self.model.model.encoder(self.features(wav)).last_hidden_state
             self._sync()

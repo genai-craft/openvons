@@ -21,23 +21,40 @@ uv venv --python 3.12 .venv && uv pip install --python .venv/bin/python -e ".[de
 .venv/bin/python -m pytest -q tests/test_voice_core.py
 ```
 
-### 音声コマンドのデモ (道路カメラ監視)
+### 音声コマンドのデモ
 
 ```bash
 docker run -d --name voicevox -p 127.0.0.1:50021:50021 voicevox/voicevox_engine:cpu-latest   # 事前学習用 TTS
-scripts/serve_road_cameras.sh start 2 8600          # GPU 2、ポート 8600 → http://localhost:8600 (マイクは https か localhost)
+JEV_APP=examples.stations.app     scripts/serve_demo.sh start 2 8601   # 駅名で動く路線図 (一般向け)
+JEV_APP=examples.road_cameras.app scripts/serve_demo.sh start 2 8600   # 道路カメラ監視 (業務例)
 ```
 
-デモの操作・設計・評価: [docs/voice_design.md](docs/voice_design.md) / [docs/voice_evaluation.md](docs/voice_evaluation.md)。
-稼働中のデモ: https://sashizu.aunvox.com
+マイクは https か localhost が必須 (`ssh -L 8601:localhost:8601 <host>`)。スマホはホーム画面に追加すると PWA として開ける。
+マイク経由の発話は `JEV_DUMP_UTTS=1` (既定) で `state/<app>/utts/` に保存され、再校正・実測に使える。
+
+| デモ | 公開 URL | 中身 |
+|---|---|---|
+| 駅名で動く路線図 | https://eki.aunvox.com | 8,987 駅 (station_database, CC BY 4.0)。駅名 → 寄る、次/前の駅、路線切替、お気に入り (要確認) |
+| 道路カメラ監視 | https://sashizu.aunvox.com | 2,932 台の合成カタログ。カメラ名 → 拡大、PTZ、プリセット保存 (要確認) |
+
+アプリは `examples/<name>/app.py` (意図・状態・実体) と `static/` だけで、認識・校正・事前学習・サーバーは共通。
+設計・評価: [docs/voice_design.md](docs/voice_design.md) / [docs/voice_evaluation.md](docs/voice_evaluation.md)。
 
 ### テキスト / 画像
 
 ```bash
 .venv/bin/python scripts/lm_prepare_datasets.py               # 公開データ → JSONL
 .venv/bin/python scripts/lm_train_head.py --task massive_scenario_en --model Qwen/Qwen3-4B-Instruct-2507
-.venv/bin/python -m jev.lm.api.server                        # POST /v1/decision (Noul / Choice / Score)
+DM_LLM_URL=http://127.0.0.1:8300/v1 .venv/bin/python -m jev.lm.api.server   # POST /v1/decision と TypeSafe Jev 互換の POST /v1/systemone
 ```
+
+`/v1/systemone` は typesafe-sdk のワイヤフォーマット (state + questions{type, instructions, criteria} → answers) と同じ形で、
+SDK の base_url を向けるだけで手元の Decision Model が答える。公開仕様との対応と規約上の注意は [docs/jev_api.md](docs/jev_api.md)。
+
+### スマホ搭載に向けた小型化 (進行中)
+
+kana-whisper (809M) の疑似ラベルで whisper-small を 2 層 decoder のカナ出力に蒸留する (`jev/voice/distill/`)。
+候補採点方式は自由認識の精度に寛容なので、小型化との相性がよい。目標はブラウザ内推論 (transformers.js, WebGPU)。
 
 ## 構成
 
@@ -47,11 +64,13 @@ jev/lm/         models (backbone/heads/pooling/decision_model/hybrid_cache), tra
 jev/vision/     vision_model (視覚単体), vlm_decision_model (小型 VLM), train_vision/train_vlm, server
 jev/voice/      kana, lexicon (実体・担当範囲), grammar (状態別コマンド集合), asr (kana-whisper), engine, state, vad, synth (事前学習)
 jev/tts/        TTS バックエンド (voicevox:// 既定、irodori://、openai://)
-examples/       road_cameras (音声デモ)、今後 stations (一般向け)
-scripts/        lm_* (テキスト/画像の実験)、build_catalog / eval_synthetic / refit_calibration (音声)、serve_road_cameras.sh
+examples/       stations (駅名で動く路線図)、road_cameras (道路カメラ監視) — app.py + static/ だけ
+jev/voice/demo_server.py  共通のデモサーバー (--app で差し替え)、jev/voice/distill/ 小型 kana モデルの蒸留
+scripts/        lm_* (テキスト/画像の実験)、build_catalog / build_stations / eval_synthetic / refit_calibration (音声)、serve_demo.sh
 docs/           lm_* / vision_* / voice_* の設計・評価・調査、licensing.md
 ```
 
 ## ライセンス
 
 コード Apache-2.0。第三者のモデル・データは [docs/licensing.md](docs/licensing.md)。
+本プロジェクトは TypeSafe AI 社および Jev とは無関係の独立実装で、同社の API 出力は一切使っていない。
