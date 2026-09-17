@@ -21,7 +21,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 async def run(url: str, tts_url: str, texts: list[str]) -> list[dict]:
     import websockets
-    from jev.voice.synth import TTSClient
+    from openvons.voice.synth import TTSClient
     tts = TTSClient(tts_url, cache_dir="/data/sashizu/state/tts_cache")
     results = []
     async with websockets.connect(url + "?session=wstest", max_size=None) as ws:

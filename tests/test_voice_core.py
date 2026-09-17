@@ -6,13 +6,13 @@ import numpy as np
 import pytest
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-from jev.voice import kana as K
-from jev.core.none_calibration import Calibration, fit
-from jev.core.decision import Thresholds
-from jev.voice.engine import Candidate, Recognizer
-from jev.voice.grammar import Grammar, Hypothesis, Intent, expand_template
-from jev.voice.lexicon import Entity, Lexicon, Scope
-from jev.voice.state import StateDef, StateMachine
+from openvons.voice import kana as K
+from openvons.core.none_calibration import Calibration, fit
+from openvons.core.decision import Thresholds
+from openvons.voice.engine import Candidate, Recognizer
+from openvons.voice.grammar import Grammar, Hypothesis, Intent, expand_template
+from openvons.voice.lexicon import Entity, Lexicon, Scope
+from openvons.voice.state import StateDef, StateMachine
 
 
 def test_normalize_conventions():

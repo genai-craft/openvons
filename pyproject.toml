@@ -1,7 +1,7 @@
 [project]
-name = "open-jev"
+name = "openvons"
 version = "0.1.0"
-description = "有限選択肢に確率で答える判断層 (Decision Model) — テキスト / 画像 / 音声コマンド"
+description = "openvons (open-Jev): 有限選択肢に確率で答える判断層 — テキスト / 画像 / 音声コマンド"
 readme = "README.md"
 requires-python = ">=3.12"
 license = { text = "Apache-2.0" }
@@ -17,7 +17,7 @@ dev = ["pytest"]
 serve = ["vllm"]          # LLM ベースライン / 教師 (任意)
 
 [tool.setuptools]
-packages = ["jev", "jev.core", "jev.voice", "jev.lm", "jev.lm.models", "jev.lm.training", "jev.lm.backends", "jev.lm.teacher", "jev.lm.api", "jev.lm.benchmark", "jev.vision", "jev.tts"]
+packages = ["openvons", "openvons.core", "openvons.voice", "openvons.voice.distill", "openvons.lm", "openvons.lm.models", "openvons.lm.training", "openvons.lm.backends", "openvons.lm.teacher", "openvons.lm.api", "openvons.lm.benchmark", "openvons.vision", "openvons.tts", "jev"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

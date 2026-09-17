@@ -12,7 +12,7 @@ import numpy as np
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
-from jev.voice.calibration import Calibration, fit  # noqa: E402
+from openvons.voice.calibration import Calibration, fit  # noqa: E402
 
 
 def load(path: str):

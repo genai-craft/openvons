@@ -19,11 +19,11 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 import numpy as np
 from tqdm import tqdm
 
-from jev.core.metrics import all_metrics
-from jev.core.formats import llm_single_prompt, SYSTEM_PROMPT
-from jev.lm.backends.llm_backend import LLMBackend, _softmax_from_logprobs
-from jev.core.formats import read_jsonl
-from jev.lm.training.dataset import task_path
+from openvons.core.metrics import all_metrics
+from openvons.core.formats import llm_single_prompt, SYSTEM_PROMPT
+from openvons.lm.backends.llm_backend import LLMBackend, _softmax_from_logprobs
+from openvons.core.formats import read_jsonl
+from openvons.lm.training.dataset import task_path
 
 ROOT = Path(__file__).resolve().parents[1]
 SLOPPY = False

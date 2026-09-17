@@ -13,9 +13,9 @@ from pathlib import Path
 import numpy as np
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-from jev.core.metrics import all_metrics  # noqa: E402
-from jev.core.temperature import TemperatureScaler  # noqa: E402
-from jev.core.formats import read_jsonl  # noqa: E402
+from openvons.core.metrics import all_metrics  # noqa: E402
+from openvons.core.temperature import TemperatureScaler  # noqa: E402
+from openvons.core.formats import read_jsonl  # noqa: E402
 
 ROOT = Path(__file__).resolve().parents[1]
 

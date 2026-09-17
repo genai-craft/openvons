@@ -24,8 +24,8 @@ os.environ.setdefault("HF_HOME", "/data/decision_model/hf_home")
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from huggingface_hub import hf_hub_download  # noqa: E402
-from jev.core.primitives import Question, Option  # noqa: E402
-from jev.core.formats import Sample, write_jsonl  # noqa: E402
+from openvons.core.primitives import Question, Option  # noqa: E402
+from openvons.core.formats import Sample, write_jsonl  # noqa: E402
 
 OUT = Path(__file__).resolve().parents[1] / "data/store/processed"
 random.seed(0)

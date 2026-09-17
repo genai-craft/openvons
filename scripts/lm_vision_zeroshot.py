@@ -11,9 +11,9 @@ from PIL import Image
 from tqdm import tqdm
 from transformers import AutoModelForImageTextToText, AutoProcessor
 
-from jev.core.metrics import all_metrics, reliability_table
-from jev.core.formats import option_labels
-from jev.core.primitives import Question
+from openvons.core.metrics import all_metrics, reliability_table
+from openvons.core.formats import option_labels
+from openvons.core.primitives import Question
 
 ROOT = Path(__file__).resolve().parents[1]
 

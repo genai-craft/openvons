@@ -1,5 +1,7 @@
 # TypeSafe Jev (System One API) の公開仕様と open-Jev の対応 (2026-09-17 調査)
 
+(プロジェクト名は openvons、旧称 open-Jev。以下の open-Jev はすべて openvons を指す)
+
 出典は docs.typesafe.ai (ログイン不要、`llms.txt` に索引)、typesafe.ai/legal、公開 SDK (MIT)。
 console.typesafe.ai (鍵・プレイグラウンド) はログインが要るが、仕様そのものは公開文書で足りる。
 
@@ -19,15 +21,15 @@ console.typesafe.ai (鍵・プレイグラウンド) はログインが要るが
 
 ## open-Jev の対応
 
-`jev.lm.api.server` に `POST /v1/systemone` を追加した (`jev/lm/api/systemone.py`)。typesafe-sdk の
+`openvons.lm.api.server` に `POST /v1/systemone` を追加した (`openvons/lm/api/systemone.py`)。typesafe-sdk の
 `TYPESAFE_BASE_URL` をこのサーバーに向ければ、同じコードで手元の Decision Model が答える。
 confidence はここでは「最大確率 − 2 位」(margin) を採用。校正した確率は probabilities に出しているので、
 しきい値運用は probabilities 側で行う。
 
 open-Jev が公式に無いものとして持つ機能:
-- 該当なし (none) を明示的な選択肢として校正に含める (jev.core.none_calibration)
-- 判断ポリシー (実行 / 確認 / 棄却) と危険度 (jev.core.decision)
-- 画像 (jev.vision) と音声 (jev.voice)
+- 該当なし (none) を明示的な選択肢として校正に含める (openvons.core.none_calibration)
+- 判断ポリシー (実行 / 確認 / 棄却) と危険度 (openvons.core.decision)
+- 画像 (openvons.vision) と音声 (openvons.voice)
 - 状態依存の選択肢集合、担当範囲、事前学習 (音声)
 - 重みと学習コードの公開、on-device (蒸留した小型 kana モデル、進行中)
 

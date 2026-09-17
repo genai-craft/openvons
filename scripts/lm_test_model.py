@@ -3,9 +3,9 @@ import sys, time
 from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 import torch
-from jev.core import Noul, Choice, Score, to_questions
-from jev.lm.models.decision_model import DecisionModel, DecisionModelConfig
-from jev.lm.backends.model_backend import ModelBackend, MODES
+from openvons.core import Noul, Choice, Score, to_questions
+from openvons.lm.models.decision_model import DecisionModel, DecisionModelConfig
+from openvons.lm.backends.model_backend import ModelBackend, MODES
 
 name = sys.argv[1] if len(sys.argv) > 1 else "Qwen/Qwen3-0.6B"
 pooling = sys.argv[2] if len(sys.argv) > 2 else "last"

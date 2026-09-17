@@ -1,8 +1,8 @@
 """Method C: average several teachers' soft labels -> data/store/generated/<task>/<name>/<split>.jsonl"""
 import sys; from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-from jev.core.formats import read_jsonl, write_jsonl
-from jev.lm.teacher.ensemble import ensemble
+from openvons.core.formats import read_jsonl, write_jsonl
+from openvons.lm.teacher.ensemble import ensemble
 ROOT = Path(__file__).resolve().parents[1]
 task, name, *teachers = sys.argv[1:]
 for split in ["train", "valid", "test"]:

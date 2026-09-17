@@ -1,7 +1,9 @@
 # 公開までの手順と残課題 (2026-09-17 時点)
 
+(プロジェクト名は openvons、旧称 open-Jev。以下の open-Jev はすべて openvons を指す)
+
 ## 済んだこと
-- 統合 repo (jev.core / lm / vision / voice / tts)、統合 venv (transformers 5.17)、ライセンス棚卸し (docs/licensing.md)
+- 統合 repo (openvons.core / lm / vision / voice / tts)、統合 venv (transformers 5.17)、ライセンス棚卸し (docs/licensing.md)
 - デモ 2 本 (駅名で動く路線図 = 一般向け、道路カメラ監視 = 業務例)、共通デモサーバー (--app 差し替え)、PWA manifest
 - Jev 互換 API (POST /v1/systemone、docs/jev_api.md)、規約上の注意の整理
 - 実音声の収集口 (マイク発話の自動保存)、事前学習の小範囲対策 (声・言い方の自動増量、正則化)
@@ -26,7 +28,7 @@
   UI で促す、校正サンプルの増量、短候補への追加ペナルティのいずれかで詰める。
 - 同じ読みの実体 (市役所前 ×8、上り/下り) は確率が割れて確認に回る。「どちらですか」と聞き返す曖昧性解消の仮説を state.py に足す。
 - 重なった発話 (別の声 −12dB) は kana-whisper が背景側の語を書く。話者分離かマイク指向性で対処 (Aunvox の AuK 分離が使える)。
-- 自分宛判定 (addressee) の前段。Aunvox の addressee head を jev.voice に移植すれば、確認状態以外の誤受理も下がる。
+- 自分宛判定 (addressee) の前段。Aunvox の addressee head を openvons.voice に移植すれば、確認状態以外の誤受理も下がる。
 
 ## 運用メモ
 - デモ起動: `JEV_APP=examples.stations.app scripts/serve_demo.sh start 2 8601` / `examples.road_cameras.app ... 8600`。

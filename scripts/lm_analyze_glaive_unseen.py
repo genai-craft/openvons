@@ -3,7 +3,7 @@ import json, sys
 from pathlib import Path
 import numpy as np
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-from jev.core.formats import read_jsonl
+from openvons.core.formats import read_jsonl
 ROOT = Path(__file__).resolve().parents[1]
 train = read_jsonl(str(ROOT / "data/store/processed/glaive_tools/train.jsonl"))
 test = read_jsonl(str(ROOT / "data/store/processed/glaive_tools/test.jsonl"))

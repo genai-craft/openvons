@@ -12,9 +12,9 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-from jev.core.formats import read_jsonl, write_jsonl  # noqa: E402
-from jev.lm.backends.llm_backend import LLMBackend  # noqa: E402
-from jev.lm.teacher.local_llm import label_samples  # noqa: E402
+from openvons.core.formats import read_jsonl, write_jsonl  # noqa: E402
+from openvons.lm.backends.llm_backend import LLMBackend  # noqa: E402
+from openvons.lm.teacher.local_llm import label_samples  # noqa: E402
 
 ROOT = Path(__file__).resolve().parents[1]
 

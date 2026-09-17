@@ -42,23 +42,23 @@ def main():
     rows = [json.loads(l) for l in open(DATA / "test.jsonl")][:40]
     imgs = [Image.open(DATA / r["image"]).convert("RGB") for r in rows]
     tasks = json.load(open(DATA / "tasks.json"))["questions"]
-    from jev.core.primitives import Question
+    from openvons.core.primitives import Question
     qs = [Question.from_dict(v, key=k) for k, v in tasks.items()]
     i = 0
 
     if a.kind == "vision":
-        from jev.vision.vision_model import VisionDecisionModel
+        from openvons.vision.vision_model import VisionDecisionModel
         m = VisionDecisionModel.from_checkpoint(a.ckpt)
         params = m.n_frozen() + m.n_trainable()
         run = lambda: m.decide([imgs[0]])
     elif a.kind == "vlm":
-        from jev.vision.vlm_decision_model import VLMDecisionModel
+        from openvons.vision.vlm_decision_model import VLMDecisionModel
         m = VLMDecisionModel.from_checkpoint(a.ckpt)
         params = sum(p.numel() for p in m.backbone.parameters()) + sum(p.numel() for p in m.head.parameters())
         run = lambda: m.decide(imgs[0], qs)
     else:
         from transformers import AutoModelForImageTextToText, AutoProcessor
-        from jev.core.formats import option_labels
+        from openvons.core.formats import option_labels
         proc = AutoProcessor.from_pretrained(a.model); tok = proc.tokenizer
         mm = AutoModelForImageTextToText.from_pretrained(a.model, dtype=torch.bfloat16).to("cuda").eval()
         params = sum(p.numel() for p in mm.parameters())

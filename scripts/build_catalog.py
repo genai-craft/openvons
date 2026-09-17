@@ -20,7 +20,7 @@ import jaconv
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
-from jev.voice import kana as K  # noqa: E402
+from openvons.voice import kana as K  # noqa: E402
 
 KEN_ALL = Path("/data/sashizu/data/kenall/ken_all.csv")
 

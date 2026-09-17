@@ -17,10 +17,10 @@ from typing import Any
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
-from jev.voice.engine import Decision
-from jev.voice.grammar import Grammar, Intent
-from jev.voice.lexicon import Entity, Lexicon, Scope
-from jev.voice.state import StateDef, StateMachine
+from openvons.voice.engine import Decision
+from openvons.voice.grammar import Grammar, Intent
+from openvons.voice.lexicon import Entity, Lexicon, Scope
+from openvons.voice.state import StateDef, StateMachine
 
 CONFIRM_TIMEOUT_SEC = 8.0
 ZOOM_STEP = 1.6

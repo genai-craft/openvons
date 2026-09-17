@@ -23,13 +23,13 @@ import numpy as np
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 from examples.road_cameras.app import INTENTS  # noqa: E402
-from jev.voice import kana as K  # noqa: E402
-from jev.voice.asr import KanaASR  # noqa: E402
-from jev.voice.calibration import Calibration, fit  # noqa: E402
-from jev.voice.engine import Recognizer  # noqa: E402
-from jev.voice.grammar import Grammar  # noqa: E402
-from jev.voice.lexicon import Lexicon, Scope  # noqa: E402
-from jev.voice.synth import OUT_OF_GRAMMAR, TTSClient, add_noise, mix_background, pad_silence, tts_text  # noqa: E402
+from openvons.voice import kana as K  # noqa: E402
+from openvons.voice.asr import KanaASR  # noqa: E402
+from openvons.voice.calibration import Calibration, fit  # noqa: E402
+from openvons.voice.engine import Recognizer  # noqa: E402
+from openvons.voice.grammar import Grammar  # noqa: E402
+from openvons.voice.lexicon import Lexicon, Scope  # noqa: E402
+from openvons.voice.synth import OUT_OF_GRAMMAR, TTSClient, add_noise, mix_background, pad_silence, tts_text  # noqa: E402
 
 CARRIERS = ["{camera}", "{camera}を表示", "{camera}出して", "{camera}に切り替え"]
 PTZ = {"pan_right": ["もっと右に向けて", "右に振って"], "pan_left": ["左に向けて"], "tilt_up": ["上に向いて"], "tilt_down": ["もっと下に向けて"],
