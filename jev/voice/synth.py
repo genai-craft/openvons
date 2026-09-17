@@ -156,11 +156,11 @@ class Pretrainer:
         self.lexicon = lexicon
 
     def run(self, scope: Scope, intent_names: list[str], slot: str = "camera", cfg: PretrainConfig | None = None,
-            progress: Callable[[dict[str, Any]], None] | None = None, seed: int = 0) -> PretrainResult:
+            progress: Callable[[dict[str, Any]], None] | None = None, seed: int = 0, entities: list[Entity] | None = None) -> PretrainResult:
         cfg = cfg or PretrainConfig()
         rng = random.Random(seed)
         t_start = time.time()
-        ents = self.lexicon.in_scope(scope)
+        ents = entities if entities is not None else self.lexicon.in_scope(scope)
         res = PretrainResult()
         if not ents:
             res.warnings.append("範囲に実体がありません")

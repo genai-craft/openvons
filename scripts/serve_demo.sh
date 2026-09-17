@@ -5,7 +5,7 @@
 #   scripts/serve_demo.sh restart [GPU] [PORT]
 set -u
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
-STATE=${JEV_STATE_DIR:-/data/openjev/state/road_cameras}
+APPNAME=$(basename "$(echo "${JEV_APP:-examples.road_cameras.app}" | tr . /)" ); APPNAME=$(basename "$(dirname "$(echo "${JEV_APP:-examples.road_cameras.app}" | tr . /)")"); STATE=${JEV_STATE_DIR:-/data/openjev/state/$APPNAME}
 PID=$STATE/server.pid
 LOG=$STATE/logs/server.log
 GPU="${2:-2}"; PORT="${3:-8600}"
@@ -14,7 +14,7 @@ mkdir -p "$STATE/logs"
 stop() { if [ -f "$PID" ] && kill -0 "$(cat "$PID")" 2>/dev/null; then kill "$(cat "$PID")"; sleep 2; fi; rm -f "$PID"; }
 start() {
   cd "$ROOT"
-  HF_HOME=${HF_HOME:-/data/lychee_ja/hf_home} JEV_STATE_DIR="$STATE" CUDA_VISIBLE_DEVICES="$GPU" nohup "$ROOT/.venv/bin/python" examples/road_cameras/server.py --port "$PORT" --tts "$TTS_URL" ${JEV_SSL_DIR:+--ssl-dir "$JEV_SSL_DIR"} >"$LOG" 2>&1 &
+  HF_HOME=${HF_HOME:-/data/lychee_ja/hf_home} JEV_STATE_DIR="$STATE" CUDA_VISIBLE_DEVICES="$GPU" nohup "$ROOT/.venv/bin/python" -m jev.voice.demo_server --app "${JEV_APP:-examples.road_cameras.app}" --port "$PORT" --tts "$TTS_URL" ${JEV_SSL_DIR:+--ssl-dir "$JEV_SSL_DIR"} >"$LOG" 2>&1 &
   echo $! > "$PID"
   for i in $(seq 1 60); do sleep 2; if grep -q "Uvicorn running" "$LOG" 2>/dev/null; then echo "ready on :$PORT (pid $(cat "$PID"))"; return 0; fi; if ! kill -0 "$(cat "$PID")" 2>/dev/null; then echo "failed:"; tail -20 "$LOG"; return 1; fi; done
   echo "timeout"; tail -5 "$LOG"; return 1

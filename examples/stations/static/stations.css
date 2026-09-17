@@ -1,0 +1,7 @@
+.map{width:100%;flex:1;min-height:60vh;background:#0b0f14;border-radius:8px;border:1px solid var(--line);touch-action:none}
+.card{position:absolute;left:16px;right:16px;bottom:16px;background:rgba(23,29,37,.96);border:1px solid var(--acc);border-radius:10px;padding:12px;display:flex;flex-direction:column;gap:8px;z-index:20}
+.card b{font-size:20px}
+.neighbors{display:flex;gap:10px;align-items:center;flex-wrap:wrap;font-size:14px}.neighbors .cur{color:var(--acc);font-weight:700}
+.cardbtns{display:flex;gap:6px;flex-wrap:wrap}.cardbtns .back{margin-left:auto;border-color:var(--acc)}
+.credit{font-size:11px}.credit a{color:var(--muted)}
+@media (max-width:1000px){.map{min-height:45vh}}

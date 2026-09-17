@@ -1,7 +1,11 @@
-"""カメラ監視 音声コマンド デモサーバー.
+"""音声コマンド デモサーバー (アプリ差し替え可).
 
 起動:
-    CUDA_VISIBLE_DEVICES=2 .venv/bin/python examples/road_cameras/server.py --port 8600 --tts voicevox://127.0.0.1:50021
+    CUDA_VISIBLE_DEVICES=2 .venv/bin/python -m jev.voice.demo_server --app examples.road_cameras.app --port 8600
+    CUDA_VISIBLE_DEVICES=2 .venv/bin/python -m jev.voice.demo_server --app examples.stations.app     --port 8601
+
+アプリモジュールの契約: AppClass (command_set/apply/snapshot/set_scope/invalidate/expire_confirm/entities/allowed_commands/grammar/sm/log),
+CALIBRATION_STATES, SLOT, DATA_FILE, default_scopes(lexicon), TITLE。静的 UI はモジュールと同じディレクトリの static/。
 
   GET  /                         UI
   WS   /ws                       音声 (PCM16 16kHz バイナリ) と制御 (JSON) の双方向
@@ -34,20 +38,20 @@ from fastapi.staticfiles import StaticFiles
 
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT))
-from examples.road_cameras.app import CALIBRATION_STATES, CameraApp  # noqa: E402
+import importlib  # noqa: E402
 from jev.voice.asr import KanaASR  # noqa: E402
-from jev.voice.calibration import Calibration  # noqa: E402
+from jev.core.none_calibration import Calibration  # noqa: E402
 from jev.voice.engine import Recognizer, Thresholds  # noqa: E402
 from jev.voice.lexicon import Lexicon, Scope, ScopeStore  # noqa: E402
 from jev.voice.synth import Pretrainer, PretrainConfig, TTSClient  # noqa: E402
 from jev.voice.vad import StreamingVad  # noqa: E402
 
-log = logging.getLogger("sashizu.demo")
+log = logging.getLogger("jev.voice.demo")
+APP = None            # アプリモジュール (main で読み込む)
 HERE = Path(__file__).resolve().parent
-STATE_DIR = Path(os.environ.get("JEV_STATE_DIR", "/data/openjev/state/road_cameras"))
-STATE_DIR.mkdir(parents=True, exist_ok=True)
+STATE_DIR = Path(os.environ.get("JEV_STATE_DIR", "/data/openjev/state/demo"))
 
-app = FastAPI(title="sashizu camera demo")
+app = FastAPI(title="jev voice demo")
 G: dict[str, Any] = {}          # グローバル資源 (asr, recognizer, lexicon, scopes, tts, hierarchy)
 SESSIONS: dict[str, "Session"] = {}
 
@@ -55,7 +59,7 @@ SESSIONS: dict[str, "Session"] = {}
 class Session:
     def __init__(self, sid: str, scope: Scope):
         self.id = sid
-        self.app = CameraApp(G["lexicon"], scope)
+        self.app = APP.AppClass(G["lexicon"], scope)
         self.vad = StreamingVad()
         self.ws: WebSocket | None = None
         self.loop: asyncio.AbstractEventLoop | None = None
@@ -64,11 +68,21 @@ class Session:
     def calibration(self) -> Calibration:
         return Calibration.from_dict(self.app.scope.profile.get("calibration"))
 
-    def handle_utterance(self, wav: np.ndarray) -> dict[str, Any]:
+    def handle_utterance(self, wav: np.ndarray, source: str = "mic") -> dict[str, Any]:
         expired = self.app.expire_confirm()
         cs = self.app.command_set()
         d = G["recognizer"].recognize(wav, cs, self.calibration())
         ev = self.app.apply(d)
+        if source == "mic" and os.environ.get("JEV_DUMP_UTTS", "1") == "1":
+            # 実音声の収集 (再校正・実測用)。wav と判断結果を並べて保存する
+            try:
+                import soundfile as sf
+                d_dir = STATE_DIR / "utts"; d_dir.mkdir(parents=True, exist_ok=True)
+                stamp = time.strftime("%Y%m%d_%H%M%S") + f"_{self.id}_{int(time.time() * 1000) % 1000:03d}"
+                sf.write(d_dir / f"{stamp}.wav", wav, 16000)
+                (d_dir / f"{stamp}.json").write_text(json.dumps({"decision": d.to_dict(), "state_before": d.state, "scope": self.app.scope.id}, ensure_ascii=False), encoding="utf-8")
+            except Exception:
+                log.exception("dump failed")
         ev["audio_sec"] = round(len(wav) / 16000, 2)
         if expired:
             ev["note"] = "確認待ちがタイムアウトしたため取り消しました"
@@ -89,8 +103,8 @@ class Session:
 def default_scope() -> Scope:
     st: ScopeStore = G["scopes"]
     if not st.scopes:
-        st.upsert(Scope("shuto", "首都国道事務所 (千葉 R14/R357/R6)", filters={"office": ["首都国道事務所"]}))
-        st.upsert(Scope("kanto_chiba", "千葉県 全域", filters={"pref": ["千葉県"]}))
+        for sc in APP.default_scopes(G["lexicon"]):
+            st.upsert(sc)
     return next(iter(st.scopes.values()))
 
 
@@ -105,7 +119,9 @@ def get_session(sid: str | None) -> Session:
 # ---------------------------------------------------------------- REST
 @app.get("/")
 def index():
-    return FileResponse(HERE / "static" / "index.html", headers={"Cache-Control": "no-store"})
+    from fastapi.responses import HTMLResponse
+    html = (G["static"] / "index.html").read_text(encoding="utf-8").replace("__V__", G.get("version", "0"))
+    return HTMLResponse(html, headers={"Cache-Control": "no-store"})
 
 
 @app.middleware("http")
@@ -151,7 +167,7 @@ def list_scopes():
     st: ScopeStore = G["scopes"]
     lex: Lexicon = G["lexicon"]
     return [{"id": s.id, "name": s.name, "filters": s.filters, "ids": s.ids, "exclude_ids": s.exclude_ids,
-             "n_cameras": len(lex.in_scope(s)), "profile": s.profile} for s in st.scopes.values()]
+             "n_cameras": len(APP.AppClass(lex, s).entities()), "profile": s.profile} for s in st.scopes.values()]
 
 
 @app.post("/api/scopes")
@@ -165,7 +181,7 @@ async def upsert_scope(body: dict):
     for sess in SESSIONS.values():
         if sess.app.scope.id == sid:
             sess.app.set_scope(s)
-    return {"ok": True, "id": sid, "n_cameras": len(G["lexicon"].in_scope(s))}
+    return {"ok": True, "id": sid, "n_cameras": len(APP.AppClass(G["lexicon"], s).entities())}
 
 
 @app.delete("/api/scopes/{sid}")
@@ -204,7 +220,7 @@ async def say(body: dict):
         import random
         from jev.voice.synth import add_noise
         wav = add_noise(wav, float(body["snr_db"]), random.Random(0))
-    ev = await asyncio.to_thread(sess.handle_utterance, wav)
+    ev = await asyncio.to_thread(sess.handle_utterance, wav, "tts")
     ev["tts_ms"] = round(t_tts)
     ev["session"] = sess.id
     await sess.send(ev)
@@ -222,8 +238,9 @@ async def pretrain(body: dict):
         return JSONResponse({"error": "busy"}, 409)
     if G.get("tts") is None or not G["tts"].ok():
         return JSONResponse({"error": "TTS unavailable"}, 503)
-    cfg = PretrainConfig(seeds=body.get("seeds") or [1, 2, 3], carriers=body.get("carriers") or ["{camera}", "{camera}を表示"],
-                         n_out_of_grammar=int(body.get("n_out_of_grammar", 12)), extra_states=CALIBRATION_STATES)
+    slot = APP.SLOT
+    cfg = PretrainConfig(seeds=body.get("seeds") or [1, 2, 3], carriers=body.get("carriers") or ["{%s}" % slot, "{%s}を表示" % slot],
+                         n_out_of_grammar=int(body.get("n_out_of_grammar", 12)), extra_states=APP.CALIBRATION_STATES)
     G["pretrain_busy"] = True
 
     def work():
@@ -235,7 +252,7 @@ async def pretrain(body: dict):
                 if time.time() - last[0] > 0.3 or kw.get("step") == kw.get("total"):
                     last[0] = time.time()
                     sess.send_threadsafe({"type": "pretrain", "status": "running", **kw})
-            res = pt.run(s, ["select_camera"], cfg=cfg, progress=prog)
+            res = pt.run(s, [APP.SELECT_INTENT], slot=APP.SLOT, cfg=cfg, progress=prog, entities=sess.app.entities())
             s.profile = {"calibration": res.calibration, "accuracy": res.accuracy, "accuracy_after": res.accuracy_after, "n_utts": res.n_utts,
                          "none_recall": res.none_recall, "false_accept": res.false_accept, "ece_after": res.ece_after,
                          "trained_at": time.strftime("%Y-%m-%d %H:%M"), "confusions": res.confusions,
@@ -297,12 +314,12 @@ async def ws_endpoint(ws: WebSocket):
                     await sess.send({"type": "state", "state": sess.app.snapshot()})
                 elif t == "reset":
                     sess.vad.reset()
-                    sess.app.sm.goto("WALL", camera=None, pending=None)
+                    sess.app.set_scope(sess.app.scope)
                     await sess.send({"type": "state", "state": sess.app.snapshot()})
                 elif t == "click_camera":     # マウス操作も同じ状態機械を通す
                     from jev.voice.engine import Candidate, Decision
                     from jev.voice.grammar import Hypothesis
-                    h = Hypothesis("select_camera", data["label"], "", {"camera": data["id"]})
+                    h = Hypothesis(APP.SELECT_INTENT, data["label"], "", {APP.SLOT: data["id"]})
                     d = Decision("execute", Candidate(h, 1.0, 0.0), [], 0.0, "(click)", 0.0, {}, sess.app.sm.state, "UI")
                     await sess.send(sess.app.apply(d))
                 elif t == "intent":          # ボタン・キー操作。音声と同じ apply() を通す (状態が許す意図だけ)
@@ -326,23 +343,35 @@ async def ws_endpoint(ws: WebSocket):
 
 # ---------------------------------------------------------------- 起動
 def main():
+    global APP, STATE_DIR
     ap = argparse.ArgumentParser()
+    ap.add_argument("--app", default="examples.road_cameras.app", help="アプリモジュール")
     ap.add_argument("--port", type=int, default=8600)
     ap.add_argument("--host", default="0.0.0.0")
     ap.add_argument("--tts", default=os.environ.get("JEV_TTS_URL", "voicevox://127.0.0.1:50021"), help="voicevox:// | irodori:// | openai://")
-    ap.add_argument("--cameras", default=str(HERE / "cameras.json"))
-    ap.add_argument("--hierarchy", default=str(HERE / "hierarchy.json"))
+    ap.add_argument("--data", default=None, help="実体 JSON (既定: アプリの DATA_FILE)")
+    ap.add_argument("--hierarchy", default=None)
     ap.add_argument("--ssl-dir", default=None, help="cert.pem/key.pem のあるディレクトリ (マイクは https か localhost が必須)")
     args = ap.parse_args()
     logging.basicConfig(level=logging.INFO, format="%(asctime)s %(name)s %(levelname)s %(message)s")
+    APP = importlib.import_module(args.app)
+    app_dir = Path(APP.__file__).resolve().parent
+    G["static"] = app_dir / "static"
+    G["version"] = str(int(max(p.stat().st_mtime for p in (app_dir / "static").glob("*")) if list((app_dir / "static").glob("*")) else time.time()))
+    app.title = getattr(APP, "TITLE", app.title)
+    if "JEV_STATE_DIR" not in os.environ:
+        STATE_DIR = Path("/data/openjev/state") / app_dir.name
+    STATE_DIR.mkdir(parents=True, exist_ok=True)
+    data_file = Path(args.data) if args.data else app_dir / APP.DATA_FILE
+    hier_file = Path(args.hierarchy) if args.hierarchy else app_dir / "hierarchy.json"
 
-    lex_path = STATE_DIR / "cameras.json"
+    lex_path = STATE_DIR / "entities.json"
     if not lex_path.exists():
         import shutil
-        shutil.copy(args.cameras, lex_path)
+        shutil.copy(data_file, lex_path)
     G["lexicon_path"] = lex_path
     G["lexicon"] = Lexicon.load(lex_path)
-    G["hierarchy"] = json.loads(Path(args.hierarchy).read_text(encoding="utf-8"))
+    G["hierarchy"] = json.loads(hier_file.read_text(encoding="utf-8"))
     G["scopes"] = ScopeStore(STATE_DIR / "scopes.json")
     G["tts"] = TTSClient(args.tts, cache_dir=STATE_DIR / "tts_cache")
     log.info("tts backend: %s ok=%s", args.tts, G["tts"].ok())
@@ -350,7 +379,8 @@ def main():
     G["asr"] = KanaASR()
     G["recognizer"] = Recognizer(G["asr"], Calibration(), Thresholds())
     log.info("ready: %d cameras, tts=%s", len(G["lexicon"]), G["tts"].ok())
-    app.mount("/static", StaticFiles(directory=str(HERE / "static")), name="static")
+    app.mount("/static", StaticFiles(directory=str(G["static"])), name="static")
+    app.mount("/shared", StaticFiles(directory=str(HERE / "demo_static")), name="shared")
     import uvicorn
     kw = {}
     if args.ssl_dir:

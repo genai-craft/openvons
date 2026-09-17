@@ -57,6 +57,18 @@ CALIBRATION_STATES = [
     ]),
 ]
 
+SLOT = "camera"
+SELECT_INTENT = "select_camera"
+DATA_FILE = "cameras.json"
+TITLE = "道路カメラ 音声コマンド"
+AppClass = None   # 末尾で束縛
+
+
+def default_scopes(lex):
+    return [Scope("shuto", "首都国道事務所 (千葉 R14/R357/R6)", filters={"office": ["首都国道事務所"]}),
+            Scope("kanto_chiba", "千葉県 全域", filters={"pref": ["千葉県"]})]
+
+
 STATES = {
     "WALL": StateDef("WALL", ["select_camera", "help"], "一覧表示中。カメラ名を言うと拡大します"),
     "FOCUS": StateDef("FOCUS", ["pan_right", "pan_left", "tilt_up", "tilt_down", "zoom_in", "zoom_out", "home", "back", "save_preset", "select_camera", "help"],
@@ -189,3 +201,6 @@ class CameraApp:
         s["n_cameras"] = len(self.entities())
         s["scope"] = {"id": self.scope.id, "name": self.scope.name}
         return s
+
+
+AppClass = CameraApp

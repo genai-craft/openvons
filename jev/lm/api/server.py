@@ -87,3 +87,22 @@ async def decide(req: DecisionRequest):
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host=os.environ.get("DM_HOST", "127.0.0.1"), port=int(os.environ.get("DM_PORT", "8400")))
+
+
+# ---------------------------------------------------------------- TypeSafe Jev 互換 (POST /v1/systemone)
+from jev.lm.api import systemone as _so  # noqa: E402
+
+
+@app.post("/v1/systemone")
+async def systemone(body: dict):
+    """Jev の SDK (typesafe-sdk) の base_url をこのサーバーに向ければそのまま使える形。model は無視 (ローカルの 1 モデル)。"""
+    try:
+        qs = [_so.criteria_to_question(name, q) for name, q in (body.get("questions") or {}).items()]
+    except ValueError as e:
+        return JSONResponse({"error": {"type": "invalid_request_error", "message": str(e)}}, 422)
+    if not qs:
+        return JSONResponse({"error": {"type": "invalid_request_error", "message": "questions is empty"}}, 422)
+    state = _so.state_to_text(body.get("state", ""))
+    probs = await run_backend(state, qs)          # 既存の /v1/decision と同じバックエンド
+    answers = {q.key: _so.answer(q, p) for q, p in zip(qs, probs)}
+    return {"model": body.get("model") or MODEL_NAME, "answers": answers, "usage": {"input_tokens": len(state) // 3, "output_tokens": 0}}
