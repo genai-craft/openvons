@@ -49,7 +49,8 @@ from openvons.voice.vad import StreamingVad  # noqa: E402
 log = logging.getLogger("openvons.voice.demo")
 APP = None            # アプリモジュール (main で読み込む)
 HERE = Path(__file__).resolve().parent
-STATE_DIR = Path(os.environ.get("JEV_STATE_DIR", "/data/openjev/state/demo"))
+STATE_ROOT = Path(os.environ.get("OPENVONS_STATE", Path(__file__).resolve().parents[2] / "state"))
+STATE_DIR = Path(os.environ.get("JEV_STATE_DIR", STATE_ROOT / "demo"))
 
 app = FastAPI(title="jev voice demo")
 G: dict[str, Any] = {}          # グローバル資源 (asr, recognizer, lexicon, scopes, tts, hierarchy)
@@ -360,7 +361,7 @@ def main():
     G["version"] = str(int(max(p.stat().st_mtime for p in (app_dir / "static").glob("*")) if list((app_dir / "static").glob("*")) else time.time()))
     app.title = getattr(APP, "TITLE", app.title)
     if "JEV_STATE_DIR" not in os.environ:
-        STATE_DIR = Path("/data/openjev/state") / app_dir.name
+        STATE_DIR = STATE_ROOT / app_dir.name
     STATE_DIR.mkdir(parents=True, exist_ok=True)
     data_file = Path(args.data) if args.data else app_dir / APP.DATA_FILE
     hier_file = Path(args.hierarchy) if args.hierarchy else app_dir / "hierarchy.json"

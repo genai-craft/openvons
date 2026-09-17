@@ -1,6 +1,6 @@
 """ブラウザの代わりに WebSocket へ PCM を流す統合テスト (サーバー起動中に実行).
 
-    .venv/bin/python tests/test_ws_client.py --url ws://localhost:8600/ws --tts http://172.20.0.3:8093
+    .venv/bin/python tests/test_ws_client.py --url ws://localhost:8600/ws --tts voicevox://127.0.0.1:50021
 
 TTS で作った発話を 4096 サンプルずつ 実時間の 1/4 のペースで送り、前後に無音を入れて VAD の切り出しと
 result イベントを確認する。pytest からも呼べる (サーバーが無ければ skip)。
@@ -58,7 +58,7 @@ def test_ws_roundtrip():
         httpx.get("http://localhost:8600/api/state", timeout=2)
     except Exception:
         pytest.skip("demo server not running")
-    res = asyncio.run(run("ws://localhost:8600/ws", "http://172.20.0.3:8093", ["船橋南1上りを表示", "もっと右に向けて", "一覧に戻る"]))
+    res = asyncio.run(run("ws://localhost:8600/ws", "voicevox://127.0.0.1:50021", ["船橋南1上りを表示", "もっと右に向けて", "一覧に戻る"]))
     assert all(r["result"] is not None for r in res)
     assert res[0]["result"]["action"] == "execute" and res[0]["result"]["top"]["text"].startswith("船橋南1上り")
     assert res[1]["result"]["top"]["intent"] == "pan_right"
@@ -68,7 +68,7 @@ def test_ws_roundtrip():
 if __name__ == "__main__":
     ap = argparse.ArgumentParser()
     ap.add_argument("--url", default="ws://localhost:8600/ws")
-    ap.add_argument("--tts", default="http://172.20.0.3:8093")
+    ap.add_argument("--tts", default="voicevox://127.0.0.1:50021")
     ap.add_argument("texts", nargs="*", default=["船橋南1上りを表示", "もっと右に向けて", "この位置を保存して", "はい", "一覧に戻る", "はい、お世話になっております"])
     a = ap.parse_args()
     asyncio.run(run(a.url, a.tts, a.texts))

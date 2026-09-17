@@ -1,7 +1,7 @@
 """ReazonSpeech (HF parquet) に kana-whisper で疑似ラベル (カナ) を付ける.
 
     CUDA_VISIBLE_DEVICES=5 .venv/bin/python -m openvons.voice.distill.pseudo_label \
-        --parquet-dir /data/lychee_ja/reazon/hf/small/small --out /data/openjev/distill/reazon_small_kana.jsonl
+        --parquet-dir <reazonspeech parquet dir> --out state/distill/reazon_small_kana.jsonl
 
 出力 jsonl: {"id", "kana", "text" (元の書き起こし), "duration", "logprob", "parquet", "row"}
 音声そのものは書き出さない (parquet から都度読む)。ReazonSpeech は再配布不可 (docs/licensing.md)。

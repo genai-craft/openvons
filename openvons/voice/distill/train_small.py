@@ -1,8 +1,8 @@
 """whisper-small (または base) をカナ出力に蒸留する (スマホ搭載用の小型 kana モデル).
 
     CUDA_VISIBLE_DEVICES=5 .venv/bin/python -m openvons.voice.distill.train_small \
-        --labels /data/openjev/distill/reazon_small_kana.jsonl --parquet-dir /data/lychee_ja/reazon/hf/small/small \
-        --student openai/whisper-small --decoder-layers 2 --out /data/openjev/distill/kana-whisper-small-2l
+        --labels state/distill/reazon_small_kana.jsonl --parquet-dir <reazonspeech parquet dir> \
+        --student openai/whisper-small --decoder-layers 2 --out state/distill/kana-whisper-small-2l
 
 レシピ (distil-whisper / kotoba-whisper / ふりがな Whisper の組み合わせ):
   - 教師 = kana-whisper の疑似ラベル (カナ)。学生は whisper-small の重みで初期化し、decoder を先頭 1 層 + 最終 1 層の 2 層に切る

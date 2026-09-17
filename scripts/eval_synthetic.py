@@ -13,6 +13,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import random
 import sys
 import time
@@ -57,7 +58,7 @@ def main():
     print(f"asr {args.asr_model}: {asr.n_params / 1e6:.0f}M params", flush=True)
     rec = Recognizer(asr)
     g = Grammar(INTENTS)
-    tts = TTSClient(args.tts, cache_dir="/data/openjev/state/tts_cache")
+    tts = TTSClient(args.tts, cache_dir=os.environ.get("OPENVONS_STATE", str(ROOT / "state")) + "/tts_cache")
     assert tts.ok(), "TTS unavailable"
 
     # 評価に使うカメラは首都国道から (全範囲で同じ発話を使い、選択肢の増加だけの効果を見る)

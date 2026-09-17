@@ -1,6 +1,6 @@
 """駅名デモのカタログを作る (Seo-4d696b75/station_database、CC BY 4.0、駅データ.jp 由来).
 
-    .venv/bin/python scripts/build_stations.py   # /data/openjev/data/stations/{station,line,register}.csv -> examples/stations/{stations,hierarchy}.json
+    .venv/bin/python scripts/build_stations.py   # $OPENVONS_DATA/stations/{station,line,register}.csv -> examples/stations/{stations,hierarchy}.json
 
 実体 = 駅。読みは name_kana (ひらがな) を ASR 形カタカナに正規化。属性: 都道府県、路線 (複数)、事業者、座標。
 担当範囲 (Scope) は路線単位で作るので、路線ごとの駅 index (順序) も持たせる (「次の駅 / 前の駅」用)。
@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import csv
 import json
+import os
 import sys
 from collections import defaultdict
 from pathlib import Path
@@ -17,7 +18,7 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 from openvons.voice import kana as K  # noqa: E402
 
-SRC = Path("/data/openjev/data/stations")
+SRC = Path(os.environ.get("OPENVONS_DATA", ROOT / "data")) / "stations"   # station_database の CSV 3 本を置く
 PREF = ["", "北海道", "青森県", "岩手県", "宮城県", "秋田県", "山形県", "福島県", "茨城県", "栃木県", "群馬県", "埼玉県", "千葉県", "東京都", "神奈川県", "新潟県", "富山県", "石川県", "福井県", "山梨県", "長野県", "岐阜県", "静岡県", "愛知県", "三重県", "滋賀県", "京都府", "大阪府", "兵庫県", "奈良県", "和歌山県", "鳥取県", "島根県", "岡山県", "広島県", "山口県", "徳島県", "香川県", "愛媛県", "高知県", "福岡県", "佐賀県", "長崎県", "熊本県", "大分県", "宮崎県", "鹿児島県", "沖縄県"]
 COMPANY = {1: "JR北海道", 2: "JR東日本", 3: "JR東海", 4: "JR西日本", 5: "JR四国", 6: "JR九州"}   # 他は路線名の頭で補う
 
