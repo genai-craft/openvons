@@ -25,6 +25,13 @@ uv venv --python 3.12 .venv && uv pip install --python .venv/bin/python -e ".[de
 .venv/bin/python -m pytest -q tests/test_voice_core.py
 ```
 
+### テキストの判断デモ
+
+```bash
+vllm serve Qwen/Qwen3-4B-Instruct-2507 --served-model-name qwen3-4b --port 8300 --logprobs-mode processed_logprobs   # OpenAI 互換なら何でもよい
+scripts/serve_text.sh start 8604
+```
+
 ### 音声コマンドのデモ
 
 ```bash
@@ -39,6 +46,7 @@ JEV_APP=examples.road_cameras.app scripts/serve_demo.sh start 2 8600   # 道路�
 
 | デモ | 公開 URL | 中身 |
 |---|---|---|
+| テキストの判断 | https://text.openvons.com | 問い合わせメール・点検メモ・打ち合わせメモを貼り、Noul / Choice / Score の質問をまとめて投げて質問ごとの確率を見る。「確率」「JSON 生成」「一択のみ」の比較と、質問を増やしたときの所要時間をその場で実測 (8 問で 40ms 対 900ms) |
 | 駅名で動く路線図 | https://eki.openvons.com | 8,987 駅 (station_database, CC BY 4.0)。駅名 → 寄る、次/前の駅、路線切替、お気に入り (要確認) |
 | 河川ライブカメラ (kasen) | https://kasen.openvons.com | 関東地方整備局の河川ライブカメラ 199 地点 (利根川・荒川・那珂川・久慈川・渡良瀬川・霞ヶ浦)。地点名 → ライブ画像、上流 / 下流へ、更新、拡大、お気に入り (要確認) |
 | 顔と全身の属性 (画像) | https://kao.openvons.com | Web カメラか画像。顔ごとに年齢 9 区分・性別 (FairFace head)、全身の性別・年代・向き・荷物 (PA-100K head)。校正済み確率と 確定 / 要確認 / 不明 の 3 段。画像は保存しない |
@@ -76,7 +84,7 @@ openvons/lm/         models (backbone/heads/pooling/decision_model/hybrid_cache)
 openvons/vision/     vision_model (視覚単体), vlm_decision_model (小型 VLM), train_vision/train_vlm, server
 openvons/voice/      kana, lexicon (実体・担当範囲), grammar (状態別コマンド集合), asr (kana-whisper), engine, state, vad, synth (事前学習)
 openvons/tts/        TTS バックエンド (voicevox:// 既定、irodori://、openai://)
-examples/       stations (駅名で動く路線図)、kasen (河川ライブカメラ)、road_cameras (合成カタログの道路カメラ) — app.py + static/ だけ
+examples/       text_decision (テキストの判断)、stations (駅名で動く路線図)、kasen (河川ライブカメラ)、road_cameras (合成カタログの道路カメラ)
 openvons/voice/demo_server.py  共通のデモサーバー (--app で差し替え)、openvons/voice/distill/ 小型 kana モデルの蒸留
 scripts/        lm_* (テキスト/画像の実験)、build_catalog / build_stations / eval_synthetic / refit_calibration (音声)、serve_demo.sh
 docs/           lm_* / vision_* / voice_* の設計・評価・調査、licensing.md

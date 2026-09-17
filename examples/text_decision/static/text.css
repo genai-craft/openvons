@@ -1,0 +1,33 @@
+.txmain{display:grid;grid-template-columns:1fr 1fr;gap:14px;padding:14px 16px;align-items:start}
+.pane{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:12px;display:flex;flex-direction:column;gap:8px}
+textarea#state{min-height:190px;background:#0b0f14;color:var(--fg);border:1px solid var(--line);border-radius:8px;padding:10px;font:13px/1.7 system-ui,-apple-system,"Noto Sans JP",sans-serif;resize:vertical}
+.qhead{display:flex;align-items:center;justify-content:space-between}
+.questions{display:flex;flex-direction:column;gap:6px;max-height:44vh;overflow:auto}
+.qrow{display:grid;grid-template-columns:86px 1fr 26px;gap:6px;align-items:start;background:#0b0f14;border:1px solid var(--line);border-radius:8px;padding:6px}
+.qrow select,.qrow input,.qrow textarea{background:#0f1318;color:var(--fg);border:1px solid var(--line);border-radius:6px;padding:5px 7px;font:13px system-ui,sans-serif;width:100%}
+.qrow textarea{min-height:44px;resize:vertical;font-family:ui-monospace,monospace;font-size:12px}
+.qrow .del{background:transparent;border:0;color:var(--muted);cursor:pointer;font-size:16px}
+.modebar{display:flex;gap:14px;align-items:center;flex-wrap:wrap;font-size:13px}
+.modebar label{display:flex;gap:4px;align-items:center;color:var(--fg)}
+.modebar .right{margin-left:auto}
+.answers{display:flex;flex-direction:column;gap:8px;min-height:120px}
+.acard{background:#0b0f14;border:1px solid var(--line);border-radius:8px;padding:8px 10px}
+.ahead{display:flex;justify-content:space-between;align-items:baseline;gap:8px;margin-bottom:4px}
+.ahead .q{color:var(--muted);font-size:12px}
+.ahead .ans{font-weight:700;color:var(--acc);font-size:15px}
+.bars{display:flex;height:16px;border-radius:4px;overflow:hidden;background:#111}
+.bars i{display:block;height:100%;opacity:.9}
+.opts{display:flex;flex-wrap:wrap;gap:8px;margin-top:3px;font-size:11px;color:var(--muted)}
+.opts b{color:var(--fg);font-weight:600}
+.lv{border-radius:999px;padding:0 8px;font-size:11px;font-weight:700;margin-left:6px}
+.lv.確定{background:#1f3b26;color:var(--ok)}.lv.要確認{background:#3b3220;color:var(--warn)}.lv.不明{background:#3b2020;color:var(--bad)}
+.legend{list-style:none;padding:0;margin:0;font-size:13px}.legend li{padding:2px 0}
+.fanout{display:flex;flex-direction:column;gap:4px;font-size:12px}
+.fanrow{display:grid;grid-template-columns:58px 1fr;gap:8px;align-items:center}
+.fanbars{display:flex;flex-direction:column;gap:2px}
+.fanbar{display:flex;align-items:center;gap:6px}
+.fanbar i{display:block;height:11px;border-radius:2px}
+.fanbar.p i{background:var(--acc)}.fanbar.j i{background:var(--warn)}
+.small{padding:4px 10px;font-size:12px}
+code{background:#0b0f14;padding:1px 4px;border-radius:4px}
+@media (max-width:1000px){.txmain{grid-template-columns:1fr}.questions{max-height:none}}

@@ -4,7 +4,7 @@
 
 ## 済んだこと
 - 統合 repo (openvons.core / lm / vision / voice / tts)、統合 venv (transformers 5.17)、ライセンス棚卸し (docs/licensing.md)
-- デモ 2 本 (駅名で動く路線図 = 一般向け、道路カメラ監視 = 業務例)、共通デモサーバー (--app 差し替え)、PWA manifest
+- デモ 5 本 (テキストの判断、駅名で動く路線図、河川ライブカメラ、顔と全身の属性、道路カメラ監視)、共通デモサーバー (--app 差し替え)、PWA manifest
 - Jev 互換 API (POST /v1/systemone、docs/jev_api.md)、規約上の注意の整理
 - 実音声の収集口 (マイク発話の自動保存)、事前学習の小範囲対策 (声・言い方の自動増量、正則化)
 - 小型化パイプライン (ReazonSpeech 100h に kana-whisper で疑似ラベル 62,046 発話 → whisper-small 2 層 decoder を蒸留)

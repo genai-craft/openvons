@@ -1,0 +1,39 @@
+[
+  {
+    "name": "問い合わせメールの仕分け",
+    "state": "件名: 注文番号 20260915-4471 の件\n\nお世話になっております。9月15日に注文した商品がまだ届きません。配送予定日は9月17日でしたが、追跡番号を見ても「準備中」のままです。\n明日から出張で不在にするため、今日中に発送の見込みを教えてください。難しいようであればキャンセルして返金をお願いしたいです。\nなお、前回の注文でも同じことがありました。正直なところ、対応に不安を感じています。\n\n山田",
+    "questions": [
+      {"key": "dept", "type": "choice", "instructions": "一次対応はどの部署が引き取るべきか", "criteria": {"shipping": "配送・物流", "billing": "請求・返金", "returns": "返品・キャンセル", "tech": "製品の技術的な不具合", "other": "その他・判断がつかない"}},
+      {"key": "urgency", "type": "score", "instructions": "対応の緊急度", "criteria": ["翌営業日でよい", "当日中に返したい", "いますぐ対応が要る"]},
+      {"key": "sentiment", "type": "score", "instructions": "書き手の不満の強さ", "criteria": ["不満なし", "軽い不満", "強い不満", "解約・苦情に発展しそう"]},
+      {"key": "refund", "type": "noul", "instructions": "返金またはキャンセルの希望が書かれているか"},
+      {"key": "repeat", "type": "noul", "instructions": "過去にも同じ問題が起きたと書かれているか"},
+      {"key": "pii", "type": "noul", "instructions": "本文に個人情報 (氏名・住所・電話番号など) が含まれるか"},
+      {"key": "reply", "type": "choice", "instructions": "最初に送る返信の型", "criteria": {"status": "配送状況の調査結果を知らせる", "apology_refund": "謝罪と返金・キャンセルの手続き案内", "ask_info": "追加情報を尋ねる", "escalate": "担当者から個別に連絡する"}}
+    ]
+  },
+  {
+    "name": "設備の点検メモ",
+    "state": "9月17日 15:20 定期点検。3号ポンプの軸受から異音 (周期的な金属音)。振動値 8.2 mm/s (前回 4.1)。温度 68℃ で上限 70℃ に接近。油面は下限付近、漏れの跡が床に約 20cm。\n運転は継続中だが、負荷を 70% に落として様子見。予備機は 1 台あり切替可能。次回の定期停止は 10 月 20 日の予定。",
+    "questions": [
+      {"key": "abnormal", "type": "noul", "instructions": "異常の兆候があるか"},
+      {"key": "severity", "type": "score", "instructions": "深刻度", "criteria": ["経過観察でよい", "計画的に修繕", "次の停止を待たず対応", "直ちに停止が必要"]},
+      {"key": "action", "type": "choice", "instructions": "取るべき対応", "criteria": {"watch": "経過観察", "plan": "計画修繕に登録", "switch": "予備機に切り替える", "stop": "直ちに停止して点検"}},
+      {"key": "part", "type": "choice", "instructions": "疑わしい部位", "criteria": {"bearing": "軸受", "seal": "シール・油漏れ", "motor": "モーター", "impeller": "羽根車", "unknown": "特定できない"}},
+      {"key": "revisit", "type": "noul", "instructions": "再訪・追加点検が必要か"},
+      {"key": "safety", "type": "noul", "instructions": "人の安全に関わる記述があるか"}
+    ]
+  },
+  {
+    "name": "打ち合わせメモから次の行動",
+    "state": "9/17 14:00-15:00 A社との定例。先方は新機能のデモを見て好感触。ただし社内稟議に 2 週間かかるとのこと。\n価格は現行案から 1 割下げてほしいという要望。決裁は情報システム部の佐藤部長。\n次回は 10/1 に、導入スケジュールと保守体制の資料を持って訪問する。見積の改訂版は今週中に送付する約束。",
+    "questions": [
+      {"key": "decided", "type": "noul", "instructions": "この場で決まったことがあるか"},
+      {"key": "deadline", "type": "noul", "instructions": "期限が明示された宿題があるか"},
+      {"key": "owner", "type": "choice", "instructions": "次の宿題の主担当", "criteria": {"sales": "営業", "product": "製品・開発", "support": "保守・サポート", "customer": "顧客側", "unclear": "書かれていない"}},
+      {"key": "stage", "type": "choice", "instructions": "商談の段階", "criteria": {"lead": "接触したばかり", "eval": "評価・検討中", "quote": "見積・条件交渉", "closing": "決裁待ち", "lost": "見送り"}},
+      {"key": "priority", "type": "score", "instructions": "社内での優先度", "criteria": ["低い", "普通", "高い"]},
+      {"key": "risk", "type": "noul", "instructions": "失注につながりそうな懸念が書かれているか"}
+    ]
+  }
+]

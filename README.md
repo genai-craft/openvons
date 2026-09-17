@@ -25,6 +25,13 @@ uv venv --python 3.12 .venv && uv pip install --python .venv/bin/python -e ".[de
 .venv/bin/python -m pytest -q tests/test_voice_core.py
 ```
 
+### Text decision demo
+
+```bash
+vllm serve Qwen/Qwen3-4B-Instruct-2507 --served-model-name qwen3-4b --port 8300 --logprobs-mode processed_logprobs   # any OpenAI-compatible server
+scripts/serve_text.sh start 8604
+```
+
 ### Voice command demos
 
 ```bash
@@ -39,6 +46,7 @@ Utterances captured through the microphone are stored under `state/<app>/utts/` 
 
 | Demo | Live | What it does |
 |---|---|---|
+| Text decisions | https://text.openvons.com | Paste a support email / inspection note / meeting memo, ask several Noul / Choice / Score questions at once, get probabilities per question. Compare "probabilities" vs "JSON generation" vs "one pick", and measure live how latency changes as you add questions (8 questions: 40 ms vs 900 ms) |
 | Railway map by voice | https://eki.openvons.com | 8,987 stations (station_database, CC BY 4.0). Say a station to zoom; next / previous station; switch line; add favorite (asks for confirmation) |
 | River live cameras (kasen) | https://kasen.openvons.com | 199 live cameras of MLIT Kanto Regional Development Bureau (Tone, Arakawa, Naka, Kuji, Watarase, Kasumigaura). Say a site name to show its live image; move upstream / downstream; refresh; zoom; favorite (asks for confirmation) |
 | Face and body attributes (vision) | https://kao.openvons.com | Webcam or upload. Age (9 bins) and gender per face (FairFace head), gender / age group / orientation / baggage for the body (PA-100K head), each with calibrated probabilities and a decided / check / unknown level. Images are not stored |
@@ -88,7 +96,7 @@ openvons/lm/        models (backbone/heads/pooling/decision_model/hybrid_cache),
 openvons/vision/    vision_model (encoder only), vlm_decision_model (small VLM), train_vision/train_vlm, server
 openvons/voice/     kana, lexicon (entities and scopes), grammar (state-dependent command sets), asr (kana-whisper), engine, state, vad, synth (pre-training)
 openvons/tts/       TTS backends (voicevox:// default, irodori://, openai://)
-examples/           stations (railway map), kasen (river live cameras), road_cameras (synthetic camera monitoring) — each is app.py + static/
+examples/           text_decision (text questions), stations (railway map), kasen (river live cameras), road_cameras (synthetic cameras)
 openvons/voice/demo_server.py   shared demo server (--app selects the application); openvons/voice/distill/ distillation of the small kana model
 scripts/            lm_* (text / vision experiments), build_catalog / build_stations / eval_synthetic / refit_calibration (voice), serve_demo.sh
 docs/               design, evaluation and research notes (lm_*, vision_*, voice_*), licensing.md, jev_api.md, roadmap.md
