@@ -10,6 +10,7 @@ from __future__ import annotations
 import csv
 import json
 import os
+import re
 import sys
 from collections import defaultdict
 from pathlib import Path
@@ -55,6 +56,7 @@ def main() -> None:
         ls = st_lines[sc]
         companies = sorted({company_of(lines[l["line_code"]]) for l in ls})
         label = s["original_name"] if s.get("original_name") and s["original_name"] != "NULL" else s["name"]
+        label = re.sub(r"[（(].*?[)）]", "", label).strip() or label      # 四ツ谷(四ッ谷) → 四ツ谷
         entities.append({
             "id": f"st_{sc}", "label": label, "kind": "station",
             "readings": [reading], "aliases": [],

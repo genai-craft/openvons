@@ -24,7 +24,7 @@ function onMessage(m) {
 
 /* ---------------- 状態 ---------------- */
 function applyState(s) {
-  const prevScope = state.snap && state.snap.scope.id;
+  const prev = state.snap; const prevScope = prev && prev.scope.id;
   state.snap = s;
   $('#stateChip').textContent = s.state; $('#stateChip').className = 'statechip ' + (s.state === 'STATION' ? 'FOCUS' : s.state);
   $('#stateDesc').textContent = s.description;
@@ -34,8 +34,9 @@ function applyState(s) {
   $('#allowed').innerHTML = s.allowed_commands.map(c => `<li><span class="ex">${c.example}</span><span>${c.description}</span>${c.risk !== 'low' ? `<span class="risk">要確認</span>` : ''}</li>`).join('');
   $('#quick').innerHTML = s.allowed_commands.filter(c => !c.example.includes('<')).slice(0, 8).map(c => `<button data-say="${c.example}">${c.example}</button>`).join('');
   if ($('#scopeSel').value !== s.scope.id) $('#scopeSel').value = s.scope.id;
-  if (prevScope !== s.scope.id) { loadCams(); return; }
-  renderCard(s); draw();
+  if (prevScope !== s.scope.id || !state.cams) { loadCams(); return; }
+  renderCard(s); drawFocus();
+  if (s.state === 'MAP' && (!prev || prev.state !== 'MAP')) fitAll();      // 「全体に戻る」で必ず全体表示へ
 }
 function onResult(m) {
   const d = m.decision;
@@ -43,7 +44,7 @@ function onResult(m) {
   $('#freeKana').textContent = d.free_kana || '';
   const dec = $('#decision'); dec.className = 'decision ' + d.action;
   dec.textContent = `${{ execute: '実行', confirm: '確認', reject: '棄却', none: '該当なし' }[d.action]}  ${d.top ? d.top.text : ''}  ${d.reason || ''}`;
-  const rows = d.candidates.slice(0, 5).map(c => bar(c.text + (c.intent !== 'select_station' ? ` (${c.intent})` : ''), c.prob, ''));
+  const rows = d.candidates.slice(0, 5).map(c => bar(c.text + (!['select_station', 'route'].includes(c.intent) ? ` (${c.intent})` : ''), c.prob, ''));
   rows.push(bar('該当なし (自由認識そのまま)', d.none_prob, 'none'));
   $('#nbest').innerHTML = rows.join('');
   const t = d.timings_ms; $('#timings').textContent = `encoder ${t.encode}ms / 自由認識 ${t.transcribe}ms / 絞り込み ${t.shortlist ?? 0}ms / 採点 ${t.score ?? 0}ms / 合計 ${t.total}ms`;
@@ -54,68 +55,74 @@ function onResult(m) {
 function bar(text, p, cls) { return `<div class="row"><div class="bar ${cls}"><i style="width:${(p * 100).toFixed(1)}%"></i><span>${text}</span></div><div>${(p * 100).toFixed(1)}%</div></div>`; }
 function speak(text) { if (!('speechSynthesis' in window)) return; speechSynthesis.cancel(); const u = new SpeechSynthesisUtterance(text); u.lang = 'ja-JP'; u.rate = 1.1; state.muteUntil = Date.now() + Math.min(4000, 400 + text.length * 120); speechSynthesis.speak(u); }
 
-/* ---------------- 駅データ・路線図 ---------------- */
+/* ---------------- 駅データ・地図 (Leaflet + OpenStreetMap) ---------------- */
+const map = L.map('map', { zoomControl: true, attributionControl: true }).setView([35.68, 139.76], 11);
+L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19, attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors' }).addTo(map);
+const layers = { lines: L.layerGroup().addTo(map), stations: L.layerGroup().addTo(map), route: L.layerGroup().addTo(map) };
+const PALETTE = ['#4cc2ff', '#3fb950', '#d29922', '#f85149', '#a371f7', '#79c0ff', '#ff7b72', '#56d364', '#e3b341', '#f778ba'];
+let lineColor = {};
 async function loadCams() {
   const sc = state.scopes.find(s => s.id === (state.snap && state.snap.scope.id)); if (!sc) return;
-  const all = await (await fetch('/api/cameras?limit=20000')).json();
-  state.all = all;
-  state.cams = all.filter(c => inScope(sc, c));
-  fitView(); renderCard(state.snap); draw();
+  if (!state.all) state.all = await (await fetch('/api/cameras?limit=20000')).json();
+  if (!state.hier) { state.hier = await (await fetch('/api/hierarchy')).json(); for (const ls of Object.values(state.hier)) for (const v of Object.values(ls)) lineColor[v.code] = (v.color && v.color !== 'NULL') ? v.color : null; }
+  state.cams = state.all.filter(c => inScope(sc, c));
+  drawBase(); fitAll(); renderCard(state.snap); drawFocus();
 }
 function inScope(sc, c) {
   if (sc.exclude_ids.includes(c.id)) return false; if (sc.ids.includes(c.id)) return true;
   const f = sc.filters; if (!f || !Object.keys(f).length) return false;
   return Object.entries(f).every(([k, v]) => Array.isArray(c.attrs[k]) ? c.attrs[k].some(x => v.includes(x)) : v.includes(c.attrs[k]));
 }
-function project(lat, lng) { const y = -Math.log(Math.tan(Math.PI / 4 + lat * Math.PI / 360)); return [lng, y * 180 / Math.PI]; }
-function fitView() {
-  if (!state.cams.length) return;
-  const pts = state.cams.map(c => project(c.attrs.lat, c.attrs.lng));
-  const xs = pts.map(p => p[0]), ys = pts.map(p => p[1]);
-  state.view.bbox = [Math.min(...xs), Math.min(...ys), Math.max(...xs), Math.max(...ys)];
-  state.view.cx = (state.view.bbox[0] + state.view.bbox[2]) / 2; state.view.cy = (state.view.bbox[1] + state.view.bbox[3]) / 2; state.view.zoom = 1;
-}
-function toScreen(lat, lng, W, H) {
-  const [x, y] = project(lat, lng); const b = state.view.bbox; const span = Math.max(b[2] - b[0], (b[3] - b[1]) * W / H) * 1.15 || 1;
-  const sc = W / span * state.view.zoom;
-  return [W / 2 + (x - state.view.cx) * sc, H / 2 + (y - state.view.cy) * sc];
-}
-function draw() {
-  const cv = $('#map'); const W = cv.width = cv.clientWidth * devicePixelRatio, H = cv.height = cv.clientHeight * devicePixelRatio;
-  const ctx = cv.getContext('2d'); ctx.clearRect(0, 0, W, H);
-  if (!state.cams.length || !state.view.bbox) return;
-  const s = state.snap; const focus = s && s.station; const lineCode = s && s.view && s.view.line_code;
-  // 路線ごとに index 順で結ぶ
+function colorOf(lc, i) { return lineColor[lc] || PALETTE[i % PALETTE.length]; }
+function drawBase() {
+  layers.lines.clearLayers(); layers.stations.clearLayers(); state.markers = {};
   const byLine = new Map();
   for (const c of state.cams) for (const p of c.attrs.positions) { if (!byLine.has(p.line_code)) byLine.set(p.line_code, []); byLine.get(p.line_code).push([p.index, c]); }
-  const colors = ['#4cc2ff', '#3fb950', '#d29922', '#f85149', '#a371f7', '#79c0ff', '#ff7b72', '#56d364'];
-  let ci = 0; const lineColor = new Map();
-  for (const [lc, arr] of byLine) { arr.sort((a, b) => a[0] - b[0]); const col = colors[ci++ % colors.length]; lineColor.set(lc, col);
-    ctx.strokeStyle = lc === lineCode ? '#fff' : col; ctx.lineWidth = (lc === lineCode ? 5 : 3) * devicePixelRatio; ctx.globalAlpha = lc === lineCode || !lineCode ? 0.9 : 0.35; ctx.beginPath();
-    arr.forEach(([i, c], k) => { const [x, y] = toScreen(c.attrs.lat, c.attrs.lng, W, H); k ? ctx.lineTo(x, y) : ctx.moveTo(x, y); }); ctx.stroke(); }
-  ctx.globalAlpha = 1;
-  const showLabels = state.view.zoom >= 2.5 || state.cams.length <= 40;
-  ctx.font = `${12 * devicePixelRatio}px system-ui, sans-serif`;
-  for (const c of state.cams) { const [x, y] = toScreen(c.attrs.lat, c.attrs.lng, W, H); const isF = focus && c.id === focus.id;
-    ctx.fillStyle = isF ? '#fff' : '#0b0f14'; ctx.strokeStyle = isF ? '#4cc2ff' : '#c9d1d9'; ctx.lineWidth = 2 * devicePixelRatio;
-    ctx.beginPath(); ctx.arc(x, y, (isF ? 9 : 4.5) * devicePixelRatio, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
-    if (showLabels || isF) { ctx.fillStyle = isF ? '#4cc2ff' : '#c9d1d9'; ctx.fillText(c.label, x + 8 * devicePixelRatio, y - 6 * devicePixelRatio); } }
-  if (focus && s.view.favorites && s.view.favorites.length) { ctx.fillStyle = '#d29922'; for (const fid of s.view.favorites) { const c = state.cams.find(x => x.id === fid) || (state.all || []).find(x => x.id === fid); if (c) { const [x, y] = toScreen(c.attrs.lat, c.attrs.lng, W, H); ctx.fillText('★', x - 6 * devicePixelRatio, y - 14 * devicePixelRatio); } } }
+  let i = 0;
+  for (const [lc, arr] of byLine) { arr.sort((a, b) => a[0] - b[0]); const col = colorOf(lc, i++);
+    let seg = []; const flush = () => { if (seg.length > 1) L.polyline(seg, { color: col, weight: 5, opacity: .85 }).addTo(layers.lines); seg = []; };
+    arr.forEach(([idx, c], k) => { if (k && idx !== arr[k - 1][0] + 1) flush(); seg.push([c.attrs.lat, c.attrs.lng]); }); flush(); }
+  const many = state.cams.length > 60;
+  for (const c of state.cams) {
+    const m = L.circleMarker([c.attrs.lat, c.attrs.lng], { radius: 6, color: '#fff', weight: 2, fillColor: '#0b0f14', fillOpacity: 1 }).addTo(layers.stations);
+    m.bindTooltip(c.label, { permanent: !many, direction: 'top', offset: [0, -6], className: 'st-label' });
+    m.on('click', () => send({ type: 'click_camera', id: c.id, label: c.label }));
+    state.markers[c.id] = m;
+  }
+}
+function fitAll() { if (!state.cams || !state.cams.length) return; map.fitBounds(L.latLngBounds(state.cams.map(c => [c.attrs.lat, c.attrs.lng])).pad(0.08)); }
+function drawFocus() {
+  const s = state.snap; layers.route.clearLayers();
+  for (const m of Object.values(state.markers || {})) { m.setStyle({ radius: 6, fillColor: '#0b0f14', color: '#fff' }); const t = m.getTooltip(); if (t && t.getElement()) t.getElement().classList.remove('focus'); }
+  if (!s || !s.station) return;
+  const st = s.station; const all = state.all || state.cams;
+  const r = s.view && s.view.route;
+  if (r) {
+    const pts = r.stations.map(id => all.find(c => c.id === id)).filter(Boolean);
+    let k = 0;
+    for (const leg of r.legs) { const ids = r.stations.slice(r.stations.indexOf(leg.from), r.stations.indexOf(leg.to) + 1); const seg = ids.map(id => all.find(c => c.id === id)).filter(Boolean).map(c => [c.attrs.lat, c.attrs.lng]);
+      L.polyline(seg, { color: '#000', weight: 12, opacity: .5 }).addTo(layers.route); L.polyline(seg, { color: colorOf(leg.line_code, k++), weight: 7, opacity: 1 }).addTo(layers.route); }
+    for (const c of pts) L.circleMarker([c.attrs.lat, c.attrs.lng], { radius: 7, color: '#fff', weight: 2, fillColor: '#4cc2ff', fillOpacity: 1 }).addTo(layers.route).bindTooltip(c.label, { permanent: true, direction: 'top', offset: [0, -7], className: 'st-label' });
+    map.flyToBounds(L.latLngBounds(pts.map(c => [c.attrs.lat, c.attrs.lng])).pad(0.2), { duration: 0.8 });
+  } else {
+    const m = state.markers[st.id]; if (m) { m.setStyle({ radius: 10, fillColor: '#4cc2ff', color: '#fff' }); const t = m.getTooltip(); if (t && t.getElement()) t.getElement().classList.add('focus'); }
+    const z = Math.min(16, 12 + Math.log2(Math.max(1, s.view.zoom)));
+    map.flyTo([st.attrs.lat, st.attrs.lng], z, { duration: 0.7 });
+  }
 }
 function renderCard(s) {
   const card = $('#stationCard'); if (!s || !s.station) { card.hidden = true; return; }
-  card.hidden = false; const st = s.station; const lc = s.view.line_code;
+  card.hidden = false; const st = s.station; const lc = s.view.line_code; const all = state.all || state.cams;
   const pos = st.attrs.positions.find(p => p.line_code === lc) || st.attrs.positions[0];
-  $('#stLabel').textContent = st.label; $('#stMeta').textContent = `${st.attrs.pref} / ${pos.line} (${pos.index + 1}/${pos.n})  ${st.attrs.lines.length > 1 ? '乗換 ' + (st.attrs.lines.length - 1) + ' 路線' : ''}`;
-  const all = state.all || state.cams;
+  $('#stLabel').textContent = st.label; $('#stMeta').textContent = `${st.attrs.pref} / ${pos.line} (${pos.index + 1}/${pos.n})  ${st.attrs.lines.length > 1 ? '乗換 ' + (st.attrs.lines.length - 1) + ' 路線: ' + st.attrs.lines.filter(l => l !== pos.line).slice(0, 4).join('・') : ''}`;
   const at = (i) => all.find(c => c.attrs.positions.some(p => p.line_code === pos.line_code && p.index === i));
   const prev = at(pos.index - 1), next = at(pos.index + 1);
   $('#stNeighbors').innerHTML = `${prev ? '◀ ' + prev.label : '（始点）'} <span class="cur">${st.label}</span> ${next ? next.label + ' ▶' : '（終点）'}`;
-  // 選択駅を中心に寄せる
-  const [x, y] = project(st.attrs.lat, st.attrs.lng); state.view.cx = x; state.view.cy = y; state.view.zoom = Math.max(1, s.view.zoom);
+  const r = s.view.route; const rd = $('#stRoute');
+  if (r) { rd.hidden = false; let k = 0; const o = all.find(c => c.id === r.stations[0]); rd.innerHTML = `<b>${o ? o.label : ''} → ${st.label}</b>　${r.stations.length - 1} 駅・乗換 ${r.transfers} 回・約 ${r.minutes} 分<br>` + r.legs.map(l => `<span class="leg" style="background:${colorOf(l.line_code, k++)}">${l.line} ${l.hops} 駅</span>`).join('→ '); }
+  else rd.hidden = true;
 }
-window.addEventListener('resize', draw);
-
+window.addEventListener('resize', () => map.invalidateSize());
 /* ---------------- マイク ---------------- */
 async function toggleMic() {
   if (state.mic) { stopMic(); return; }
@@ -192,14 +199,9 @@ $('#sayForm').onsubmit = async (e) => { e.preventDefault(); const t = $('#sayTex
 $('#quick').onclick = (e) => { const b = e.target.closest('button'); if (b) say(b.dataset.say); };
 async function say(text) { $('#speech').textContent = '… TTS 合成中'; const snr = $('#saySnr').value; const r = await fetch('/api/say', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ session: state.session, text, snr_db: snr ? +snr : null }) }); const j = await r.json(); if (j.error) $('#speech').textContent = 'エラー: ' + j.error; }
 $('#stationCard').onclick = (e) => { const b = e.target.closest('button'); if (b) send({ type: 'intent', intent: b.dataset.intent }); };
-$('#map').addEventListener('click', (e) => {   // 駅をクリックしても同じ状態機械を通す
-  const cv = $('#map'); const r = cv.getBoundingClientRect(); const mx = (e.clientX - r.left) * devicePixelRatio, my = (e.clientY - r.top) * devicePixelRatio;
-  let best = null, bd = 1e9; for (const c of state.cams) { const [x, y] = toScreen(c.attrs.lat, c.attrs.lng, cv.width, cv.height); const d = Math.hypot(x - mx, y - my); if (d < bd) { bd = d; best = c; } }
-  if (best && bd < 18 * devicePixelRatio) send({ type: 'click_camera', id: best.id, label: best.label });
-});
 document.addEventListener('keydown', (e) => { if (e.target.tagName === 'INPUT') return; const map = { Escape: 'back', ArrowRight: 'next_station', ArrowLeft: 'prev_station', '+': 'zoom_in', '=': 'zoom_in', '-': 'zoom_out' }; const it = map[e.key]; if (it && state.snap && state.snap.state !== 'MAP') { e.preventDefault(); send({ type: 'intent', intent: it }); } });
 $('#scopeSel').onchange = (e) => useScope(e.target.value);
-$('#tabMonitor').onclick = () => { $('#monitor').hidden = false; $('#register').hidden = true; $('#tabMonitor').classList.add('active'); $('#tabRegister').classList.remove('active'); draw(); };
+$('#tabMonitor').onclick = () => { $('#monitor').hidden = false; $('#register').hidden = true; $('#tabMonitor').classList.add('active'); $('#tabRegister').classList.remove('active'); setTimeout(() => map.invalidateSize(), 50); };
 $('#tabRegister').onclick = async () => { $('#monitor').hidden = true; $('#register').hidden = false; $('#tabRegister').classList.add('active'); $('#tabMonitor').classList.remove('active'); if (!state.hier) await loadHierarchy(); renderCamTable(); };
 $('#bureauList').onclick = (e) => { const li = e.target.closest('li'); if (!li) return; state.reg.bureau = li.dataset.b; renderReg(); };
 $('#officeList').onclick = (e) => { const li = e.target.closest('li'); if (!li) return; const c = li.dataset.l; state.reg.lines.has(c) ? state.reg.lines.delete(c) : state.reg.lines.set(c, li.dataset.n); renderReg(); };

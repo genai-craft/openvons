@@ -36,6 +36,8 @@ class Intent:
     #: 埋め込み採点 (前後に余計な語が付いても候補を認める) を許すか。「はい/いいえ」のような確認応答は
     #: 単独で言わせる (False)。「そうですね、確認します」の頭の「そうです」を肯定と取らないため
     allow_embed: bool = True
+    #: スロット展開で主読みだけを使う (2 スロットの意図は n² に膨らむので別名・「〜駅」読みを落とす)
+    primary_only: bool = False
 
     def slot_kind(self, slot: str) -> str:
         return self.slots.get(slot, slot)
@@ -201,7 +203,10 @@ class Grammar:
             kind = it.slot_kind(slot)
             ents = by_kind.get(kind, [])
             table = self._readings_in_scope.get(kind, {})
-            opts = [(slot, e, r) for e in ents for r in table.get(e.id, e.all_readings())]
+            if it.primary_only:
+                opts = [(slot, e, e.primary_readings()[0]) for e in ents]
+            else:
+                opts = [(slot, e, r) for e in ents for r in table.get(e.id, e.all_readings())]
             options.append(opts)
         for combo in itertools.product(*options):
             fill = {slot: e for slot, e, _ in combo}

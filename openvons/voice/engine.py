@@ -99,7 +99,8 @@ class Analysis:
 
 class Recognizer:
     def __init__(self, asr: KanaASR, calibration: Calibration | None = None, thresholds: Thresholds | None = None, shortlist_k: int = 16,
-                 embed: bool = True, embed_min_ratio: float = 0.3, embed_max_residual: int = 14, embed_min_morae: int = 4):
+                 embed: bool = True, embed_min_ratio: float = 0.3, embed_max_residual: int = 14, embed_min_morae: int = 4,
+                 embed_penalty: float = 0.7):
         self.asr = asr
         self.calibration = calibration or Calibration()
         self.thresholds = thresholds or Thresholds()
@@ -112,6 +113,9 @@ class Recognizer:
         self.embed_min_ratio = embed_min_ratio
         self.embed_max_residual = embed_max_residual
         self.embed_min_morae = embed_min_morae
+        #: 埋め込み文は自由認識から借りたトークンの分だけ減点する (nats/トークン)。これが無いと「東京」だけの候補が
+        #: 「新宿から東京まで」の全文を借りて説明でき、全文を自分で説明する経路候補と同点になって確率が割れる
+        self.embed_penalty = embed_penalty
 
     def _embedded(self, free_kana: str, cand_kana: str) -> str | None:
         """候補を自由認識の最も似た区間に置き換えた文。条件を満たさなければ None。"""
@@ -162,7 +166,8 @@ class Recognizer:
         for j, i in enumerate(emb_index):
             # 埋め込み文 (前後の語を自由認識から取り込んだもの) と素の候補のうち、校正後 logit が大きい方を採る。
             # 埋め込み文は残り (説明しないトークン) が 0 になるので γ の罰則を受けない
-            s_e = all_scores[len(cands) + j]; n_e = float(len(seqs[len(cands) + j]))
+            n_e = float(len(seqs[len(cands) + j]))
+            s_e = all_scores[len(cands) + j] - self.embed_penalty * max(0.0, n_e - lens[i])
             z_bare = cal.logits(np.array([scores[i]]), free.logprob, np.array([lens[i]]), n_free)[0]
             z_emb = cal.logits(np.array([s_e]), free.logprob, np.array([n_e]), n_free)[0]
             if z_emb > z_bare:

@@ -82,6 +82,11 @@ def fit(samples: list[tuple], init: Calibration | None = None, fit_len_bonus: bo
         nf = int(smp[4]) if len(smp) > 4 and smp[4] is not None else None
         S.append((cs, fs, y, lens, nf))
 
+    # 正例 (文法内) と負例 (該当なし) を 1:1 に重み付け。負例が少ないと β0 が正例に引かれて伸び、
+    # 短い命令の状態で電話の「はい」を拾うようになる (山手線 30 駅で β0 が 24 に飛んだ)
+    n_neg = sum(1 for cs, _, y, _, _ in S if y == len(cs)); n_pos = len(S) - n_neg
+    w_neg = (n_pos / n_neg) if n_neg and n_pos else 1.0
+
     def nll(x):
         T = np.exp(x[0]); b0 = x[1]; b1 = x[2] if fit_len_bonus else init.len_bonus; g = x[3] if fit_len_bonus else init.residual_penalty
         cal = Calibration(T, b0, b1, g)
@@ -89,7 +94,7 @@ def fit(samples: list[tuple], init: Calibration | None = None, fit_len_bonus: bo
         for cs, fs, y, lens, nf in S:
             z = cal.logits(cs, fs, lens, nf)
             z = z - z.max()
-            tot += np.log(np.exp(z).sum()) - z[y]
+            tot += (w_neg if y == len(cs) else 1.0) * (np.log(np.exp(z).sum()) - z[y])
         # 正則化はサンプルが少ないほど強く (200 件で 0.02、50 件で 0.08)。少数サンプルでの退化 (β0 が 17 に飛ぶ等) を防ぐ
         lam = 0.02 * max(1.0, 200.0 / max(len(S), 1))
         tot += lam * ((x[0] - np.log(init.temperature)) ** 2 + 0.1 * (b0 - init.none_bias) ** 2 + (b1 - init.len_bonus) ** 2 + (g - init.residual_penalty) ** 2)
@@ -97,10 +102,11 @@ def fit(samples: list[tuple], init: Calibration | None = None, fit_len_bonus: bo
 
     res = minimize(nll, x0=[np.log(init.temperature), init.none_bias, init.len_bonus, init.residual_penalty], method="Nelder-Mead",
                    options={"xatol": 1e-3, "fatol": 1e-7, "maxiter": 6000})
-    T = float(np.clip(np.exp(res.x[0]), 0.3, 50.0))
-    b0 = float(np.clip(res.x[1], -5.0, 60.0))
-    b1 = float(np.clip(res.x[2], 0.0, 5.0)) if fit_len_bonus else init.len_bonus
-    g = float(np.clip(res.x[3], 0.0, 6.0)) if fit_len_bonus else init.residual_penalty
+    # 事前分布の範囲 (合成音声での校正の経験値)。外れる値は退化なので切る
+    T = float(np.clip(np.exp(res.x[0]), 0.5, 6.0))
+    b0 = float(np.clip(res.x[1], -2.0, 12.0))
+    b1 = float(np.clip(res.x[2], 0.5, 4.0)) if fit_len_bonus else init.len_bonus
+    g = float(np.clip(res.x[3], 0.5, 4.0)) if fit_len_bonus else init.residual_penalty
     return Calibration(T, b0, b1, g)
 
 

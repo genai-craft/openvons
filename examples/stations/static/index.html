@@ -7,6 +7,7 @@
 <link rel="manifest" href="/static/manifest.webmanifest">
 <title>駅名で動く路線図 — openvons (open-Jev) voice demo</title>
 <link rel="stylesheet" href="/shared/style.css?v=__V__">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
 <link rel="stylesheet" href="/static/stations.css?v=__V__">
 </head>
 <body>
@@ -27,10 +28,11 @@
       <span id="stateDesc" class="muted"></span>
       <span id="hypCount" class="muted right"></span>
     </div>
-    <canvas id="map" class="map"></canvas>
+    <div id="map" class="map"></div>
     <div id="stationCard" class="card" hidden>
       <div><b id="stLabel"></b> <span id="stMeta" class="muted"></span></div>
       <div id="stNeighbors" class="neighbors"></div>
+      <div id="stRoute" class="route" hidden></div>
       <div class="cardbtns"><button data-intent="prev_station">◀ 前の駅</button><button data-intent="next_station">次の駅 ▶</button><button data-intent="switch_line">路線を変える</button><button data-intent="zoom_in">＋</button><button data-intent="zoom_out">－</button><button data-intent="back" class="back">全体に戻る</button></div>
     </div>
   </section>
@@ -50,7 +52,7 @@
     <ul id="allowed" class="allowed"></ul>
     <h3>テキストで試す (TTS 経由でサーバー側から音声を通す)</h3>
     <form id="sayForm" class="sayform">
-      <input id="sayText" placeholder="例: 新宿まで / 次の駅 / 路線を変えて / はい" autocomplete="off">
+      <input id="sayText" placeholder="例: 新宿まで / 新宿から東京まで / 次の駅 / 路線を変えて / はい" autocomplete="off">
       <select id="saySnr"><option value="">雑音なし</option><option value="20">SNR 20dB</option><option value="10">SNR 10dB</option><option value="5">SNR 5dB</option></select>
       <button>喋らせる</button>
     </form>
@@ -93,6 +95,7 @@
     <div id="camTable" class="camtable"></div>
   </section>
 </main>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <script src="/static/stations.js?v=__V__"></script>
 </body>
 </html>

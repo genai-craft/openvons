@@ -1,4 +1,10 @@
-.map{width:100%;flex:1;min-height:60vh;background:#0b0f14;border-radius:8px;border:1px solid var(--line);touch-action:none}
+.map{width:100%;flex:1;min-height:60vh;background:#0b0f14;border-radius:8px;border:1px solid var(--line)}
+.leaflet-container{background:#0b0f14;font:inherit}
+.leaflet-tile{filter:brightness(.72) contrast(1.05) saturate(.7)}
+.st-label{background:rgba(11,15,20,.85);color:#e6edf3;border:1px solid #26303b;border-radius:4px;padding:1px 5px;font-size:11px;white-space:nowrap;box-shadow:none}
+.st-label.focus{color:#4cc2ff;border-color:#4cc2ff;font-weight:700;font-size:13px}
+.route{font-size:13px;line-height:1.7}.route .leg{display:inline-block;padding:1px 8px;border-radius:999px;margin-right:6px;color:#fff}
+.route b{color:var(--acc)}
 .card{position:absolute;left:16px;right:16px;bottom:16px;background:rgba(23,29,37,.96);border:1px solid var(--acc);border-radius:10px;padding:12px;display:flex;flex-direction:column;gap:8px;z-index:20}
 .card b{font-size:20px}
 .neighbors{display:flex;gap:10px;align-items:center;flex-wrap:wrap;font-size:14px}.neighbors .cur{color:var(--acc);font-weight:700}

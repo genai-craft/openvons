@@ -9,6 +9,8 @@
 """
 from __future__ import annotations
 
+import math
+import re
 import sys
 import time
 from dataclasses import dataclass, field
@@ -27,6 +29,8 @@ ZOOM_STEP = 1.6
 
 INTENTS = [
     Intent("select_station", ["{station}[を](表示|出して|見せて|お願い)", "{station}(まで|に行きたい|へ)", "{station}[に](寄って|ズーム)", "{station}"], description="駅に寄る"),
+    Intent("route", ["{origin}から{dest}[まで]"], slots={"origin": "station", "dest": "station"}, primary_only=True,
+           description="経路 (乗換込み) を表示"),
     Intent("next_station", ["(次|つぎ)[の駅]", "一つ先", "先に進んで"], description="次の駅へ"),
     Intent("prev_station", ["(前|まえ|一つ前)[の駅]", "一つ戻って", "手前"], description="前の駅へ"),
     Intent("switch_line", ["(路線|線)[を](変えて|切り替え|切り替えて)", "別の路線", "乗り換え"], description="乗換路線に切り替え"),
@@ -40,9 +44,9 @@ INTENTS = [
 ]
 
 STATES = {
-    "MAP": StateDef("MAP", ["select_station", "help"], "路線図全体。駅名を言うと寄ります"),
-    "STATION": StateDef("STATION", ["next_station", "prev_station", "switch_line", "zoom_in", "zoom_out", "back", "favorite", "select_station", "help"],
-                        "駅を選択中。次/前の駅・路線切替・拡大縮小・戻る"),
+    "MAP": StateDef("MAP", ["select_station", "route", "help"], "地図全体。駅名を言うと寄ります。「新宿から東京まで」で経路"),
+    "STATION": StateDef("STATION", ["next_station", "prev_station", "switch_line", "zoom_in", "zoom_out", "back", "favorite", "select_station", "route", "help"],
+                        "駅を選択中。次/前の駅・路線切替・拡大縮小・経路・戻る"),
     "CONFIRM": StateDef("CONFIRM", ["yes", "no"], "確認待ち。はい / いいえ"),
 }
 
@@ -51,6 +55,7 @@ CALIBRATION_STATES = [
     ("STATION", ["next_station", "prev_station", "switch_line", "zoom_in", "zoom_out", "back", "favorite", "help"], [
         ("次の駅", "next_station"), ("一つ先", "next_station"), ("前の駅", "prev_station"), ("一つ戻って", "prev_station"), ("路線を変えて", "switch_line"),
         ("もっと寄って", "zoom_in"), ("もっと引いて", "zoom_out"), ("全体に戻って", "back"), ("戻る", "back"), ("この駅を登録して", "favorite"),
+        ("地図全体に戻して", "back"),
         ("はい", None), ("少々お待ちください", None), ("はい、お世話になっております", None), ("了解しました", None), ("ちょっと待ってね", None), ("何時に着くかな", None),
     ]),
     ("CONFIRM", ["yes", "no"], [
@@ -73,14 +78,22 @@ def default_scopes(lex: Lexicon) -> list[Scope]:
     ]
 
 
+ROUTE_MAX_STATIONS = 150     # 2 スロットの経路意図は n² 仮説になるので、範囲がこれより大きいときは外す (150 駅 = 4.5 万仮説)
+SPEED_KMH = 45.0             # 駅間の走行速度の目安
+STOP_MIN = 0.5               # 1 駅停車の目安 (分)
+TRANSFER_MIN = 5.0           # 乗換 1 回の目安 (分)
+EXCLUDE_LINE = re.compile(r"新幹線|エクスプレス|ライナー|特急|リゾート|成田|スカイアクセス")   # 経路探索から外す路線 (停車駅が飛ぶ)
+
+
 @dataclass
 class View:
     zoom: float = 1.0
     line_code: str | None = None
     favorites: list[str] = field(default_factory=list)
+    route: dict[str, Any] | None = None      # {"stations": [id...], "legs": [{"line", "line_code", "from", "to", "hops"}], "minutes": m}
 
     def to_dict(self) -> dict[str, Any]:
-        return {"zoom": self.zoom, "line_code": self.line_code, "favorites": list(self.favorites)}
+        return {"zoom": self.zoom, "line_code": self.line_code, "favorites": list(self.favorites), "route": self.route}
 
 
 class StationApp:
@@ -127,8 +140,71 @@ class StationApp:
     def command_set(self):
         st = self.sm.state
         if st not in self._cs_cache:
-            self._cs_cache[st] = self.grammar.compile(self.sm.allowed_intents(), self.entities(), st)
+            ents = self.entities()
+            intents = [i for i in self.sm.allowed_intents() if not (i == "route" and len(ents) > ROUTE_MAX_STATIONS)]
+            self._cs_cache[st] = self.grammar.compile(intents, ents, st)
         return self._cs_cache[st]
+
+    # ------------------------------------------------------------ 経路探索 (駅 = 節、同じ路線で隣り合う駅 = 辺、乗換に罰則)
+    def _graph(self):
+        """辺 = 同じ路線で隣り合う駅。重み = 駅間距離 (haversine) / 速度 + 停車時間。特急系の路線は外す。"""
+        if getattr(self, "_g", None) is None:
+            by_line: dict[str, list[tuple[int, str]]] = {}
+            for e in self.lexicon:
+                for p in e.attrs["positions"]:
+                    if EXCLUDE_LINE.search(p["line"]):
+                        continue
+                    by_line.setdefault(p["line_code"], []).append((p["index"], e.id))
+            adj: dict[str, list[tuple[str, str, float]]] = {}
+            for lc, lst in by_line.items():
+                lst.sort()
+                for (i1, a), (i2, b) in zip(lst, lst[1:]):
+                    if i2 == i1 + 1:
+                        w = self._km(a, b) / SPEED_KMH * 60 + STOP_MIN
+                        adj.setdefault(a, []).append((b, lc, w)); adj.setdefault(b, []).append((a, lc, w))
+            self._g = adj
+        return self._g
+
+    def _km(self, a: str, b: str) -> float:
+        ea, eb = self.lexicon.get(a).attrs, self.lexicon.get(b).attrs
+        la1, lo1, la2, lo2 = map(math.radians, (ea["lat"], ea["lng"], eb["lat"], eb["lng"]))
+        h = math.sin((la2 - la1) / 2) ** 2 + math.cos(la1) * math.cos(la2) * math.sin((lo2 - lo1) / 2) ** 2
+        return 2 * 6371 * math.asin(math.sqrt(h))
+
+    def find_route(self, src: str, dst: str) -> dict[str, Any] | None:
+        """Dijkstra: 辺の重み = 駅間の所要時間の目安、路線が変わるたび TRANSFER_MIN 分。状態は (駅, 乗ってきた路線)。"""
+        import heapq
+        adj = self._graph()
+        best: dict[tuple[str, str | None], float] = {(src, None): 0.0}
+        prev: dict[tuple[str, str | None], tuple[str, str | None] | None] = {(src, None): None}
+        pq = [(0.0, src, None)]
+        goal = None
+        while pq:
+            cost, node, line = heapq.heappop(pq)
+            if best.get((node, line), 1e18) < cost:
+                continue
+            if node == dst:
+                goal = (node, line); break
+            for nxt, lc, w in adj.get(node, []):
+                c = cost + w + (TRANSFER_MIN if line is not None and lc != line else 0.0)
+                if c < best.get((nxt, lc), 1e18):
+                    best[(nxt, lc)] = c; prev[(nxt, lc)] = (node, line); heapq.heappush(pq, (c, nxt, lc))
+        if goal is None:
+            return None
+        path: list[tuple[str, str | None]] = []
+        cur: tuple[str, str | None] | None = goal
+        while cur is not None:
+            path.append(cur); cur = prev[cur]
+        path.reverse()
+        stations = [n for n, _ in path]
+        legs: list[dict[str, Any]] = []
+        for (a, _), (b, lc) in zip(path, path[1:]):
+            if legs and legs[-1]["line_code"] == lc:
+                legs[-1]["to"] = b; legs[-1]["hops"] += 1
+            else:
+                name = next(p["line"] for p in self.lexicon.get(b).attrs["positions"] if p["line_code"] == lc)
+                legs.append({"line": name, "line_code": lc, "from": a, "to": b, "hops": 1})
+        return {"stations": stations, "legs": legs, "minutes": round(best[goal]), "transfers": len(legs) - 1}
 
     def allowed_commands(self) -> list[dict[str, str]]:
         out = []
@@ -136,7 +212,7 @@ class StationApp:
             it = self.grammar.intents[name]
             ex = it.patterns[0].replace("[", "").replace("]", "")
             ex = ex.split("(")[0] + (ex.split("(")[1].split("|")[0] + ex.split(")")[1] if "(" in ex else "")
-            out.append({"intent": name, "example": ex.replace("{station}", "<駅名>"), "description": it.description, "risk": it.risk})
+            out.append({"intent": name, "example": ex.replace("{station}", "<駅名>").replace("{origin}", "<駅名>").replace("{dest}", "<駅名>"), "description": it.description, "risk": it.risk})
         return out
 
     def expire_confirm(self) -> bool:
@@ -188,6 +264,7 @@ class StationApp:
             return {"intent": intent, "speech": "取り消しました"}
         sid = self.sm.context.get("station")
         if intent == "select_station":
+            self.view.route = None
             e = self.lexicon.get(slots[SLOT])
             lines = [p["line_code"] for p in e.attrs["positions"]]
             if self.view.line_code not in lines:
@@ -195,9 +272,20 @@ class StationApp:
             self.view.zoom = max(self.view.zoom, 3.0)
             self.sm.goto("STATION", station=e.id, pending=None)
             return {"intent": intent, "station": e.id, "speech": f"{e.label} です。{e.attrs['route_label']}"}
+        if intent == "route":
+            a = self.lexicon.get(slots["origin"]); b = self.lexicon.get(slots["dest"])
+            r = self.find_route(a.id, b.id)
+            if r is None:
+                return {"intent": intent, "speech": f"{a.label} から {b.label} への経路が見つかりません"}
+            self.view.route = r
+            self.view.line_code = r["legs"][0]["line_code"]
+            self.sm.goto("STATION", station=b.id, pending=None)
+            legs = "、".join(f"{lg['line']} {lg['hops']} 駅" for lg in r["legs"])
+            return {"intent": intent, "station": b.id, "route": r,
+                    "speech": f"{a.label} から {b.label} まで、{legs}。乗換 {r['transfers']} 回、約 {r['minutes']} 分"}
         if intent == "back":
-            self.sm.goto("MAP", station=None, pending=None); self.view.zoom = 1.0
-            return {"intent": intent, "speech": "路線図に戻ります"}
+            self.sm.goto("MAP", station=None, pending=None); self.view.zoom = 1.0; self.view.route = None
+            return {"intent": intent, "speech": "地図全体に戻ります"}
         if intent == "help":
             return {"intent": intent, "speech": "、".join(c["example"] for c in self.allowed_commands()[:5])}
         if sid is None:

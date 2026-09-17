@@ -37,6 +37,8 @@ SR = 16000
 #: 文法外の発話 (電話応対・独り言)。「該当なし」の学習に使う
 OUT_OF_GRAMMAR = [
     "はい、お世話になっております", "少々お待ちください", "ええ、そうですね、確認します",
+    "いま電話中なので後にしてください", "その件は担当から連絡します", "はい、承知しました、ではそのように",
+    "今日は何時に帰る", "コーヒー飲む?", "資料できたら送ってね", "うん、それでいいと思う",
     "それでは午後の会議でお願いします", "今ちょっと手が離せないので後でかけ直します",
     "了解しました、確認して折り返します", "資料は共有フォルダに入れておきました",
     "おつかれさまです、渋滞の件ですが", "雨が強くなってきましたね", "課長、こちらの画面ご覧ください",
@@ -108,7 +110,7 @@ class PretrainConfig:
     carriers: list[str] = field(default_factory=lambda: ["{camera}", "{camera}を表示", "{camera}出して"])
     snr_db: list[float | None] = field(default_factory=lambda: [None, 20.0, 10.0])
     background_level_db: float | None = -12.0     # None で無効
-    n_out_of_grammar: int = 12
+    n_out_of_grammar: int = 16
     add_readings: bool = True
     min_utts: int = 320                         # 校正サンプルの下限 (足りなければ声・言い方を自動で増やす)
     reading_max_mora_distance: int = 4          # 実現読みを追加する上限 (これ以上離れていたら別物として警告)
