@@ -100,7 +100,7 @@ class Analysis:
 class Recognizer:
     def __init__(self, asr: KanaASR, calibration: Calibration | None = None, thresholds: Thresholds | None = None, shortlist_k: int = 16,
                  embed: bool = True, embed_min_ratio: float = 0.3, embed_max_residual: int = 14, embed_min_morae: int = 4,
-                 embed_penalty: float = 1.0):
+                 embed_penalty: float = 0.5):
         self.asr = asr
         self.calibration = calibration or Calibration()
         self.thresholds = thresholds or Thresholds()
@@ -113,7 +113,7 @@ class Recognizer:
         self.embed_min_ratio = embed_min_ratio
         self.embed_max_residual = embed_max_residual
         self.embed_min_morae = embed_min_morae
-        #: 埋め込み文は自由認識から借りたトークンの分だけ減点する (nats/トークン)。これが無いと「東京」だけの候補が
+        #: 埋め込み文は自由認識から借りたトークンの分だけ減点する (logit/トークン、温度の外で効く)。これが無いと「東京」だけの候補が
         #: 「新宿から東京まで」の全文を借りて説明でき、全文を自分で説明する経路候補と同点になって確率が割れる
         self.embed_penalty = embed_penalty
 
@@ -167,7 +167,10 @@ class Recognizer:
             # 埋め込み文 (前後の語を自由認識から取り込んだもの) と素の候補のうち、校正後 logit が大きい方を採る。
             # 埋め込み文は残り (説明しないトークン) が 0 になるので γ の罰則を受けない
             n_e = float(len(seqs[len(cands) + j]))
-            s_e = all_scores[len(cands) + j] - self.embed_penalty * max(0.0, n_e - lens[i])
+            borrowed = max(0.0, n_e - lens[i])
+            # 借用罰則は構造的な事前分布なので温度の外 (logit 空間) で効かせる。score 側に入れると温度 3 の校正では
+            # 8 トークン借りても 2.4 logit しか差がつかず、全文を自分で説明する経路候補と割れる
+            s_e = all_scores[len(cands) + j] - self.embed_penalty * borrowed * cal.temperature
             z_bare = cal.logits(np.array([scores[i]]), free.logprob, np.array([lens[i]]), n_free)[0]
             z_emb = cal.logits(np.array([s_e]), free.logprob, np.array([n_e]), n_free)[0]
             if z_emb > z_bare:

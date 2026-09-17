@@ -77,8 +77,9 @@ def variants(kana: str) -> list[str]:
     out = [kana]
     alt: list[str] = []
     for ch in kana:
-        if alt and ((ch == "イ" and alt[-1] in _I_ROW) or (ch == "ア" and alt[-1] in _A_ROW)):
-            alt.append("ー")
+        if alt and ((ch == "イ" and alt[-1] in _I_ROW) or (ch == "ア" and alt[-1] in _A_ROW)
+                    or (ch == "オ" and alt[-1] in _O_ROW) or (ch == "エ" and alt[-1] in _E_ROW)):
+            alt.append("ー")          # オオクボ → オークボ、オネエサン → オネーサン
         else:
             alt.append(ch)
     a = "".join(alt)

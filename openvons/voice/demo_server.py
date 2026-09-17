@@ -215,7 +215,14 @@ async def say(body: dict):
     if tts is None or not tts.ok():
         return JSONResponse({"error": "TTS unavailable"}, 503)
     t0 = time.time()
-    wav = await asyncio.to_thread(tts.synth, body["text"], int(body.get("seed", 1)))
+    text = body["text"]
+    if body.get("readingize", True):
+        # 実体の表示名 (漢字) を登録読み (カナ) に置き換えてから合成する。TTS の G2P は固有名詞に弱く、
+        # 「田端」を「タハシ」と読むなど、ASR ではなく TTS の誤りを測ってしまうため
+        for e in sorted(sess.app.entities(), key=lambda e: -len(e.label)):
+            if e.label and e.label in text:
+                text = text.replace(e.label, e.primary_readings()[0])
+    wav = await asyncio.to_thread(tts.synth, text, int(body.get("seed", 1)))
     t_tts = (time.time() - t0) * 1000
     if body.get("snr_db") is not None:
         import random
@@ -223,6 +230,7 @@ async def say(body: dict):
         wav = add_noise(wav, float(body["snr_db"]), random.Random(0))
     ev = await asyncio.to_thread(sess.handle_utterance, wav, "tts")
     ev["tts_ms"] = round(t_tts)
+    ev["tts_text"] = text
     ev["session"] = sess.id
     await sess.send(ev)
     return ev
