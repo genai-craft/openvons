@@ -24,23 +24,15 @@ STRIP = re.compile(r"(水位観測所|水位監視|水位|観測所|排水機場
 
 
 def readings_for(label: str) -> list[str]:
-    """地点名の読み。G2P は「橋」を キョー と読むが、橋の固有名は バシ (連濁) か ハシ なので両方を作る
-    (芽吹橋: G2P メフキキョー → メフキバシ / メフキハシ)。「大橋」は オーハシ で正しいのでそのまま。"""
+    """地点名の読み。G2P は固有名の「橋」を キョー と読むことがある (芽吹橋 → メフキキョー) が、
+    実際は バシ (連濁) か ハシ なので、その位置だけ差し替えた読みを両方作る。
+    名前を分割して読み直すと他の部分の連濁まで変わる (栗橋水位 クリハシ → クリバシ) ので、
+    全体の読みを正として置換だけ行う。「東京」等で キョー が正しい場合は触らない。
+    """
     base = K.g2p(label)
-    if "橋" not in label or label.endswith("大橋") or "大橋" in label:
+    if "橋" not in label or "キョー" not in base or "京" in label.replace("橋", "") or "教" in label:
         return [base]
-    parts = label.split("橋")
-    out = []
-    for suf in ("バシ", "ハシ"):
-        r = ""
-        for i, part in enumerate(parts):
-            r += (K.g2p(part) if part else "")
-            if i < len(parts) - 1:
-                r += suf
-        out.append(K.normalize(r))
-    if base not in out and "キョー" not in base:
-        out.append(base)
-    return out
+    return [base.replace("キョー", "バシ"), base.replace("キョー", "ハシ"), base]
 
 
 def main() -> None:

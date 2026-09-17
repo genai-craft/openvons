@@ -31,19 +31,32 @@
     <div id="map" class="map"></div>
     <div id="camCard" class="card" hidden>
       <div class="camhead">
-        <div><b id="camLabel"></b> <span id="camMeta" class="muted"></span></div>
-        <div class="cardbtns"><button data-intent="upstream">▲ 上流</button><button data-intent="downstream">▼ 下流</button><button data-intent="refresh">更新</button><button data-intent="zoom_in">＋</button><button data-intent="zoom_out">－</button><button data-intent="back" class="back">地図に戻る</button></div>
+        <div class="ttl"><b id="camLabel"></b> <span id="camMeta" class="muted"></span></div>
+        <div class="cardbtns">
+          <button data-intent="upstream">▲ 上流</button>
+          <button data-intent="downstream">▼ 下流</button>
+          <button data-intent="refresh">更新</button>
+          <button data-intent="zoom_out">－</button>
+          <button data-intent="zoom_in">＋</button>
+          <button id="fullBtn" title="ブラウザの全画面">⛶</button>
+          <button data-intent="back" class="back">✕ 地図に戻る</button>
+        </div>
       </div>
-      <div class="imgwrap" title="クリックで全画面、ホイールで拡大縮小"><img id="camImg" alt="ライブカメラ画像"><div id="imgNote" class="muted small"></div><button id="fullBtn" class="fullbtn" title="全画面">⛶</button></div>
-      <div id="camNeighbors" class="neighbors"></div>
+      <div class="imgwrap"><img id="camImg" alt="ライブカメラ画像"><div id="imgNote" class="muted small"></div></div>
+      <div class="camfoot">
+        <div id="camNeighbors" class="neighbors"></div>
+        <div class="mvoice">
+          <button id="mMicBtn" class="mic small">🎙</button>
+          <span id="mVad" class="chip">待機</span>
+          <span class="muted">聞こえ:</span><span id="mFree" class="mono"></span>
+          <span id="mDecision" class="decision"></span>
+          <span id="mSpeech" class="mspeech"></span>
+          <span class="right muted small" id="mAllowed"></span>
+        </div>
+      </div>
     </div>
     <div class="credit muted small" id="attribution"></div>
   </section>
-  <div id="lightbox" class="lightbox" hidden>
-    <div class="lbhead"><b id="lbLabel"></b> <span id="lbMeta" class="muted"></span><span class="right muted small">ホイールで拡大縮小 / クリックか Esc で閉じる / ↑↓ で上流・下流</span><button id="lbClose">✕</button></div>
-    <img id="lbImg" alt="ライブカメラ画像 (全画面)">
-    <div class="lbfoot muted small" id="lbNote"></div>
-  </div>
 
   <aside class="voice">
     <div class="microw">
