@@ -1,0 +1,63 @@
+:root{--bg:#0f1318;--panel:#171d25;--line:#26303b;--fg:#e6edf3;--muted:#8b98a5;--acc:#4cc2ff;--ok:#3fb950;--warn:#d29922;--bad:#f85149;--chip:#22303c}
+*{box-sizing:border-box}
+[hidden]{display:none !important}
+body{margin:0;background:var(--bg);color:var(--fg);font:14px/1.5 system-ui,-apple-system,"Segoe UI","Noto Sans JP",sans-serif}
+header{display:flex;align-items:center;justify-content:space-between;padding:10px 16px;border-bottom:1px solid var(--line);background:var(--panel);gap:16px;flex-wrap:wrap}
+.brand{font-size:20px;font-weight:700}.brand .sub{font-size:13px;color:var(--muted);font-weight:400;margin-left:8px}
+.scopebar{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+select,input,button{background:#0b0f14;color:var(--fg);border:1px solid var(--line);border-radius:6px;padding:6px 10px;font:inherit}
+button{cursor:pointer}button:hover{border-color:var(--acc)}
+.tab{background:transparent}.tab.active{background:var(--chip);border-color:var(--acc)}
+main{display:grid;grid-template-columns:1fr 380px;gap:14px;padding:14px 16px;min-height:calc(100vh - 60px)}
+main#register{grid-template-columns:1fr 1fr}
+.muted{color:var(--muted)}.right{margin-left:auto}
+.wall{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:10px;display:flex;flex-direction:column;min-height:70vh;position:relative;overflow:hidden}
+.statebar{display:flex;gap:10px;align-items:center;padding:4px 6px 10px}
+.statechip{background:var(--chip);border:1px solid var(--acc);color:var(--acc);border-radius:999px;padding:2px 12px;font-weight:700;letter-spacing:.5px}
+.statechip.FOCUS{color:var(--ok);border-color:var(--ok)}.statechip.CONFIRM{color:var(--warn);border-color:var(--warn)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:8px;overflow:auto;max-height:78vh;padding:2px}
+.tile{position:relative;border:1px solid var(--line);border-radius:6px;overflow:hidden;cursor:pointer;background:#000}
+.tile:hover{border-color:var(--acc)}.tile canvas{width:100%;display:block;aspect-ratio:16/9}
+.tile .lbl{position:absolute;left:0;right:0;bottom:0;background:rgba(0,0,0,.55);padding:2px 6px;font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tile .lbl small{color:var(--muted);margin-left:4px}
+.tile.hl{outline:3px solid var(--acc)}
+/* 拡大表示は画面全体を覆うモーダル。背景 (一覧・音声パネル) は暗く残し、クリックで閉じる */
+.focus{position:absolute;inset:0;z-index:20;background:rgba(5,8,12,.82);display:flex;align-items:flex-start;justify-content:center;padding:16px;border-radius:10px}
+.focus .modal{width:100%;max-height:100%;background:var(--panel);border:1px solid var(--acc);border-radius:12px;padding:14px;display:flex;flex-direction:column;gap:8px;box-shadow:0 20px 60px rgba(0,0,0,.6)}
+.focushead{display:flex;align-items:center;gap:14px;flex-wrap:wrap}.focushead b{font-size:18px}
+.focushead .back{margin-left:auto;background:#1b2a3a;border-color:var(--acc);font-weight:600;padding:8px 16px}
+.focus .hint{color:var(--muted);font-size:12px}
+#focusCanvas{width:100%;max-height:calc(100vh - 260px);object-fit:contain;border-radius:8px;background:#000;border:1px solid var(--line)}
+.voice{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:12px;display:flex;flex-direction:column;gap:8px;overflow:auto;max-height:calc(100vh - 90px)}
+.microw{display:flex;align-items:center;gap:10px}
+.mic{background:#1b2a3a;border-color:var(--acc);font-weight:600}.mic.on{background:#3a1b1b;border-color:var(--bad)}
+.vu{flex:1;height:10px;background:#0b0f14;border-radius:5px;overflow:hidden}#vuBar{height:100%;width:0;background:var(--ok);transition:width .05s}
+.chip{background:var(--chip);border-radius:999px;padding:1px 10px;font-size:12px}.chip.on{background:#1f3b26;color:var(--ok)}
+.speech{font-size:20px;font-weight:700;min-height:32px}
+.free{font-family:ui-monospace,monospace}
+.decision{font-weight:700;padding:6px 10px;border-radius:6px;background:var(--chip)}
+.decision.execute{color:var(--ok)}.decision.confirm{color:var(--warn)}.decision.reject{color:var(--bad)}.decision.none{color:var(--muted)}
+.nbest .row{display:grid;grid-template-columns:1fr 60px;gap:6px;align-items:center;font-size:13px;margin:2px 0}
+.nbest .bar{height:14px;background:#0b0f14;border-radius:3px;overflow:hidden;position:relative}
+.nbest .bar i{position:absolute;left:0;top:0;bottom:0;background:var(--acc);opacity:.7}
+.nbest .bar.none i{background:var(--muted)}
+.nbest .bar span{position:absolute;left:6px;top:-1px;font-size:12px;white-space:nowrap}
+.timings{font-size:12px;font-family:ui-monospace,monospace}
+h3{margin:10px 0 4px;font-size:14px;color:var(--muted)}
+.allowed{margin:0;padding:0;list-style:none;font-size:13px}.allowed li{padding:3px 6px;border-bottom:1px dashed var(--line);display:flex;gap:8px}
+.allowed li .ex{color:var(--acc);min-width:150px}.allowed li .risk{color:var(--warn);font-size:11px}
+.sayform{display:flex;gap:6px}.sayform input{flex:1}
+.quick{display:flex;flex-wrap:wrap;gap:4px}.quick button{font-size:12px;padding:3px 8px}
+pre#log{font-size:11px;max-height:200px;overflow:auto;background:#0b0f14;padding:6px;border-radius:6px}
+.reg{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:14px;overflow:auto}
+.regcols{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+.picklist{list-style:none;margin:0;padding:0;max-height:300px;overflow:auto;border:1px solid var(--line);border-radius:6px}
+.picklist li{padding:5px 8px;cursor:pointer;border-bottom:1px solid var(--line);display:flex;justify-content:space-between}
+.picklist li:hover{background:var(--chip)}.picklist li.sel{background:#1b3a4a;color:var(--acc)}
+.regform{display:flex;gap:8px;align-items:center;margin:12px 0;flex-wrap:wrap}
+table.scopes{width:100%;border-collapse:collapse;font-size:13px}table.scopes th,table.scopes td{border-bottom:1px solid var(--line);padding:5px 6px;text-align:left;vertical-align:top}
+.progress{height:10px;background:#0b0f14;border-radius:5px;overflow:hidden;margin:6px 0}#ptBar{height:100%;width:0;background:var(--acc)}
+.camtable{max-height:40vh;overflow:auto;font-size:12px}.camtable table{width:100%;border-collapse:collapse}.camtable td,.camtable th{border-bottom:1px solid var(--line);padding:3px 6px;text-align:left}
+.camtable .rd{color:var(--acc);cursor:pointer;font-family:ui-monospace,monospace}
+.kv{display:grid;grid-template-columns:auto 1fr;gap:4px 12px;font-size:13px;margin:8px 0}.kv b{color:var(--acc)}
+@media (max-width:1000px){main{grid-template-columns:1fr}main#register{grid-template-columns:1fr}.voice{max-height:none}}

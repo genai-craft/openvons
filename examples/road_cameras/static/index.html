@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>指図 (sashizu) — 道路カメラ音声コマンド デモ</title>
+<link rel="stylesheet" href="/static/style.css?v=1789616058">
+</head>
+<body>
+<header>
+  <div class="brand">指図 <span class="sub">sashizu — 状態遷移に応じた音声コマンド</span></div>
+  <div class="scopebar">
+    <label>担当範囲 <select id="scopeSel"></select></label>
+    <span id="scopeInfo" class="muted"></span>
+    <button id="tabMonitor" class="tab active">監視</button>
+    <button id="tabRegister" class="tab">担当地域の登録・事前学習</button>
+  </div>
+</header>
+
+<main id="monitor">
+  <section class="wall" id="wallPane">
+    <div class="statebar">
+      <span class="statechip" id="stateChip">WALL</span>
+      <span id="stateDesc" class="muted"></span>
+      <span id="hypCount" class="muted right"></span>
+    </div>
+    <div id="wall" class="grid"></div>
+  <div id="focus" class="focus" hidden>
+    <div class="modal">
+      <div class="focushead">
+        <div><b id="focusLabel"></b> <span id="focusMeta" class="muted"></span></div>
+        <div class="ptzinfo" id="ptzInfo"></div>
+        <button id="backBtn" class="back">◀ 一覧に戻る</button>
+      </div>
+      <canvas id="focusCanvas" width="960" height="540"></canvas>
+      <div class="hint">声: 「右に向けて」「上に向いて」「もっと引いて」「ホームに戻して」「一覧に戻る」 / キー: Esc で一覧へ、矢印で旋回、+/- でズーム。右のパネルに「今この状態で言えること」が出ます</div>
+    </div>
+  </div>
+  </section>
+
+  <aside class="voice">
+    <div class="microw">
+      <button id="micBtn" class="mic">🎙 マイク開始</button>
+      <div class="vu"><div id="vuBar"></div></div>
+      <span id="vadChip" class="chip">待機</span>
+    </div>
+    <div class="speech" id="speech">—</div>
+    <div class="free"><span class="muted">聞こえたカナ:</span> <span id="freeKana"></span></div>
+    <div id="decision" class="decision"></div>
+    <div id="nbest" class="nbest"></div>
+    <div class="timings muted" id="timings"></div>
+
+    <h3>今この状態で言えること <span class="muted" id="allowedN"></span></h3>
+    <ul id="allowed" class="allowed"></ul>
+
+    <h3>テキストで試す (TTS 経由でサーバー側から音声を通す)</h3>
+    <form id="sayForm" class="sayform">
+      <input id="sayText" placeholder="例: 船橋南1上りを表示 / もっと右に向けて / はい" autocomplete="off">
+      <select id="saySnr"><option value="">雑音なし</option><option value="20">SNR 20dB</option><option value="10">SNR 10dB</option><option value="5">SNR 5dB</option></select>
+      <button>喋らせる</button>
+    </form>
+    <div class="quick" id="quick"></div>
+    <details><summary>ログ</summary><pre id="log"></pre></details>
+  </aside>
+</main>
+
+<main id="register" hidden>
+  <section class="reg">
+    <h2>担当地域の登録</h2>
+    <p class="muted">整備局 → 事務所 → 路線 の順に絞り込んで担当範囲を作ります。範囲が小さいほど選択肢が少なく、認識は確実になります。</p>
+    <div class="regcols">
+      <div>
+        <h4>整備局</h4><ul id="bureauList" class="picklist"></ul>
+      </div>
+      <div>
+        <h4>事務所 <span class="muted" id="officeHint"></span></h4><ul id="officeList" class="picklist"></ul>
+      </div>
+      <div>
+        <h4>路線 <span class="muted">(未選択 = 全路線)</span></h4><ul id="routeList" class="picklist"></ul>
+      </div>
+    </div>
+    <div class="regform">
+      <input id="scopeName" placeholder="範囲の名前 (例: 千葉北西 昼当番)">
+      <input id="scopeId" placeholder="ID (任意)">
+      <button id="saveScope">この条件で保存</button>
+      <span id="regPreview" class="muted"></span>
+    </div>
+    <h4>登録済みの範囲</h4>
+    <table id="scopeTable" class="scopes"><thead><tr><th>名前</th><th>条件</th><th>台数</th><th>事前学習</th><th></th></tr></thead><tbody></tbody></table>
+  </section>
+  <section class="reg">
+    <h2>事前学習 (TTS 往復)</h2>
+    <p class="muted">範囲内の各カメラ名を複数の声で合成して認識器に通し、(1) 正解率と混同しやすい対、(2) ASR が実際に書く読み、(3) 確信度の校正 (温度 / 該当なしバイアス) を得ます。文法外の発話 (電話応対) が「該当なし」に倒れることも確認します。</p>
+    <div class="regform">
+      <label>声の数 <select id="ptSeeds"><option>2</option><option selected>3</option><option>5</option></select></label>
+      <label>言い方 <select id="ptCarriers"><option value="1">名前だけ</option><option value="2" selected>名前だけ + 〜を表示</option></select></label>
+      <button id="pretrainBtn">選択中の範囲で事前学習を開始</button>
+    </div>
+    <div class="progress"><div id="ptBar"></div></div>
+    <div id="ptStatus" class="muted"></div>
+    <div id="ptResult"></div>
+    <h4>カメラ一覧と読み <span class="muted">(読みをクリックで追加編集)</span></h4>
+    <div id="camTable" class="camtable"></div>
+  </section>
+</main>
+
+<script src="/static/app.js?v=1789616058"></script>
+</body>
+</html>

@@ -1,0 +1,60 @@
+"""experiments/eval_synth*.json から docs/evaluation.md を生成する.  .venv/bin/python scripts/make_eval_doc.py experiments/eval_synth_v3.json"""
+import json, sys
+from pathlib import Path
+
+r = json.load(open(sys.argv[1]))
+src = sys.argv[1]
+L = ["# 評価 (合成音声、2026-09-17)\n", f"再現: `CUDA_VISIBLE_DEVICES=4 .venv/bin/python scripts/eval_synthetic.py --n 60 --out {src}`、校正の再推定は `scripts/refit_calibration.py`。\n", "## 条件\n"]
+L.append(f"- 発話: 首都国道事務所のカメラ 60 台 × 3 声 (Irodori TTS、読みカナ + 担体「〜を表示 / 出して / に切り替え / 名前だけ」) = {r['n_camera_utts']} 発話。")
+L.append("  雑音: なし / ピンクノイズ SNR 20・10・5 dB / 別発話の重ね合わせ −10dB (babble) をランダムに割り当て、前後に無音を付加。")
+L.append(f"- 文法外: 電話応対の定型句 {r['n_oog']} 発話。PTZ: FOCUS 状態の操作 {r['n_ptz']} 発話。確認待ち: はい/いいえ 6 種 × 3 声 (SNR 10dB) と電話応対 5 種 × 2 声。")
+L.append("- 同じ発話を 3 つの範囲 (選択肢の大きさ) で認識し、選択肢の増加だけの影響を見る。")
+L.append("- A = 自由認識カナに最も近い仮説を採る (文字 Levenshtein、確率なし)。B = 本方式 (絞り込み K=16 → 埋め込み込みの教師強制リスコア → 校正 → 3 段閾値)。")
+L.append("  「B 既定校正」は事前学習なしの既定値 (T 2.5, β0 4, β1 1.4, γ 1.0) での実行/確認の正解率、「校正後 argmax」は同じ範囲の合成データで校正した後の分類精度 (該当なし含む)。\n")
+L.append("## 1. 選択肢の大きさと精度・遅延\n")
+L.append("| 範囲 | カメラ | 仮説数 | A 最近傍 | B 既定校正 | B 校正後 argmax | ECE 校正前→後 | 文法外の棄却 | 遅延 中央値 / p95 |")
+L.append("|---|---|---|---|---|---|---|---|---|")
+for k, v in r["scopes"].items():
+    L.append(f"| {k} | {v['n_cameras']} | {v['n_hypotheses']:,} | {v['A_nearest']['all']:.3f} | {v['B_rescore']['all']:.3f} | **{v['acc_argmax_after']:.3f}** | {v['ece_before']:.3f} → **{v['ece_after']:.3f}** | {v['oog_rejected']:.2f} | {v['latency_ms']['total']:.0f} / {v['latency_p95_ms']:.0f} ms |")
+v = r["scopes"]["首都国道 (100台)"]
+L.append("")
+L.append(f"- 遅延の内訳 (首都国道): encoder {v['latency_ms']['encode']:.0f} / 自由認識 {v['latency_ms']['transcribe']:.0f} / 絞り込み {v['latency_ms']['shortlist']:.1f} / 採点 {v['latency_ms']['score']:.0f} ms。全国では絞り込み (rapidfuzz、13 万仮説) が {r['scopes']['全国 (2,932台)']['latency_ms']['shortlist']:.0f} ms に増えるだけ。")
+L.append("- 選択肢を 100 台 → 2,932 台に増やしても精度はほぼ変わらない。担当範囲で絞る意味は、同音・類似名の衝突 (混同対) を減らし確認に回る割合を下げること、そして UI で見せる候補を減らすこと。\n")
+L.append("## 2. 雑音条件別 (首都国道 100 台)\n")
+L.append("| 条件 | A 最近傍 | B 既定校正 |"); L.append("|---|---|---|")
+for c in ["clean", "snr20", "snr10", "snr5", "babble"]:
+    L.append(f"| {c} | {v['A_nearest'][c]:.3f} | {v['B_rescore'][c]:.3f} |")
+L.append("")
+L.append("旧既定 (定数 β=3、埋め込みなし) では babble 0.375 / snr5 0.775 / 全体 0.817 だった (experiments/eval_synth.json)。")
+L.append("kana-whisper は雑音で崩れた自由認識にも log p ≈ −0.15 と過信するため、候補側に長さに比例した許容量 (β1) が要る。")
+L.append("babble は自由認識に相手の言葉が混ざるので、候補を自由認識の中に埋め込んで採点する方式で救っている。\n")
+L.append("## 3. 確信度ゲート (校正後、首都国道)\n")
+L.append("| しきい値 | 自動実行の網羅率 | その精度 |"); L.append("|---|---|---|")
+for th, g in v["conf_gate"].items():
+    L.append(f"| p ≥ {th} | {g['coverage']:.3f} | {g['precision']:.3f} |")
+L.append("")
+L.append("Decision Model と同じく「確信度が高いものだけ自動処理し、残りは確認に回す」運用が組める。\n")
+L.append("## 4. 状態別\n")
+p = r["ptz_focus"]; c = r["confirm_state"]; ph = r.get("confirm_phone_reject")
+L.append(f"- FOCUS 状態の PTZ 操作 ({p['n']} 発話、{p['n_hypotheses']:,} 仮説): 実行 {p['acc']:.3f}。取りこぼし: {json.dumps(p['misses'], ensure_ascii=False) if p['misses'] else 'なし'}。")
+L.append(f"- CONFIRM 状態 (はい / いいえ、{c['n_hypotheses']} 仮説、SNR {c['snr_db']}dB): {c['acc']:.3f} ({c['n']} 発話)。")
+if ph:
+    L.append(f"- CONFIRM 状態で電話相手への「はい、お世話になっております」等 {ph['n']} 発話を該当なし/棄却にできた率: **{ph['rate']:.3f}**。誤受理: {json.dumps(ph['false_accepts'], ensure_ascii=False) if ph['false_accepts'] else 'なし'}。")
+    L.append("  定数 β=30 の時はこれを 0.996 で「はい」と誤受理した。長さボーナス β1 に切り替えた理由。")
+L.append("")
+L.append("## 5. 校正方式の比較 (scripts/refit_calibration.py、首都国道 196 サンプル)\n")
+L.append("カメラ名 (長い候補) だけのサンプルでは β の定数項が 30 前後に伸び、短い候補 (はい) に緩くなる。首都国道 196 サンプル (v2) での比較:\n")
+L.append("| 方式 | acc | ECE | 確認待ちで電話の「はい、お世話に…」 |"); L.append("|---|---|---|---|")
+L.append("| 旧既定 T=1, β=3 (埋め込みなし) | 0.847 | 0.099 | 拾わない (が雑音下 82%) |"); L.append("| 定数 β=30 | 0.995 | 0.007 | **0.996 で誤受理** |")
+L.append("| β0 + 長さボーナス β1 (T 1.5, β0 8, β1 1.8) | 0.995 | 0.011 | 0.996 で誤受理 (EOT が安く尤度差 5 nats しか無い) |")
+L.append("| **β0 + β1 + 残り罰則 γ (既定 T 2.5, β0 4, β1 1.4, γ 1.0)** | 0.99 | 0.02 | 該当なし 0.89 で棄却 |")
+L.append("")
+L.append("事前学習 (首都国道、カメラ名 400 + PTZ/はい・いいえ 31 + 文法外 12 発話、実行時と同じ analyze 経路) の fit: T 2.88 / β0 3.95 / β1 1.32 / γ 0.82、校正後 argmax 0.968 (残りは −12dB の重なり発話で背景側を書き取ったもの)。")
+L.append("")
+L.append("## 6. 読み取り方と限界\n")
+L.append("- 合成音声 + 合成雑音の結果であり、実マイク・実オフィスの音は未計測。UI のマイク経路で実音声を貯めて再校正するのが次。")
+L.append("- TTS に表示名 (漢字) を渡すと TTS 側の誤読 (「2下り」→ ニグダリ、谷津 → タニズ) を測ってしまうので、評価も事前学習も読みカナを渡している。表示名で合成した結果は「登録読みと食い違う実体の警告」にだけ使う。")
+L.append("- kana-whisper は稀に反復ハルシネーション (「リョーカイシマシタワハハハハ…」) を出す。同じモーラの 6 連続以上は認識失敗として該当なしに倒す。")
+L.append("- 単発の短い語 (「右」) は TTS が不安定で ASR も崩れる。文法には残すが、運用では「右に向けて」のような 2 語以上の形を推奨。")
+Path("docs/evaluation.md").write_text("\n".join(L) + "\n", encoding="utf-8")
+print("written docs/evaluation.md")

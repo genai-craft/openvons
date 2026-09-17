@@ -1,0 +1,23 @@
+[project]
+name = "open-jev"
+version = "0.1.0"
+description = "有限選択肢に確率で答える判断層 (Decision Model) — テキスト / 画像 / 音声コマンド"
+readme = "README.md"
+requires-python = ">=3.12"
+license = { text = "Apache-2.0" }
+dependencies = [
+  "torch>=2.13", "torchaudio", "transformers>=5.17", "accelerate", "peft", "datasets", "scikit-learn",
+  "numpy", "scipy", "soundfile", "librosa", "pillow", "tqdm", "pandas",
+  "pyopenjtalk", "jaconv", "rapidfuzz", "silero-vad", "httpx",
+  "fastapi", "uvicorn[standard]", "websockets", "python-multipart", "pydantic",
+]
+
+[project.optional-dependencies]
+dev = ["pytest"]
+serve = ["vllm"]          # LLM ベースライン / 教師 (任意)
+
+[tool.setuptools]
+packages = ["jev", "jev.core", "jev.voice", "jev.lm", "jev.lm.models", "jev.lm.training", "jev.lm.backends", "jev.lm.teacher", "jev.lm.api", "jev.lm.benchmark", "jev.vision", "jev.tts"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
