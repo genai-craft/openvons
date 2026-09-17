@@ -17,11 +17,23 @@
 3. **蒸留モデルの評価と配布**。検証 CER と、合成評価 (`scripts/eval_synthetic.py --asr-model <dir>`) で kana-whisper との差を出す。
    実用域なら HF に Apache-2.0 で公開 (ReazonSpeech で学習したモデルの Apache-2.0 配布は kotoba-whisper に先例)。
    モデルカードに疑似ラベルの出自 (kana-whisper, MIT) と学習データ (ReazonSpeech small, 再配布なし) を明記。
-4. **ブラウザ内推論 (スマホ)**。transformers.js v4 (WebGPU、iOS 26 以降; それ以前は WASM) に蒸留モデルを ONNX 変換して載せ、
+4. **ブラウザ内推論 (スマホ)** — 現状: PWA (サーバー推論) は 4 デモとも完了、蒸留 pilot も完了、ONNX 変換以降が未着手。transformers.js v4 (WebGPU、iOS 26 以降; それ以前は WASM) に蒸留モデルを ONNX 変換して載せ、
    候補採点 (decoder forward に強制トークン) を JS で実装。サーバー推論への自動フォールバックを付ける。
 5. **英語 README とモデルカード**、CONTRIBUTING、Issue テンプレート。
 6. **CI**: GPU 不要のテスト (tests/test_voice_core.py、core の校正・判断) を GitHub Actions で。
 7. **テキスト / 画像側の整備**: scripts/lm_* の再現手順を README から辿れるようにし、公開データでの学習ジョブを 1 コマンドに。
+
+## スマホ対応の現状 (2026-09-17)
+
+| 段階 | 状態 |
+|---|---|
+| https で開ける (マイクの前提) | 完了。openvons.com のトンネル経由 |
+| PWA (ホーム画面に追加、サーバー推論) | 完了。4 デモとも manifest + アイコン + テーマ色、狭幅レイアウト (指で押せるボタン、セーフエリア) |
+| 端末のマイク入力 | 完了。サンプルレートを毎コールバック読む (機種でルートが変わると壊れる罠の対策) |
+| 小型モデルの蒸留 | pilot 完了。whisper-small 2 層 decoder、147M、検証 kana CER 0.23 (docs/voice_small_model.md) |
+| 小型モデルの品質 | 課題。自由認識は同等だが候補の尤度採点が弱い (PTZ 0.58)。ReazonSpeech medium (1,000h) + KL 蒸留 + decoder 4 層が次 |
+| ONNX 変換 → transformers.js (端末内推論) | 未着手 |
+| ネイティブアプリ (Capacitor) | 未着手。PWA で足りる間は不要 |
 
 ## 残課題 (技術)
 - 短い固有名詞だけの小さな範囲では該当なしとの分離が甘い (山手線 30 駅: 文法外の誤受理 8%)。担体付きの言い方 (〜まで / 〜駅) を

@@ -15,3 +15,9 @@
 .yomi{display:block;color:var(--muted);font-size:10px;font-weight:400;letter-spacing:.3px}
 .card b .yomi,#stLabel .yomi,#camLabel .yomi{display:inline;font-size:12px;margin-left:6px}
 .neighbors .yomi{display:inline;margin-left:3px}
+
+@media (max-width:640px){
+  .card{left:6px;right:6px;bottom:6px;padding:10px}
+  .cardbtns button{padding:8px 10px;font-size:15px}
+  .card b{font-size:17px}.neighbors{font-size:12px}
+}

@@ -25,4 +25,13 @@
 .yomi{display:block;color:var(--muted);font-size:10px;font-weight:400;letter-spacing:.3px}
 .card b .yomi,#camLabel .yomi{display:inline;font-size:13px;margin-left:8px}
 .neighbors .yomi{display:inline;margin-left:3px;font-size:11px}
-@media (max-width:1000px){.map{min-height:45vh}.camhead .ttl b{font-size:18px}}
+@media (max-width:1000px){.map{min-height:45vh}.camhead .ttl b{font-size:17px}}
+@media (max-width:640px){
+  .card{padding:0}
+  .card .panel{width:100vw;max-height:100vh;height:100dvh;border-radius:0;border:0;padding:8px 10px calc(8px + env(safe-area-inset-bottom))}
+  .cardbtns button{padding:8px 10px;font-size:15px}     /* 指で押せる大きさに */
+  .camhead{gap:6px}.camhead .ttl b{font-size:16px}
+  .imgwrap{min-height:180px}
+  .mvoice{font-size:12px;gap:6px}.mvoice .right{display:none}
+  .neighbors{font-size:12px}
+}

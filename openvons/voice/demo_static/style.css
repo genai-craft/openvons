@@ -64,3 +64,15 @@ table.scopes{width:100%;border-collapse:collapse;font-size:13px}table.scopes th,
 
 .yomi{color:var(--muted);font-size:11px;font-weight:400;margin-left:6px}
 .tile .lbl .yomi{display:block;margin:0}
+
+/* PWA / スマホ: 指で押せる大きさ、セーフエリア、横スクロール禁止 */
+@media (max-width:640px){
+  html,body{overflow-x:hidden}
+  header{padding:8px 10px;gap:8px}
+  .brand{font-size:17px}.brand .sub{display:none}
+  main{padding:8px;gap:8px}
+  .voice{max-height:none;padding:10px}
+  .mic,.tab,.sayform button,.quick button{padding:8px 12px;font-size:15px}
+  .statebar{flex-wrap:wrap}
+  body{padding-bottom:env(safe-area-inset-bottom)}
+}
