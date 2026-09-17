@@ -27,3 +27,8 @@ h3{margin:8px 0 4px;font-size:14px;color:var(--muted)}
 .legend{list-style:none;padding:0;margin:0;font-size:13px}.legend li{padding:3px 0}
 .muted{color:var(--muted)}.small{font-size:12px}
 @media (max-width:1000px){main{grid-template-columns:1fr}}
+
+/* 導入・カスタマイズの問い合わせ先 (自社サイトへ) */
+.contact{color:var(--acc);text-decoration:none;border:1px solid var(--line);border-radius:999px;padding:4px 12px;font-size:12px;white-space:nowrap}
+.contact:hover{border-color:var(--acc);background:var(--chip)}
+@media (max-width:640px){.contact{font-size:11px;padding:3px 9px}}

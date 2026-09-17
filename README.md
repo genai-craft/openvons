@@ -96,6 +96,13 @@ docs/               design, evaluation and research notes (lm_*, vision_*, voice
 
 Most documents under `docs/` are in Japanese for now.
 
+## Commercial use, customization and deployment
+
+openvons is an independent open-source project. For help applying it to your own domain (your own entity catalog, states and commands,
+on-premise deployment, model tuning, evaluation on your own audio), please get in touch through **https://genai-craft.com**.
+
+GitHub Issues are for bugs and questions about the code itself.
+
 ## License
 
 Code is Apache-2.0. Third-party models and data are listed in [docs/licensing.md](docs/licensing.md): kana-whisper (MIT), Silero VAD (MIT),

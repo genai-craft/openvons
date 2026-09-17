@@ -82,6 +82,13 @@ scripts/        lm_* (テキスト/画像の実験)、build_catalog / build_stat
 docs/           lm_* / vision_* / voice_* の設計・評価・調査、licensing.md
 ```
 
+## 導入・カスタマイズのご相談
+
+openvons は独立したオープンソースのプロジェクトです。自社の対象物 (機器・拠点・帳票など) や業務の状態遷移に合わせた作り込み、
+オンプレミス導入、モデルの追加学習、実音声での評価などのご相談は **https://genai-craft.com** からお願いします。
+
+GitHub の Issue はコード自体の不具合・質問用です。
+
 ## ライセンス
 
 コード Apache-2.0。第三者のモデル・データは [docs/licensing.md](docs/licensing.md)。
