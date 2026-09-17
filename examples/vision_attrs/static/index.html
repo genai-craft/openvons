@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0f1318">
+<title>顔と全身の属性 — openvons (open-Jev) vision demo</title>
+<link rel="stylesheet" href="/static/vision.css?v=__V__">
+</head>
+<body>
+<header>
+  <div class="brand">顔と全身の属性 <span class="sub">openvons (open-Jev) — 生成せず、選択肢に確率で答える</span></div>
+  <div class="bar">
+    <button id="camBtn" class="mic">📷 カメラ開始</button>
+    <label class="chk"><input type="checkbox" id="live" checked> 連続 (1.5 秒ごと)</label>
+    <button id="shotBtn">1 枚だけ判定</button>
+    <label class="upl">画像を選ぶ<input type="file" id="file" accept="image/*" hidden></label>
+    <select id="facing"><option value="user">前面カメラ</option><option value="environment">背面カメラ</option></select>
+  </div>
+</header>
+<main>
+  <section class="stage">
+    <div class="viewport">
+      <video id="video" playsinline muted autoplay hidden></video>
+      <canvas id="frame"></canvas>
+      <canvas id="overlay"></canvas>
+    </div>
+    <div class="hint" id="hint">カメラを開始するか、画像を選んでください。全身の判定はフレーム全体 (または枠をドラッグした範囲) を見ます。画像はサーバーに保存しません。</div>
+    <div class="timings muted" id="timings"></div>
+  </section>
+  <aside class="panel">
+    <h3>顔 <span class="muted" id="faceInfo"></span></h3>
+    <div id="faces" class="cards"><div class="muted">顔が見つかるとここに年齢帯と性別が出ます</div></div>
+    <h3>全身 <span class="muted" id="bodyInfo"></span></h3>
+    <div id="body" class="cards"></div>
+    <h3>読み方</h3>
+    <ul class="legend">
+      <li><span class="lv 確定">確定</span> 最大確率 0.70 以上。自動処理してよい帯</li>
+      <li><span class="lv 要確認">要確認</span> 0.45〜0.70。人が見る帯</li>
+      <li><span class="lv 不明">不明</span> 0.45 未満。答えない</li>
+    </ul>
+    <p class="muted small">凍結した Qwen3-VL-2B の視覚エンコーダ (407M) に、FairFace / PA-100K で学習した数万パラメータの head を載せたもの。
+    確率は温度校正済み (ECE 0.01〜0.03)。年齢は 9 区分の分布として出るので、隣り合う区分に割れるのは正常。
+    公開データセットの結果であり、実環境 (照明・角度・マスク) では精度が落ちる。属性推定は用途に応じて倫理・法令の確認を。</p>
+  </aside>
+</main>
+<script src="/static/vision.js?v=__V__"></script>
+</body>
+</html>

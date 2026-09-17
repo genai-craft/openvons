@@ -109,7 +109,7 @@ class PretrainConfig:
     seeds: list[int] = field(default_factory=lambda: [1, 2, 3])
     carriers: list[str] = field(default_factory=lambda: ["{camera}", "{camera}を表示", "{camera}出して"])
     snr_db: list[float | None] = field(default_factory=lambda: [None, 20.0, 10.0])
-    background_level_db: float | None = -12.0     # None で無効
+    background_level_db: float | None = -18.0     # None で無効。−12dB だと kana-whisper が背景の語を書き取り校正を汚す
     n_out_of_grammar: int = 16
     add_readings: bool = True
     min_utts: int = 320                         # 校正サンプルの下限 (足りなければ声・言い方を自動で増やす)
@@ -215,7 +215,7 @@ class Pretrainer:
                     w = pad_silence(wav, rng)
                     if snr is not None:
                         w = add_noise(w, snr, rng)
-                    if cfg.background_level_db is not None and len(bg_pool) > 2 and rng.random() < 0.3:
+                    if cfg.background_level_db is not None and len(bg_pool) > 2 and rng.random() < 0.15:
                         w = mix_background(w, rng.choice(bg_pool), cfg.background_level_db, rng)
                     a = self.rec.analyze(w, cs_full)
                     d = self.rec.recognize(w, cs_full)      # 判断 (校正前の実行時挙動) — analyze を 2 回呼ぶが GPU コストは小さい

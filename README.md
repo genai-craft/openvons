@@ -40,6 +40,7 @@ Utterances captured through the microphone are stored under `state/<app>/utts/` 
 |---|---|---|
 | Railway map by voice | https://eki.aunvox.com | 8,987 stations (station_database, CC BY 4.0). Say a station to zoom; next / previous station; switch line; add favorite (asks for confirmation) |
 | Road camera monitoring | https://sashizu.aunvox.com | 2,932 synthetic cameras. Say a camera name to enlarge; pan / tilt / zoom; save preset (asks for confirmation) |
+| Face and body attributes (vision) | https://kao.aunvox.com | Webcam or upload. Age (9 bins) and gender per face (FairFace head), gender / age group / orientation / baggage for the body (PA-100K head), each with calibrated probabilities and a decided / check / unknown level. Images are not stored |
 
 An application is just `examples/<name>/app.py` (intents, states, entities) plus `static/`; recognition, calibration, pre-training and the server are shared.
 Design and evaluation: [docs/voice_design.md](docs/voice_design.md) / [docs/voice_evaluation.md](docs/voice_evaluation.md) (Japanese).
@@ -52,6 +53,14 @@ How the voice pipeline works:
 4. Candidates and the free hypothesis are combined into one calibrated distribution; the free hypothesis acts as the "none of the above" option.
 5. A policy turns the distribution into execute / confirm / reject, with risk levels per intent.
 6. Registering a scope (e.g. a set of lines or cameras) triggers *pre-training*: names are synthesized with TTS in several voices, run through the recognizer, and the calibration, the realized readings and the confusable pairs are stored with the scope.
+
+### Vision demo
+
+```bash
+scripts/serve_vision.sh start 0 8602   # OPENVONS_FACE_CKPT / OPENVONS_BODY_CKPT point at trained heads; YuNet onnx under state/models/
+```
+
+Both heads share a frozen Qwen3-VL-2B vision encoder (407M) and add tens of thousands of trainable parameters. Face detection uses OpenCV YuNet (Apache-2.0).
 
 ### Text and vision
 

@@ -40,9 +40,16 @@ JEV_APP=examples.road_cameras.app scripts/serve_demo.sh start 2 8600   # 道路�
 |---|---|---|
 | 駅名で動く路線図 | https://eki.aunvox.com | 8,987 駅 (station_database, CC BY 4.0)。駅名 → 寄る、次/前の駅、路線切替、お気に入り (要確認) |
 | 道路カメラ監視 | https://sashizu.aunvox.com | 2,932 台の合成カタログ。カメラ名 → 拡大、PTZ、プリセット保存 (要確認) |
+| 顔と全身の属性 (画像) | https://kao.aunvox.com | Web カメラか画像。顔ごとに年齢 9 区分・性別 (FairFace head)、全身の性別・年代・向き・荷物 (PA-100K head)。校正済み確率と 確定 / 要確認 / 不明 の 3 段。画像は保存しない |
 
 アプリは `examples/<name>/app.py` (意図・状態・実体) と `static/` だけで、認識・校正・事前学習・サーバーは共通。
 設計・評価: [docs/voice_design.md](docs/voice_design.md) / [docs/voice_evaluation.md](docs/voice_evaluation.md)。
+
+### 画像デモ
+
+```bash
+scripts/serve_vision.sh start 0 8602   # OPENVONS_FACE_CKPT / OPENVONS_BODY_CKPT に学習済み head、YuNet の onnx は state/models/ に
+```
 
 ### テキスト / 画像
 

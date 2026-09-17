@@ -100,7 +100,7 @@ class Analysis:
 class Recognizer:
     def __init__(self, asr: KanaASR, calibration: Calibration | None = None, thresholds: Thresholds | None = None, shortlist_k: int = 16,
                  embed: bool = True, embed_min_ratio: float = 0.3, embed_max_residual: int = 14, embed_min_morae: int = 4,
-                 embed_penalty: float = 0.7):
+                 embed_penalty: float = 1.0):
         self.asr = asr
         self.calibration = calibration or Calibration()
         self.thresholds = thresholds or Thresholds()
