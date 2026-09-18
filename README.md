@@ -96,6 +96,9 @@ closest phrase from the transcription, no way to refuse) next to **openvons** (p
 conventional way would have fired the wrong command. Measured on a Nothing Phone 3 (NNAPI, int8):
 2.0-2.2 s per utterance, 260-290 ms to embed an image and 11 ms to answer 9 questions about it.
 
+**[Download the Android APK](https://github.com/genai-craft/openvons/releases/latest)** (39 MB for arm64),
+or build it yourself:
+
 ```bash
 cd app && flutter pub get
 flutter run                     # a connected Android device, or an iOS device/simulator

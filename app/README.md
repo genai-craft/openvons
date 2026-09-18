@@ -18,6 +18,12 @@ Three screens:
   and "answer N questions" to show that questions are nearly free.
 - **設定 (settings)** — which server to fetch models from, and whether to use the device accelerator.
 
+## Install it
+
+A signed APK is published under [Releases](https://github.com/genai-craft/openvons/releases/latest):
+`arm64-v8a` (39 MB) for recent phones, `armeabi-v7a` (31 MB) for older 32-bit ones, or the universal
+build (111 MB). Android 8.0 or newer; you have to allow installing from an unknown source.
+
 ## Run it
 
 ```bash
