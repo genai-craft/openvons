@@ -1,7 +1,7 @@
 name: openvons
 description: "openvons — 声と映像を、端末の中で有限の選択肢に確率で答える"
 publish_to: 'none'
-version: 0.1.6+7
+version: 0.1.7+8
 
 environment:
   sdk: ^3.9.0
