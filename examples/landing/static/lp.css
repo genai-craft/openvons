@@ -167,3 +167,10 @@ h2{font-size:clamp(26px,3.4vw,38px);font-weight:800;letter-spacing:-.02em}
 .footer{border-top:1px solid var(--line);background:var(--bg2);display:flex;justify-content:space-between;gap:24px;flex-wrap:wrap;
   padding:30px max(16px,calc((100vw - var(--maxw))/2))}
 .footer p{margin:6px 0 0}
+
+/* アプリ配布のブロック (デモ一覧の下) */
+.applink{display:flex;gap:24px;align-items:center;justify-content:space-between;flex-wrap:wrap;
+  margin-top:28px;padding:22px 24px;border:1px solid var(--line);border-radius:14px;background:rgba(255,255,255,.02)}
+.applink h3{margin:0 0 6px}
+.applink p{margin:0 0 4px;max-width:62ch}
+@media (max-width:640px){.applink{flex-direction:column;align-items:flex-start}}
