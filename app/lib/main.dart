@@ -151,7 +151,10 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
           VisionPage(engine: vision, server: server, console: console),
           SettingsPage(
             server: server, status: status, progress: progress, loading: loading, useGpu: useGpu,
-            onServer: (v) async { setState(() => server = v); (await SharedPreferences.getInstance()).setString('server', v); await _loadSites(); },
+            onServer: (v) async {
+              setState(() => server = v.trim());
+              (await SharedPreferences.getInstance()).setString('server', server);
+            },
             onGpu: (v) => setState(() => useGpu = v),
             speak: speak,
             onSpeak: (v) => setState(() => speak = v),

@@ -824,8 +824,11 @@ class SettingsPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) => ListView(padding: const EdgeInsets.all(14), children: [
     const Text('サーバー', style: TextStyle(color: Colors.white70)),
-    TextFormField(initialValue: server, onFieldSubmitted: onServer,
-      decoration: const InputDecoration(border: OutlineInputBorder(), isDense: true, helperText: 'モデルと選択肢の配布元 (推論は端末内)')),
+    // 決定キーを押さなくても保存する (押し忘れると既定値のままで繋がらない)
+    TextFormField(initialValue: server, onChanged: onServer, onFieldSubmitted: onServer,
+      keyboardType: TextInputType.url, autocorrect: false,
+      decoration: const InputDecoration(border: OutlineInputBorder(), isDense: true,
+          helperText: 'モデルと選択肢の配布元 (推論は端末内)。自前で立てるなら http://<アドレス>:8606')),
     const SizedBox(height: 16),
     SwitchListTile(value: useGpu, onChanged: onGpu, activeThumbColor: acc,
       title: const Text('端末の加速器を使う'), subtitle: const Text('Android: NNAPI / iOS: Core ML。切ると CPU のみ'),
