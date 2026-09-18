@@ -5,12 +5,12 @@
 library;
 
 class Site {
-  final String id, label, reading, river, office, pref;
+  final String id, code, label, reading, river, office, pref;
   final int order;
   final double? lat, lng;
-  Site(this.id, this.label, this.reading, this.river, this.office, this.pref, this.order, this.lat, this.lng);
+  Site(this.id, this.code, this.label, this.reading, this.river, this.office, this.pref, this.order, this.lat, this.lng);
   factory Site.fromJson(Map<String, dynamic> j) => Site(
-      j['id'] as String, j['label'] as String, (j['reading'] ?? '') as String,
+      j['id'] as String, (j['code'] ?? '') as String, j['label'] as String, (j['reading'] ?? '') as String,
       (j['river'] ?? '') as String, (j['office'] ?? '') as String, (j['pref'] ?? '') as String,
       (j['order'] ?? 0) as int, (j['lat'] as num?)?.toDouble(), (j['lng'] as num?)?.toDouble());
 }

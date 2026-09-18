@@ -141,14 +141,16 @@ def sites():
     lex = G.get("lexicon")
     if lex is None:
         return JSONResponse({"error": "lexicon not loaded"}, 503)
+    ents = sorted(lex.in_scope(G["scope"]),
+                  key=lambda e: (e.attrs.get("river", ""), e.attrs.get("order") or 0))
     out = []
-    for e in lex.in_scope(G["scope"]):
+    for i, e in enumerate(ents, 1):
         a = e.attrs
-        out.append({"id": e.id, "label": e.label, "reading": (e.readings or [""])[0], "river": a.get("river", ""),
-                    "office": a.get("office", ""), "pref": a.get("pref", ""), "order": a.get("order"),
-                    "lat": a.get("lat"), "lng": a.get("lng"),
+        # コードは並び順で振る (アプリ側と同じ規則)。名前を覚えていなくても「C06」で呼べる
+        out.append({"id": e.id, "code": f"C{i:02d}", "label": e.label, "reading": (e.readings or [""])[0],
+                    "river": a.get("river", ""), "office": a.get("office", ""), "pref": a.get("pref", ""),
+                    "order": a.get("order"), "lat": a.get("lat"), "lng": a.get("lng"),
                     "image": f"/api/image/{e.id}"})
-    out.sort(key=lambda x: (x["river"], x["order"] if x["order"] is not None else 0))
     return {"scope": G["scope"].name, "attribution": G.get("attribution", ""), "sites": out}
 
 

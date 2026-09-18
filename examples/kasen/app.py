@@ -19,7 +19,7 @@ from typing import Any
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
 from openvons.voice.engine import Decision
-from openvons.voice.grammar import Grammar, Intent, example_of
+from openvons.voice.grammar import Grammar, Intent, code_hypotheses, example_of, number_hypotheses
 from openvons.voice.lexicon import Entity, Lexicon, Scope
 from openvons.voice.state import StateDef, StateMachine
 
@@ -156,8 +156,24 @@ class KasenApp:
     def command_set(self):
         st = self.sm.state
         if st not in self._cs_cache:
-            self._cs_cache[st] = self.grammar.compile(self.sm.allowed_intents(), self.entities(), st)
+            cs = self.grammar.compile(self.sm.allowed_intents(), self.entities(), st)
+            # 名前を全部覚えなくて済むように、画面に出ている整理番号でも選べるようにする。
+            # 主役はコード (C06 = シーゼロロク。音が長く雑談とぶつかりにくい)。「6 番」も通す
+            if SELECT_INTENT in self.sm.allowed_intents():
+                from openvons.voice.grammar import CommandSet
+                coded = self.coded_entities()
+                cs = CommandSet(
+                    cs.hyps
+                    + code_hypotheses(SELECT_INTENT, SLOT, coded)
+                    + number_hypotheses(SELECT_INTENT, SLOT, [e for _, e in coded]), st)
+            self._cs_cache[st] = cs
         return self._cs_cache[st]
+
+    def coded_entities(self) -> list[tuple[str, Entity]]:
+        """画面に出る並び (河川ごと上流→下流) と同じ順に C01, C02, ... を振る。
+        番号は範囲 (スコープ) ごとに振り直す。担当範囲が変われば番号も変わる。"""
+        ents = sorted(self.entities(), key=lambda e: (e.attrs.get("river", ""), e.attrs.get("order") or 0))
+        return [(f"C{i:02d}", e) for i, e in enumerate(ents, 1)]
 
     def allowed_commands(self) -> list[dict[str, str]]:
         out = []
@@ -266,6 +282,7 @@ class KasenApp:
         s["n_hypotheses"] = len(self.command_set())
         s["n_cameras"] = len(self.entities())
         s["scope"] = {"id": self.scope.id, "name": self.scope.name}
+        s["codes"] = {e.id: code for code, e in self.coded_entities()}
         s["attribution"] = ATTRIBUTION
         return s
 

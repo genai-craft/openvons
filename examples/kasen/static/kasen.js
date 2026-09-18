@@ -39,6 +39,8 @@ function applyState(s) {
   renderCard(s); drawFocus();
   if (s.state === 'MAP' && (!prev || prev.state !== 'MAP')) fitAll();      // 「全体に戻る」で必ず全体表示へ
 }
+function codeOf(id) { return (state.snap && state.snap.codes && state.snap.codes[id]) || ''; }
+
 function onResult(m) {
   const d = m.decision;
   $('#speech').textContent = m.speech || (d.action === 'none' ? '(システム宛ではないと判断)' : '—');
@@ -209,7 +211,12 @@ function onPretrain(m) {
     refreshScopes(); applyState(m.state); renderCamTable(); }
   else if (m.status === 'error') $('#ptStatus').textContent = 'エラー: ' + m.error;
 }
-function renderCamTable() { $('#camTable').innerHTML = `<table><tr><th>地点</th><th>河川</th><th>読み</th></tr>` + state.cams.slice(0, 300).map(c => `<tr><td>${c.label}</td><td>${c.attrs.route_label}</td><td>${c.readings.map(r => `<span class="rd">${r}</span>`).join(' , ')} <span class="rd" data-add="${c.id}">＋追加</span></td></tr>`).join('') + '</table>'; }
+/* 地点表。コード (C06) は声で呼ぶための短い呼び名。名前を覚えていなくても言える */
+function renderCamTable() {
+  const codes = (state.snap && state.snap.codes) || {};
+  $('#camTable').innerHTML = `<table><tr><th>コード</th><th>地点</th><th>河川</th><th>読み</th></tr>` + state.cams.slice(0, 300).map(c =>
+    `<tr><td class="rd">${codes[c.id] || ''}</td><td>${c.label}</td><td>${c.attrs.route_label}</td><td>${c.readings.map(r => `<span class="rd">${r}</span>`).join(' , ')} <span class="rd" data-add="${c.id}">＋追加</span></td></tr>`).join('') + '</table>';
+}
 
 /* ---------------- イベント ---------------- */
 $('#micBtn').onclick = toggleMic;

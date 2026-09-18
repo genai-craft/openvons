@@ -122,6 +122,96 @@ def expand_template(pattern: str) -> list[list[tuple[str, str]]]:
     return out
 
 
+#: 数字の読み方。コードは 1 桁ずつ読む (C06 = シーゼロロク)。ゼロは マル / レイ とも言う
+_DIGIT_KANA = {
+    "0": ["ゼロ", "マル", "レイ"], "1": ["イチ"], "2": ["ニ"], "3": ["サン"], "4": ["ヨン", "シ"],
+    "5": ["ゴ"], "6": ["ロク"], "7": ["ナナ", "シチ"], "8": ["ハチ"], "9": ["キュー", "ク"],
+}
+#: 英字の読み方 (コードの接頭辞に使うぶんだけ)
+_LETTER_KANA = {
+    "A": ["エー"], "B": ["ビー"], "C": ["シー"], "D": ["ディー"], "E": ["イー"], "F": ["エフ"],
+    "G": ["ジー"], "H": ["エイチ"], "K": ["ケー"], "L": ["エル"], "M": ["エム"], "N": ["エヌ"],
+    "P": ["ピー"], "R": ["アール"], "S": ["エス"], "T": ["ティー"], "V": ["ブイ"], "W": ["ダブリュー"],
+}
+
+
+def code_readings(code: str, max_forms: int = 6) -> list[str]:
+    """「C06」→ [シーゼロロク, シーマルロク, シーレイロク, シーロク]。
+
+    人は同じコードをいろいろに読む (ゼロ / マル / レイ、先頭の 0 を飛ばす) ので、
+    ありうる読みを並べて候補にする。読みが 1 つだけだと言い方が違うだけで外れる。
+    """
+    parts: list[list[str]] = []
+    for ch in code.upper():
+        if ch.isdigit():
+            parts.append(_DIGIT_KANA[ch])
+        elif ch in _LETTER_KANA:
+            parts.append(_LETTER_KANA[ch])
+        else:
+            continue
+    out: list[str] = []
+    for combo in itertools.product(*parts):
+        out.append("".join(combo))
+        if len(out) >= max_forms:
+            break
+    m = re.match(r"^([A-Za-z]+)(\d+)$", code)
+    if m:
+        head, num = m.group(1), m.group(2)
+        head_kana = _LETTER_KANA.get(head.upper(), [head])[0]
+        # 先頭の 0 を飛ばした言い方 (C06 → シーロク)
+        if num.lstrip("0") != num and num.lstrip("0"):
+            out.extend(r for r in code_readings(head + num.lstrip("0"), max_forms=2) if r not in out)
+        # 数としての言い方 (C10 → シージュー、C37 → シーサンジューナナ)
+        whole = K.normalize(K.g2p(str(int(num))))
+        if whole and head_kana + whole not in out:
+            out.append(head_kana + whole)
+    return out
+
+
+def code_hypotheses(intent: str, slot: str, coded: Iterable[tuple[str, Entity]],
+                    patterns: Iterable[str] | None = None, risk: str = "low") -> list[Hypothesis]:
+    """「C06」のような整理番号でも選べるようにする仮説。
+
+    固有名を全部覚えて言うのは現場では無理があるので、画面に出ている短いコードで呼べる道を用意する。
+    数字だけ (「6 番」) より、英字を頭に付けたコードの方が音として長く、雑談とぶつかりにくい。
+    意味 (意図 + スロット) は名前で呼んだときと同じなので、確率は自然に足し合わされる。
+    """
+    pats = list(patterns or ["{c}", "{c}[を](表示|出して|見せて|お願い)", "{c}[に](切り替え|して)"])
+    out: list[Hypothesis] = []
+    for code, e in coded:
+        for kana_code in code_readings(code):
+            for pat in pats:
+                for seq in expand_template(pat.replace("{c}", "\x00")):
+                    tail = "".join(v for _, v in seq).replace("\x00", "")
+                    text = f"{code}{tail}"
+                    kana = K.normalize(kana_code + (K.g2p(tail) if tail else ""))
+                    if kana:
+                        out.append(Hypothesis(intent, f"{text} ({e.label})", kana, {slot: e.id}, {}, risk, True, True, True))
+    return out
+
+
+def number_hypotheses(intent: str, slot: str, entities: Iterable[Entity], patterns: Iterable[str] | None = None,
+                      risk: str = "low", start: int = 1) -> list[Hypothesis]:
+    """一覧の並び順に番号を振り、「12 番」でも選べるようにする仮説を作る。
+
+    固有名を全部覚えて言うのは現場では無理があるので、画面に出ている番号で呼べる道を用意する。
+    意味 (意図 + スロット) は名前で呼んだときと同じなので、確率は自然に足し合わされる。
+    番号は範囲 (スコープ) ごとの並び順に依存するため、語彙ではなくコマンド集合を作るときに付ける。
+    """
+    pats = list(patterns or ["{n}番", "{n}番[を](表示|出して|見せて|お願い)", "番号{n}", "{n}番[に](切り替え|して)"])
+    out: list[Hypothesis] = []
+    for i, e in enumerate(entities, start):
+        for pat in pats:
+            surface = pat.replace("{n}", str(i))
+            for seq in expand_template(surface):
+                text = "".join(v for _, v in seq)
+                kana = K.normalize(K.g2p(text))
+                if not kana:
+                    continue
+                out.append(Hypothesis(intent, f"{text} ({e.label})", kana, {slot: e.id}, {}, risk, True, True, True))
+    return out
+
+
 class CommandSet:
     def __init__(self, hyps: list[Hypothesis], state: str = ""):
         self.state = state

@@ -348,6 +348,7 @@ class _VoicePageState extends State<VoicePage> {
       ),
       const SizedBox(height: 6),
       Row(children: [
+        Text('${cam.code}  ', style: const TextStyle(fontSize: 16, color: acc, fontFamily: 'monospace', fontWeight: FontWeight.w700)),
         Expanded(child: Text(cam.label, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700))),
         if (c.favorites.contains(cam.id)) const Icon(Icons.star, color: warn, size: 18),
         if (c.zoom > 1.01) Text(' x${c.zoom.toStringAsFixed(1)}', style: const TextStyle(color: Colors.white54, fontSize: 12)),
@@ -382,7 +383,7 @@ class _VoicePageState extends State<VoicePage> {
           if (_picked != null)
             Padding(padding: const EdgeInsets.only(top: 6), child: Row(children: [
               Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                Text(_picked!.label, style: const TextStyle(fontWeight: FontWeight.w700)),
+                Text('${_picked!.code}  ${_picked!.label}', style: const TextStyle(fontWeight: FontWeight.w700)),
                 Text('${_picked!.reading} · ${_picked!.river}', style: const TextStyle(color: Colors.white38, fontSize: 11, fontFamily: 'monospace')),
               ])),
               TextButton(onPressed: () => setState(() { c.cameraId = _picked!.id; c.state = 'CAMERA'; c.imageSeq++; }),
@@ -396,14 +397,17 @@ class _VoicePageState extends State<VoicePage> {
             onChanged: (v) => setState(() => _filter = v),
             style: const TextStyle(fontSize: 13),
             decoration: const InputDecoration(isDense: true, prefixIcon: Icon(Icons.search, size: 18),
-              hintText: '地点名でしぼる', border: OutlineInputBorder()),
+              hintText: '地点名・コードでしぼる', border: OutlineInputBorder()),
           ),
           const SizedBox(height: 6),
           SizedBox(height: 220, child: ListView(children: [
-            for (final s in sites.where((s) => _filter.isEmpty || s.label.contains(_filter) || s.reading.contains(_filter)))
+            for (final s in sites.where((s) => _filter.isEmpty || s.label.contains(_filter) ||
+                s.reading.contains(_filter) || s.code.toLowerCase().contains(_filter.toLowerCase())))
               InkWell(
                 onTap: () => setState(() { c.cameraId = s.id; c.state = 'CAMERA'; c.imageSeq++; }),
                 child: Padding(padding: const EdgeInsets.symmetric(vertical: 4), child: Row(children: [
+                  SizedBox(width: 44, child: Text(s.code,
+                      style: const TextStyle(fontSize: 12, color: acc, fontFamily: 'monospace', fontWeight: FontWeight.w700))),
                   Expanded(child: Text(s.label, style: const TextStyle(fontSize: 14))),
                   Text(s.reading, style: const TextStyle(color: Colors.white38, fontSize: 11, fontFamily: 'monospace')),
                 ])),
@@ -440,7 +444,7 @@ class _VoicePageState extends State<VoicePage> {
                     padding: const EdgeInsets.symmetric(horizontal: 3, vertical: 1),
                     color: Colors.black.withValues(alpha: .62),
                     child: Column(mainAxisSize: MainAxisSize.min, children: [
-                      Text(s.label, maxLines: 1, overflow: TextOverflow.ellipsis,
+                      Text('${s.code} ${s.label}', maxLines: 1, overflow: TextOverflow.ellipsis,
                           style: const TextStyle(fontSize: 9, height: 1.1, color: Colors.white)),
                       if (s.reading.isNotEmpty)
                         Text(s.reading, maxLines: 1, overflow: TextOverflow.ellipsis,
@@ -490,7 +494,8 @@ class _VoicePageState extends State<VoicePage> {
         if (c.state == 'MAP')
           Padding(padding: const EdgeInsets.only(bottom: 4), child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
             const SizedBox(width: 108, child: Text('地点を選ぶ', style: TextStyle(fontSize: 12, color: Colors.white70))),
-            Expanded(child: Text('上の地図か一覧にある ${c.sites.length} 地点の名前', style: const TextStyle(fontSize: 12))),
+            Expanded(child: Text('${c.sites.length} 地点の名前、またはコード「シーゼロロク」「6 番」',
+                style: const TextStyle(fontSize: 12))),
           ])),
         for (final e2 in byIntent.entries)
           Padding(padding: const EdgeInsets.symmetric(vertical: 2), child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
