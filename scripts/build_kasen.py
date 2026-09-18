@@ -23,6 +23,14 @@ from openvons.voice import kana as K  # noqa: E402
 STRIP = re.compile(r"(水位観測所|水位監視|水位|観測所|排水機場|排水樋管|樋管|水門|堰|付近|カメラ|地点|局|屋上|川表側|川裏側|（.*?）|\(.*?\))")
 
 
+#: G2P が地名として読み違えるもの。誤った読み -> 正しい読み。
+#: 固有名詞は辞書に無いと一般語として読まれる (古河 → フルカワ。市の名前は「こが」)。
+#: 誤った読みも別名として残す (人によってはそう言うため)。
+PLACE_READINGS = {
+    "古河": ("フルカワ", "コガ"),
+}
+
+
 def readings_for(label: str) -> list[str]:
     """地点名の読み。G2P は固有名の「橋」を キョー と読むことがある (芽吹橋 → メフキキョー) が、
     実際は バシ (連濁) か ハシ なので、その位置だけ差し替えた読みを両方作る。
@@ -30,16 +38,41 @@ def readings_for(label: str) -> list[str]:
     全体の読みを正として置換だけ行う。「東京」等で キョー が正しい場合は触らない。
     """
     base = K.g2p(label)
-    if "橋" not in label or "キョー" not in base or "京" in label.replace("橋", "") or "教" in label:
-        return [base]
-    return [base.replace("キョー", "バシ"), base.replace("キョー", "ハシ"), base]
+    out = [base]
+    if "橋" in label and "キョー" in base and "京" not in label.replace("橋", "") and "教" not in label:
+        out = [base.replace("キョー", "バシ"), base.replace("キョー", "ハシ"), base]
+    # 地名の読み違いを直す。正しい読みを先頭に、元の読みも残す
+    for word, (wrong, right) in PLACE_READINGS.items():
+        if word in label and wrong in out[0]:
+            out = [out[0].replace(wrong, right)] + out
+    return out
 
 
 def main() -> None:
     ap = argparse.ArgumentParser()
-    ap.add_argument("--src", required=True)
+    ap.add_argument("--src", help="関東地整から集めた生データ (JSON)")
+    ap.add_argument("--fix-readings", metavar="CAMERAS_JSON",
+                    help="既存の cameras.json の読みだけ、いまの規則で作り直す (元データが無くても直せる)")
     ap.add_argument("--out", default=str(ROOT / "examples" / "kasen"))
     args = ap.parse_args()
+    if args.fix_readings:
+        path = Path(args.fix_readings)
+        ents = json.loads(path.read_text(encoding="utf-8"))
+        changed = 0
+        for e in ents:
+            new = readings_for(e["label"])
+            # 元の読みのうち、短縮形 (「〜水位」を落としたもの) は残す
+            extra = [r for r in e["readings"] if r not in new and len(r) < len(new[0])]
+            merged = new + extra
+            if merged != e["readings"]:
+                print(f'  {e["label"]}: {e["readings"]} -> {merged}')
+                e["readings"] = merged
+                changed += 1
+        path.write_text(json.dumps(ents, ensure_ascii=False, indent=1), encoding="utf-8")
+        print(f"{changed} 件の読みを更新: {path}")
+        return
+    if not args.src:
+        ap.error("--src か --fix-readings のどちらかが要ります")
     rows = json.load(open(args.src, encoding="utf-8"))
     # 画像 URL の無い地点 (京浜 = 外部サイトへのリンクのみ、砂防 = 動画サイト) は声で選んでも見せるものが無いので外す
     rows = [r for r in rows if r.get("image_url") and re.search(r"\.(jpe?g|png|gif)(\?|$)", r["image_url"], re.I)]   # 画像でない (動画サイトの HTML 等) は外す
