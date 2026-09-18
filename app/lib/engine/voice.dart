@@ -121,8 +121,11 @@ class VoiceEngine {
     }
 
     final top = ranked.isEmpty ? null : ranked.first;
-    final action = top == null ? 'none'
-        : decide(top[1] as double, noneProb, (top[0] as Map)['r'] as String? ?? 'low');
+    final action = top == null
+        ? 'none'
+        : decide(top[1] as double, noneProb, (top[0] as Map)['r'] as String? ?? 'low',
+            confirmable: ((top[0] as Map)['c'] ?? true) as bool,
+            positive: ((top[0] as Map)['y'] ?? true) as bool);
     return VoiceResult(
       freeKana: free, action: action,
       text: top == null ? '-' : (top[0] as Map)['t'] as String,

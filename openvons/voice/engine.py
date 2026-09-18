@@ -208,4 +208,6 @@ class Recognizer:
     def _decide(self, top: Candidate | None, none_prob: float) -> tuple[str, str]:
         if top is None:
             return "none", "no candidates"
-        return decide(top.prob, none_prob, top.hypothesis.risk, self.thresholds)
+        h = top.hypothesis
+        return decide(top.prob, none_prob, h.risk, self.thresholds,
+                      confirmable=getattr(h, "confirmable", True), positive=getattr(h, "positive", True))

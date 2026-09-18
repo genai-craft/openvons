@@ -67,8 +67,11 @@ INTENTS = [
     Intent("back", ["(一覧|全体|地図|元の画面|ホーム|最初|トップ)[に|へ](戻って|戻る|戻して)", "戻る", "閉じて",
                     "ホーム[へ|に]", "地図[へ|に]"], description="地図に戻る (いつでも使えます)"),
     Intent("favorite", ["(この地点|ここ|このカメラ)[を](登録|お気に入り|保存)[して]", "お気に入り登録"], risk="high", description="お気に入りに登録 (要確認)"),
-    Intent("yes", ["はい", "そうです", "お願いします", "OK", "実行"], description="確認: はい", allow_embed=False),
-    Intent("no", ["いいえ", "違います", "キャンセル", "やめて", "取り消し"], description="確認: いいえ", allow_embed=False),
+    # 確認への返事は、それ自体を確認し直さない (「いいえ でよろしいですか」と聞き返す無限ループになる)
+    Intent("yes", ["はい", "そうです", "お願いします", "OK", "実行"], description="確認: はい",
+           allow_embed=False, confirmable=False, positive=True),
+    Intent("no", ["いいえ", "違います", "キャンセル", "やめて", "取り消し"], description="確認: いいえ",
+           allow_embed=False, confirmable=False, positive=False),
     Intent("help", ["ヘルプ", "何ができる", "コマンド一覧"], description="使えるコマンド"),
 ] + _pan_intents()
 

@@ -24,20 +24,43 @@ class Thresholds:
     execute_medium: float = 0.95   # 危険度 medium はより高い確信を要求
     # 危険度 high は確信度に関わらず必ず確認
 
+    #: 迷っていないときは確認を省く。他の候補に残っている確率が小さく、該当なしも低いなら、
+    #: 絶対値が execute に届かなくても実行する (確認が多すぎて使っていられない、という実地の指摘)
+    clear_min: float = 0.65        # 最尤がこれ以上あり
+    clear_ratio: float = 3.0       # 他候補の合計が最尤の 1/3 以下
+    clear_none_max: float = 0.20   # 該当なしが低い
 
-def decide(p_top: float, none_prob: float, risk: Risk = "low", th: Thresholds | None = None) -> tuple[Action, str]:
-    """最尤候補の確率 p_top と該当なしの確率から行動を決める。"""
+    #: 確認への返事 (はい / いいえ) のように、それ自体を確認し直せないもの
+    answer_yes: float = 0.60       # 「はい」はこれ以上で受ける
+    answer_no: float = 0.40        # 「いいえ」(取り消し) は安全側なので低くてよい
+
+
+def decide(p_top: float, none_prob: float, risk: Risk = "low", th: Thresholds | None = None,
+           confirmable: bool = True, positive: bool = True) -> tuple[Action, str]:
+    """最尤候補の確率 p_top と該当なしの確率から行動を決める。
+
+    confirmable=False は「確認し直せない意図」(はい / いいえ)。ここで confirm を返すと
+    「いいえ でよろしいですか」と聞き返す無限ループになるので、受けるか棄却するかの 2 択にする。
+    positive は、その返事が実行側 (はい) か取り消し側 (いいえ) か。
+    """
     th = th or Thresholds()
     if none_prob > p_top:
         return "none", f"該当なしが最尤 ({none_prob:.2f})"
+    if not confirmable:
+        need = th.answer_yes if positive else th.answer_no
+        return ("execute", f"確認への返事 p={p_top:.2f} >= {need}") if p_top >= need else ("reject", "確信度不足")
     if risk == "high":
         return ("confirm", "危険度 high は常に確認") if p_top >= th.confirm else ("reject", "確信度不足")
+    rest = max(0.0, 1.0 - p_top - none_prob)      # 他の候補に残っている確率
+    clear = p_top >= th.clear_min and none_prob <= th.clear_none_max and rest <= p_top / th.clear_ratio
     if risk == "medium":
         if p_top >= th.execute_medium:
             return "execute", f"p={p_top:.2f} >= {th.execute_medium}"
         return ("confirm", f"p={p_top:.2f} (medium)") if p_top >= th.confirm else ("reject", "確信度不足")
     if p_top >= th.execute:
         return "execute", f"p={p_top:.2f} >= {th.execute}"
+    if clear:
+        return "execute", f"p={p_top:.2f} で競合なし (他候補 {rest:.2f} / 該当なし {none_prob:.2f})"
     if p_top >= th.confirm:
         return "confirm", f"p={p_top:.2f} in [{th.confirm},{th.execute})"
     return "reject", f"p={p_top:.2f} < {th.confirm}"

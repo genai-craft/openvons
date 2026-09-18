@@ -38,8 +38,8 @@ INTENTS = [
     Intent("home", ["(ホーム|初期位置|正面)[に](戻して|戻って)", "ホームポジション"], description="初期位置に戻す"),
     Intent("back", ["(一覧|全体|元の画面)[に](戻って|戻る|戻して)", "戻る", "閉じて"], description="一覧に戻る"),
     Intent("save_preset", ["(この位置|ここ)[を](保存|プリセット保存|登録)[して]", "プリセット保存"], risk="high", description="プリセット保存 (要確認)"),
-    Intent("yes", ["はい", "そうです", "お願いします", "OK", "実行"], description="確認: はい", allow_embed=False),
-    Intent("no", ["いいえ", "違います", "キャンセル", "やめて", "取り消し"], description="確認: いいえ", allow_embed=False),
+    Intent("yes", ["はい", "そうです", "お願いします", "OK", "実行"], description="確認: はい", allow_embed=False, confirmable=False, positive=True),
+    Intent("no", ["いいえ", "違います", "キャンセル", "やめて", "取り消し"], description="確認: いいえ", allow_embed=False, confirmable=False, positive=False),
     Intent("help", ["ヘルプ", "何ができる", "コマンド一覧"], description="使えるコマンド"),
 ]
 

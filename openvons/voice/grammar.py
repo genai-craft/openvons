@@ -39,6 +39,11 @@ class Intent:
     allow_embed: bool = True
     #: スロット展開で主読みだけを使う (2 スロットの意図は n² に膨らむので別名・「〜駅」読みを落とす)
     primary_only: bool = False
+    #: この意図自体を「〜でよろしいですか」と確認できるか。はい / いいえ は False
+    #: (確認への返事をさらに確認すると無限に聞き返すことになる)
+    confirmable: bool = True
+    #: 確認への返事のとき、実行側 (はい) なら True、取り消し側 (いいえ) なら False
+    positive: bool = True
 
     def slot_kind(self, slot: str) -> str:
         return self.slots.get(slot, slot)
@@ -53,6 +58,8 @@ class Hypothesis:
     params: dict[str, Any] = field(default_factory=dict)
     risk: str = "low"
     allow_embed: bool = True
+    confirmable: bool = True
+    positive: bool = True
 
     @property
     def meaning(self) -> tuple:
@@ -220,7 +227,8 @@ class Grammar:
         if not slot_positions:
             text = "".join(v for _, v in seq)
             for kv in K.variants("".join(lit_kana[i] for i in range(len(seq)))):
-                yield Hypothesis(it.name, text, kv, {}, dict(it.params), it.risk, it.allow_embed)
+                yield Hypothesis(it.name, text, kv, {}, dict(it.params), it.risk, it.allow_embed,
+                                 it.confirmable, it.positive)
             return
         # スロットごとの (entity, reading) の候補
         options: list[list[tuple[str, Entity, str]]] = []
@@ -245,4 +253,5 @@ class Grammar:
                 else:
                     text_parts.append(fill[v].label); kana_parts.append(reading[v])
             for kv in K.variants(K.normalize("".join(kana_parts))):
-                yield Hypothesis(it.name, "".join(text_parts), kv, {s: e.id for s, e in fill.items()}, dict(it.params), it.risk, it.allow_embed)
+                yield Hypothesis(it.name, "".join(text_parts), kv, {s: e.id for s, e in fill.items()},
+                                 dict(it.params), it.risk, it.allow_embed, it.confirmable, it.positive)

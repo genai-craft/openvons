@@ -28,12 +28,26 @@ class Calibration {
   }
 }
 
-/// 3 段階 (実行 / 確認 / 棄却) と、該当なし。
-String decide(double pTop, double noneProb, String risk, {double execute = 0.85, double confirm = 0.4, double executeMedium = 0.95}) {
+/// 3 段階 (実行 / 確認 / 棄却) と、該当なし。openvons/core/decision.py と同じ規則。
+///
+/// confirmable=false は「確認し直せない意図」(はい / いいえ)。ここで confirm を返すと
+/// 「いいえ でよろしいですか」と聞き返す無限ループになるので、受けるか棄却するかの 2 択にする。
+/// positive はその返事が実行側 (はい) か取り消し側 (いいえ) か。
+String decide(double pTop, double noneProb, String risk,
+    {double execute = 0.85, double confirm = 0.4, double executeMedium = 0.95,
+    double clearMin = 0.65, double clearRatio = 3.0, double clearNoneMax = 0.20,
+    double answerYes = 0.60, double answerNo = 0.40,
+    bool confirmable = true, bool positive = true}) {
   if (noneProb > pTop) return 'none';
+  if (!confirmable) {
+    return pTop >= (positive ? answerYes : answerNo) ? 'execute' : 'reject';
+  }
   if (risk == 'high') return pTop >= confirm ? 'confirm' : 'reject';
   if (risk == 'medium') return pTop >= executeMedium ? 'execute' : (pTop >= confirm ? 'confirm' : 'reject');
   if (pTop >= execute) return 'execute';
+  // 他の候補に残った確率が小さく、該当なしも低いなら、迷っていないので確認を省く
+  final rest = (1.0 - pTop - noneProb).clamp(0.0, 1.0);
+  if (pTop >= clearMin && noneProb <= clearNoneMax && rest <= pTop / clearRatio) return 'execute';
   if (pTop >= confirm) return 'confirm';
   return 'reject';
 }

@@ -38,8 +38,8 @@ INTENTS = [
     Intent("zoom_out", ["[もっと](引いて|縮小|ズームアウト|広く)", "縮小して", "全体を見せて"], description="地図を縮小"),
     Intent("back", ["(全体|路線図|元の画面|一覧)[に](戻って|戻る|戻して)", "戻る", "閉じて"], description="路線図全体に戻る"),
     Intent("favorite", ["(この駅|ここ)[を](登録|お気に入り|保存)[して]", "お気に入り登録"], risk="high", description="お気に入りに登録 (要確認)"),
-    Intent("yes", ["はい", "そうです", "お願いします", "OK", "実行"], description="確認: はい", allow_embed=False),
-    Intent("no", ["いいえ", "違います", "キャンセル", "やめて", "取り消し"], description="確認: いいえ", allow_embed=False),
+    Intent("yes", ["はい", "そうです", "お願いします", "OK", "実行"], description="確認: はい", allow_embed=False, confirmable=False, positive=True),
+    Intent("no", ["いいえ", "違います", "キャンセル", "やめて", "取り消し"], description="確認: いいえ", allow_embed=False, confirmable=False, positive=False),
     Intent("help", ["ヘルプ", "何ができる", "コマンド一覧"], description="使えるコマンド"),
 ]
 

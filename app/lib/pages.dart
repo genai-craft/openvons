@@ -63,31 +63,49 @@ class _VoicePageState extends State<VoicePage> {
   final _mapCtl = MapController();
   final _tts = FlutterTts();
   bool _speaking = false;        // 読み上げ中はマイクを止める (自分の声を拾わないため)
-  Timer? _confirmTimer;
+  Timer? _confirmTimer, _unmute;
 
   @override
   void initState() {
     super.initState();
     _tts.setLanguage('ja-JP');
     _tts.setSpeechRate(0.55);
-    _tts.setCompletionHandler(() => _speaking = false);
-    _tts.setCancelHandler(() => _speaking = false);
-    _tts.setErrorHandler((_) => _speaking = false);
+    // 読み終わった通知が来ても、余韻が残るので少し待ってからマイクを戻す
+    _tts.setCompletionHandler(() => _unmuteAfter(const Duration(milliseconds: 500)));
+    _tts.setCancelHandler(() => _unmuteAfter(const Duration(milliseconds: 300)));
+    _tts.setErrorHandler((_) => _unmuteAfter(const Duration(milliseconds: 300)));
   }
 
   @override
-  void dispose() { _confirmTimer?.cancel(); _sub?.cancel(); _rec.dispose(); _tts.stop(); super.dispose(); }
+  void dispose() { _unmute?.cancel(); _confirmTimer?.cancel(); _sub?.cancel(); _rec.dispose(); _tts.stop(); super.dispose(); }
 
   Console? get _c => widget.console;
 
-  /// 端末の合成音声で返す。読み上げている間はマイクを止めて、自分の声を指示として拾わないようにする。
+  /// 端末の合成音声で返す。読み上げている間と、その直後の余韻のあいだはマイクを止める。
+  /// (端末のエコー抑制だけでは自分の声が残り、「〜でよろしいですか」を指示として拾ってしまう)
   Future<void> _say(String text) async {
     if (!widget.speak || text.isEmpty) return;
-    _speaking = true;
+    _muteMic();
     await _tts.stop();
     await _tts.speak(text);
-    // 完了通知が来ない端末があるので、長さから見積もった時間で必ず解除する
-    Future.delayed(Duration(milliseconds: 600 + text.length * 180), () => _speaking = false);
+    // 完了通知が来ない端末があるので、長さから見積もった時間でも必ず解除する
+    _unmuteAfter(Duration(milliseconds: 900 + text.length * 200));
+  }
+
+  void _muteMic() {
+    _speaking = true;
+    _unmute?.cancel();
+    _vad?.reset();        // 途中まで溜まっていた音は捨てる
+  }
+
+  /// 読み上げが終わってから少し置いてマイクを戻す。戻すときに VAD を初期化して、
+  /// 余韻を発話の続きとして拾わないようにする。
+  void _unmuteAfter(Duration d) {
+    _unmute?.cancel();
+    _unmute = Timer(d, () {
+      _vad?.reset();
+      _speaking = false;
+    });
   }
 
   /// ハンズフリー待受。一度押したら入れっぱなしで、話し終わりを自分で見つけて判断し、
@@ -104,11 +122,17 @@ class _VoicePageState extends State<VoicePage> {
     }
     if (!await _rec.hasPermission()) { setState(() => _msg = 'マイクの許可が要ります'); return; }
     _vad = Vad(
-      onUtterance: (audio) { _queue.add(audio); _drain(); },
+      onUtterance: (audio) {
+        if (_speaking) return;          // 自分の読み上げ由来は捨てる
+        _queue.add(audio);
+        _drain();
+      },
       onState: (sp) { if (mounted && _listening) setState(() => _hearing = sp); },
     );
-    final stream = await _rec.startStream(
-        const RecordConfig(encoder: AudioEncoder.pcm16bits, sampleRate: 16000, numChannels: 1));
+    final stream = await _rec.startStream(const RecordConfig(
+        encoder: AudioEncoder.pcm16bits, sampleRate: 16000, numChannels: 1,
+        // 既定は全て false。入れないと自分の読み上げをそのまま拾って、確認が延々と続く
+        echoCancel: true, noiseSuppress: true, autoGain: true));
     _sub = stream.listen((bytes) {
       if (_speaking) return;              // 自分の読み上げは聞かない
       final pcm = Int16List.view(Uint8List.fromList(bytes).buffer);
@@ -405,17 +429,24 @@ class _VoicePageState extends State<VoicePage> {
             tileProvider: NetworkTileProvider()),
         MarkerLayer(markers: [
           for (final s in pts)
-            Marker(point: LatLng(s.lat!, s.lng!), width: _zoom >= 11 ? 110 : 22, height: _zoom >= 11 ? 32 : 22,
+            Marker(point: LatLng(s.lat!, s.lng!), width: _zoom >= 11 ? 130 : 22, height: _zoom >= 11 ? 44 : 22,
               child: GestureDetector(
                 onTap: () => setState(() => _picked = s),
                 child: Column(mainAxisSize: MainAxisSize.min, children: [
                   Icon(Icons.place, size: 18, color: _picked?.id == s.id ? warn : acc),
-                  // 名前は拡大したときだけ (縮小時に重なって読めなくなるため)
+                  // 名前と読みは拡大したときだけ (縮小時に重なって読めなくなるため)。
+                  // 読み方が分からないと声に出せないので、地図でも併記する
                   if (_zoom >= 11) Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 3),
-                    color: Colors.black54,
-                    child: Text(s.label, maxLines: 1, overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(fontSize: 9, color: Colors.white)),
+                    padding: const EdgeInsets.symmetric(horizontal: 3, vertical: 1),
+                    color: Colors.black.withValues(alpha: .62),
+                    child: Column(mainAxisSize: MainAxisSize.min, children: [
+                      Text(s.label, maxLines: 1, overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(fontSize: 9, height: 1.1, color: Colors.white)),
+                      if (s.reading.isNotEmpty)
+                        Text(s.reading, maxLines: 1, overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(fontSize: 8, height: 1.1, color: Color(0xFF9FD8FF),
+                                fontFamily: 'monospace')),
+                    ]),
                   ),
                 ]),
               )),
