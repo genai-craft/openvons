@@ -48,10 +48,42 @@ Android / iOS 用の Flutter アプリ。**推論はすべて端末の中**で�
 | `encoder_model_quantized.onnx` | 98MB | kana-small-4l の encoder (int8) |
 | `decoder_head_quantized.onnx` | 199MB | decoder + 採点 + 次トークン (int8) |
 | `image_encoder_quantized.onnx` | 102MB | SigLIP2 の画像側 (int8) |
-| `choices*.json` | 数百 KB | 質問と選択肢のテキスト埋め込み (サーバーで計算済み) |
+| `choices*.json` | 数百 KB | 質問と選択肢のテキスト埋め込み (サーバーで計算済み、10 セット) |
+| `head_fairface.json` | 約 1MB | 年齢・性別の学習済みヘッド (10 万パラメータ) |
 
 テキスト側のエンコーダは端末に要らない。質問を足す・言い換えるのは JSON を配り直すだけで、
 アプリの更新は要らない。
+
+## 映像の質問セット
+
+`scripts/vision_question_sets.py` に 10 セット (室内外の汎用 / 人物の様子 / ゲーム画面の状態 /
+食べ物 / ペット / 服装 / 写真の出来 / 河川カメラの監視 / 工事・作業現場 / 道路・交通)。
+`scripts/build_vision_choices.py --set all` でテキスト側を計算して JSON にし、端末に配る。
+
+質問には **前提 (requires)** を持たせられる。質問は互いに独立に答えるので、前提を書かないと
+「食べ物が写っていないのに和食 0.61」のような答えが出る。前提が崩れた質問は「対象外」と出す。
+
+## 学習済みヘッド (年齢・性別)
+
+零ショット (言葉で聞くだけ) は性別なら実用になるが、年齢は粗い区分でも足りない。
+端末にすでに載っている画像エンコーダは凍結したまま、**10 万パラメータの小さなヘッドだけ**を
+FairFace (8.7 万枚) で学習した (`scripts/train_ondevice_head.py`)。重みは JSON で配り、
+端末側で計算する (ONNX にするほどの大きさではない)。
+
+| | 零ショット | 学習済みヘッド |
+|---|---|---|
+| 年齢 (4 区分に写像) | 0.575 | **0.839** |
+| 年齢 (9 区分) | — | 0.557 |
+| 性別 | 0.919 | **0.931** |
+
+**罠: int8 の画像エンコーダで学習しないと壊れる。** fp32 特徴で学習したヘッドを端末の int8 に
+載せると、年齢 0.573 → 0.323、性別 0.943 → 0.810 に落ちた。原因は前処理ではなく量子化で、
+int8 の埋め込みは fp32 とのコサイン類似が平均 0.89 しかない (per-channel にしても 0.89)。
+`--onnx-dir` を付けて**端末と同じ int8 ONNX で特徴を作って学習する**。
+
+fp16 の画像エンコーダ (187MB) はコサイン 1.0000 とほぼ無損失だが、CPU で約 2 倍の時間がかかる。
+配布は int8 (102MB) のままにしてある。fp16 に変換するときは `op_block_list=["Conv"]` が要る
+(そのままだと Conv の入出力の型が混ざって ONNX Runtime が読めない)。
 
 ## 罠 (踏んだもの)
 
@@ -93,8 +125,11 @@ Android / iOS 用の Flutter アプリ。**推論はすべて端末の中**で�
     .venv/bin/python scripts/export_mel.py
     /data/openjev/onnx_venv/bin/python scripts/export_decoder_heads.py --model <蒸留した学生>
     .venv/bin/python scripts/export_vision_encoder.py
-    .venv/bin/python scripts/build_vision_choices.py --set general
-    .venv/bin/python scripts/build_vision_choices.py --set kasen
+    .venv/bin/python scripts/build_vision_choices.py --set all
+
+    # 学習済みヘッド (端末と同じ int8 の特徴で学習する)
+    /data/openjev/onnx_venv/bin/python scripts/train_ondevice_head.py \
+        --onnx-dir /data/openjev/models/ondevice/siglip2-base-img --epochs 40
 
     # アプリ
     cd app && flutter build apk --debug        # Android

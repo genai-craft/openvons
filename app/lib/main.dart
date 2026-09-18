@@ -93,9 +93,14 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
       final toks = await api.tokens();
       final vsets = await api.visionSets();
       final vch = <String, Map<String, dynamic>>{};
+      final vheads = <String, Map<String, dynamic>>{};
       for (final v in vsets) {
         final key = (v as Map)['key'] as String;
-        vch[key] = await api.visionChoices(set: key);
+        if (key.startsWith('head:')) {
+          vheads[key] = await api.visionHead(key.substring(5));   // 学習済みヘッドの重み
+        } else {
+          vch[key] = await api.visionChoices(set: key);
+        }
       }
       final voiceFiles = List<Map<String, dynamic>>.from(man['voice']['files']);
       final vname = man['voice']['name'] as String;
@@ -119,7 +124,7 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
       setState(() => status = 'モデルを読み込み中…');
       await voice.load(melPath: mel, encPath: enc, decPath: dec, config: cfg,
           tokenDecoder: TokenDecoder.fromJson(toks), commandSets: cmds, providers: providers);
-      await vision.load(modelPath: imgModel, preprocess: await _readJson(pre), choiceDocs: vch, providers: providers);
+      await vision.load(modelPath: imgModel, preprocess: await _readJson(pre), choiceDocs: vch, headDocs: vheads, providers: providers);
       setState(() { status = '準備完了 (${useGpu ? "GPU/NNAPI" : "CPU"})'; progress = 1; loading = false; });
     } catch (e) {
       setState(() { status = 'エラー: $e'; loading = false; });

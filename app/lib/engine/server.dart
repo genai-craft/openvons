@@ -21,6 +21,8 @@ class Api {
   Future<Map<String, dynamic>> tokens() async => jsonDecode(utf8.decode((await http.get(_u('/api/tokens'))).bodyBytes));
   Future<Map<String, dynamic>> visionChoices({String set = 'general'}) async =>
       jsonDecode(utf8.decode((await http.get(_u('/api/vision/choices?set=$set'))).bodyBytes));
+  Future<Map<String, dynamic>> visionHead(String task) async =>
+      jsonDecode(utf8.decode((await http.get(_u('/api/vision/head/$task'))).bodyBytes));
   Future<List<dynamic>> visionSets() async => jsonDecode(utf8.decode((await http.get(_u('/api/vision/sets'))).bodyBytes)) as List;
 
   /// モデルファイルを端末に落として、そのパスを返す (2 回目からはキャッシュ)。

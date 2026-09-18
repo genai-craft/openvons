@@ -700,8 +700,12 @@ class _VisionPageState extends State<VisionPage> {
         const Text('聞くこと ', style: TextStyle(color: Colors.white70, fontSize: 13)),
         Expanded(child: DropdownButton<String>(
           isExpanded: true, value: widget.engine.setKey, dropdownColor: panel,
-          items: [for (final e in widget.engine.docs.entries)
-            DropdownMenuItem(value: e.key, child: Text('${e.value['title']} (${(e.value['questions'] as List).length} 問)'))],
+          items: [
+            for (final e in widget.engine.heads.entries)
+              DropdownMenuItem(value: e.key, child: Text('${e.value.title} (${e.value.tasks.length} 問)')),
+            for (final e in widget.engine.docs.entries)
+              DropdownMenuItem(value: e.key, child: Text('${e.value['title']} (${(e.value['questions'] as List).length} 問)')),
+          ],
           onChanged: (v) => setState(() { if (v != null) widget.engine.use(v); _answers = []; }))),
       ]),
       const SizedBox(height: 6),
@@ -738,7 +742,17 @@ class _VisionPageState extends State<VisionPage> {
         FilledButton.icon(onPressed: _startCamera, icon: const Icon(Icons.videocam), label: const Text('カメラを開始'),
           style: FilledButton.styleFrom(backgroundColor: acc, foregroundColor: Colors.black, minimumSize: const Size.fromHeight(52)))
       else
-        AspectRatio(aspectRatio: 4 / 3, child: ClipRRect(borderRadius: BorderRadius.circular(10), child: CameraPreview(_cam!))),
+        AspectRatio(aspectRatio: 4 / 3, child: ClipRRect(borderRadius: BorderRadius.circular(10),
+          child: Stack(fit: StackFit.expand, children: [
+            CameraPreview(_cam!),
+            // 学習済みヘッドは顔の切り抜きで学習してあるので、枠に顔を入れてもらう
+            if (widget.engine.trained != null) Center(child: AspectRatio(aspectRatio: 1, child: Container(
+              margin: const EdgeInsets.all(8),
+              decoration: BoxDecoration(border: Border.all(color: acc, width: 2), borderRadius: BorderRadius.circular(8)),
+              child: const Align(alignment: Alignment.bottomCenter, child: Padding(padding: EdgeInsets.all(4),
+                  child: Text('この枠に顔を入れてください', style: TextStyle(fontSize: 11, color: Colors.white70)))),
+            ))),
+          ]))),
 
       if (_live || _cam != null) ...[
         const SizedBox(height: 8),

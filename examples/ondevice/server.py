@@ -130,8 +130,23 @@ def vision_sets():
     for f in sorted(base.glob("choices*.json")):
         doc = json.loads(f.read_text(encoding="utf-8"))
         key = "general" if f.name == "choices.json" else f.stem.replace("choices_", "")
-        out.append({"key": key, "title": doc.get("title", key), "n": len(doc.get("questions", []))})
+        out.append({"key": key, "title": doc.get("title", key), "n": len(doc.get("questions", [])), "kind": "zeroshot"})
+    # 学習済みヘッド (凍結した画像エンコーダの上に小さな head を足したもの)
+    for f in sorted(base.glob("head_*.json")):
+        doc = json.loads(f.read_text(encoding="utf-8"))
+        out.append({"key": f"head:{f.stem.replace('head_', '')}", "title": doc.get("title", f.stem),
+                    "n": len(doc.get("tasks", {})), "kind": "trained"})
     return out
+
+
+@app.get("/api/vision/head/{task}")
+def vision_head(task: str):
+    """学習済みヘッドの重み。数万パラメータなので JSON のまま配り、端末側で計算する。"""
+    base = Path(os.environ.get("OPENVONS_ONDEVICE_MODELS", "/data/openjev/models/ondevice")) / "vision-choices"
+    p = base / f"head_{task}.json"
+    if not p.exists():
+        return JSONResponse({"error": f"{p.name} not found"}, 404)
+    return json.loads(p.read_text(encoding="utf-8"))
 
 
 @app.get("/api/sites")
