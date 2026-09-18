@@ -13,7 +13,11 @@ class VisionAnswer {
   final String key, title, label, level;
   final double prob;
   final List<MapEntry<String, double>> all;
-  VisionAnswer(this.key, this.title, this.label, this.prob, this.level, this.all);
+  /// 前提が崩れていて答えなかった質問 (食べ物が写っていないのに「和食」と言わないため)
+  final bool skipped;
+  final String skipReason;
+  VisionAnswer(this.key, this.title, this.label, this.prob, this.level, this.all,
+      {this.skipped = false, this.skipReason = ''});
 }
 
 class VisionEngine {
@@ -79,8 +83,22 @@ class VisionEngine {
     final embedMs = DateTime.now().difference(t0).inMilliseconds;
     final t1 = DateTime.now();
     final answers = <VisionAnswer>[];
+    final picked = <String, String>{};      // 質問 key -> 選ばれた選択肢 id (前提の判定に使う)
     for (final q in List<Map<String, dynamic>>.from(choices!['questions'])) {
       final cs = List<Map<String, dynamic>>.from(q['choices']);
+      // 前提が満たされていない質問は答えない
+      final req = q['requires'] as Map<String, dynamic>?;
+      if (req != null) {
+        final got = picked[req['key'] as String];
+        final want = List<String>.from(req['any'] as List);
+        if (got == null || !want.contains(got)) {
+          final gate = List<Map<String, dynamic>>.from(choices!['questions'])
+              .firstWhere((x) => x['key'] == req['key'], orElse: () => {'title': req['key']});
+          answers.add(VisionAnswer(q['key'] as String, q['title'] as String, '—', 0, '対象外', const [],
+              skipped: true, skipReason: '${gate['title']} が該当しないため'));
+          continue;
+        }
+      }
       final embs = Map<String, dynamic>.from(q['embeddings']);
       final logits = <double>[];
       for (final c in cs) {
@@ -95,6 +113,7 @@ class VisionEngine {
       final pr = ex.map((v) => v / s).toList();
       var best = 0;
       for (var i = 1; i < pr.length; i++) if (pr[i] > pr[best]) best = i;
+      picked[q['key'] as String] = cs[best]['id'] as String;
       answers.add(VisionAnswer(q['key'] as String, q['title'] as String, cs[best]['label'] as String, pr[best],
           levelLabel(pr[best]), [for (var i = 0; i < cs.length; i++) MapEntry(cs[i]['label'] as String, pr[i])]));
     }

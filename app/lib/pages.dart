@@ -695,6 +695,17 @@ class _VisionPageState extends State<VisionPage> {
   Widget build(BuildContext context) {
     final sites = widget.console?.sites ?? [];
     return ListView(padding: const EdgeInsets.all(12), children: [
+      // 何を聞くか (質問セット)
+      Row(children: [
+        const Text('聞くこと ', style: TextStyle(color: Colors.white70, fontSize: 13)),
+        Expanded(child: DropdownButton<String>(
+          isExpanded: true, value: widget.engine.setKey, dropdownColor: panel,
+          items: [for (final e in widget.engine.docs.entries)
+            DropdownMenuItem(value: e.key, child: Text('${e.value['title']} (${(e.value['questions'] as List).length} 問)'))],
+          onChanged: (v) => setState(() { if (v != null) widget.engine.use(v); _answers = []; }))),
+      ]),
+      const SizedBox(height: 6),
+
       // どの映像を見るか
       SegmentedButton<bool>(
         segments: const [
@@ -704,7 +715,8 @@ class _VisionPageState extends State<VisionPage> {
         selected: {_live},
         onSelectionChanged: (v) => setState(() {
           _live = v.first; _answers = []; _msg = '';
-          widget.engine.use(_live ? 'kasen' : 'general');   // 見る映像に合わせて質問セットを替える
+          // 河川カメラに切り替えたときだけ、専用の質問セットに寄せる (手で選び直せる)
+          if (_live && widget.engine.docs.containsKey('kasen')) widget.engine.use('kasen');
           if (_auto) _toggleAuto(false);
         }),
       ),
@@ -762,11 +774,15 @@ class _VisionPageState extends State<VisionPage> {
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
           Row(children: [
             SizedBox(width: 92, child: Text(a.title, style: const TextStyle(color: Colors.white70, fontSize: 13))),
-            Expanded(child: Text(a.label, style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 16))),
-            _chip(a.level, a.level == '確定' ? ok : a.level == '要確認' ? warn : bad),
+            Expanded(child: Text(a.skipped ? a.skipReason : a.label,
+                style: TextStyle(fontWeight: a.skipped ? FontWeight.w400 : FontWeight.w700,
+                    fontSize: a.skipped ? 12 : 16, color: a.skipped ? Colors.white38 : Colors.white))),
+            _chip(a.level, a.skipped ? Colors.white24 : a.level == '確定' ? ok : a.level == '要確認' ? warn : bad),
           ]),
-          const SizedBox(height: 4),
-          for (final c in a.all) _bar(c.key, c.value, acc),
+          if (!a.skipped) ...[
+            const SizedBox(height: 4),
+            for (final c in a.all) _bar(c.key, c.value, acc),
+          ],
         ]))),
 
       if (_answers.isEmpty) const Padding(padding: EdgeInsets.only(top: 12),

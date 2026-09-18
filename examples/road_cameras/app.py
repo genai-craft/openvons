@@ -17,7 +17,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))  # repo root
 
 from openvons.voice.engine import Decision
-from openvons.voice.grammar import Grammar, Intent, example_of
+from openvons.voice.grammar import Grammar, Intent, code_hypotheses, example_of, number_hypotheses
 from openvons.voice.lexicon import Entity, Lexicon, Scope
 from openvons.voice.state import StateDef, StateMachine
 
@@ -36,12 +36,16 @@ INTENTS = [
     Intent("zoom_in", ["[もっと](寄って|寄せて|拡大|ズームイン|アップ)", "拡大して", "ズームイン"], params={"dir": "in"}, description="ズームイン"),
     Intent("zoom_out", ["[もっと](引いて|引き|縮小|ズームアウト|広く)", "縮小して", "ズームアウト", "全体を見せて"], params={"dir": "out"}, description="ズームアウト"),
     Intent("home", ["(ホーム|初期位置|正面)[に](戻して|戻って)", "ホームポジション"], description="初期位置に戻す"),
-    Intent("back", ["(一覧|全体|元の画面)[に](戻って|戻る|戻して)", "戻る", "閉じて"], description="一覧に戻る"),
+    Intent("back", ["(一覧|全体|元の画面|ホーム|最初)[に|へ](戻って|戻る|戻して)", "戻る", "閉じて",
+                    "ホーム[へ|に]", "一覧[へ|に]"], description="一覧に戻る (いつでも使えます)"),
     Intent("save_preset", ["(この位置|ここ)[を](保存|プリセット保存|登録)[して]", "プリセット保存"], risk="high", description="プリセット保存 (要確認)"),
     Intent("yes", ["はい", "そうです", "お願いします", "OK", "実行"], description="確認: はい", allow_embed=False, confirmable=False, positive=True),
     Intent("no", ["いいえ", "違います", "キャンセル", "やめて", "取り消し"], description="確認: いいえ", allow_embed=False, confirmable=False, positive=False),
     Intent("help", ["ヘルプ", "何ができる", "コマンド一覧"], description="使えるコマンド"),
 ]
+
+#: どの状態でも受け付ける意図 (確認待ちで行き止まりにならないように)
+GLOBAL_INTENTS = ["back", "help"]
 
 #: 事前学習の校正に使う他状態の発話 (状態名, 受理意図, [(発話, 正解意図 | None=該当なし)])
 CALIBRATION_STATES = [
@@ -70,10 +74,11 @@ def default_scopes(lex):
 
 
 STATES = {
-    "WALL": StateDef("WALL", ["select_camera", "help"], "一覧表示中。カメラ名を言うと拡大します"),
+    "WALL": StateDef("WALL", ["select_camera", *GLOBAL_INTENTS], "一覧表示中。カメラ名かコードを言うと拡大します"),
     "FOCUS": StateDef("FOCUS", ["pan_right", "pan_left", "tilt_up", "tilt_down", "zoom_in", "zoom_out", "home", "back", "save_preset", "select_camera", "help"],
                       "拡大表示中。旋回・ズーム・別カメラ・戻る"),
-    "CONFIRM": StateDef("CONFIRM", ["yes", "no"], "確認待ち。はい / いいえ"),
+    # 確認待ちでも「戻る」と「ヘルプ」は通す
+    "CONFIRM": StateDef("CONFIRM", ["yes", "no", *GLOBAL_INTENTS], "確認待ち。はい / いいえ (「戻る」で取り消し)"),
 }
 
 
@@ -112,11 +117,26 @@ class CameraApp:
     def invalidate(self) -> None:
         self._cs_cache.clear()
 
+    #: コードを振る上限 (範囲が広すぎると番号を探す方が大変になる)
+    CODE_MAX = 300
+
     def command_set(self):
         st = self.sm.state
         if st not in self._cs_cache:
-            self._cs_cache[st] = self.grammar.compile(self.sm.allowed_intents(), self.entities(), st, self.sm.current.extra_patterns)
+            ents = self.entities()
+            cs = self.grammar.compile(self.sm.allowed_intents(), ents, st, self.sm.current.extra_patterns)
+            # 名前を全部覚えなくて済むように、一覧の並び順で C01, C02... を振る
+            if SELECT_INTENT in self.sm.allowed_intents() and len(ents) <= self.CODE_MAX:
+                from openvons.voice.grammar import CommandSet
+                coded = self.coded_entities()
+                cs = CommandSet(cs.hyps + code_hypotheses(SELECT_INTENT, SLOT, coded)
+                                + number_hypotheses(SELECT_INTENT, SLOT, [e for _, e in coded]), st)
+            self._cs_cache[st] = cs
         return self._cs_cache[st]
+
+    def coded_entities(self) -> list[tuple[str, Entity]]:
+        """一覧の並び順に C01, C02, ... を振る。範囲が変われば振り直す。"""
+        return [(f"C{i:02d}", e) for i, e in enumerate(self.entities(), 1)]
 
     def allowed_commands(self) -> list[dict[str, str]]:
         """UI 用: 今の状態で言えること。"""

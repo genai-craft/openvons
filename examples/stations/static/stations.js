@@ -49,9 +49,23 @@ function onResult(m) {
   $('#nbest').innerHTML = rows.join('');
   const t = d.timings_ms; $('#timings').textContent = `encoder ${t.encode}ms / 自由認識 ${t.transcribe}ms / 絞り込み ${t.shortlist ?? 0}ms / 採点 ${t.score ?? 0}ms / 合計 ${t.total}ms`;
   if (m.speech && d.action !== 'none') speak(m.speech);
+  applyMap(m.applied);
   applyState(m.state);
   const log = $('#log'); log.textContent = `${new Date().toLocaleTimeString()} [${d.state}] ${d.free_kana} -> ${d.action} ${d.top ? d.top.text + ' p=' + d.top.prob : ''}\n` + log.textContent;
 }
+/* 声で地図を動かす。8 方向 × 量は画面の何割か (サーバーが intent の params で返す) */
+const PAN_VEC = { up: [0, -1], down: [0, 1], left: [-1, 0], right: [1, 0],
+  upleft: [-0.71, -0.71], upright: [0.71, -0.71], downleft: [-0.71, 0.71], downright: [0.71, 0.71] };
+function applyMap(applied) {
+  if (!applied || !applied.map) return;
+  const mv = applied.map;
+  if (mv.zoom) { map.setZoom(map.getZoom() + mv.zoom); return; }
+  const v = PAN_VEC[mv.pan];
+  if (!v) return;
+  const size = map.getSize(); const f = mv.amount ?? 0.6;
+  map.panBy([v[0] * size.x * f, v[1] * size.y * f], { animate: true });
+}
+
 function bar(text, p, cls) { return `<div class="row"><div class="bar ${cls}"><i style="width:${(p * 100).toFixed(1)}%"></i><span>${text}</span></div><div>${(p * 100).toFixed(1)}%</div></div>`; }
 function speak(text) { if (!('speechSynthesis' in window)) return; speechSynthesis.cancel(); const u = new SpeechSynthesisUtterance(text); u.lang = 'ja-JP'; u.rate = 1.1; state.muteUntil = Date.now() + Math.min(4000, 400 + text.length * 120); speechSynthesis.speak(u); }
 

@@ -20,7 +20,8 @@ from typing import Any
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
 from openvons.voice.engine import Decision
-from openvons.voice.grammar import Grammar, Intent, example_of
+from openvons.voice.common_intents import PAN_INTENT_NAMES, pan_intents
+from openvons.voice.grammar import Grammar, Intent, code_hypotheses, example_of, number_hypotheses
 from openvons.voice.lexicon import Entity, Lexicon, Scope
 from openvons.voice.state import StateDef, StateMachine
 
@@ -36,18 +37,25 @@ INTENTS = [
     Intent("switch_line", ["(路線|線)[を](変えて|切り替え|切り替えて)", "別の路線", "乗り換え"], description="乗換路線に切り替え"),
     Intent("zoom_in", ["[もっと](寄って|寄せて|拡大|ズームイン)", "拡大して"], description="地図を拡大"),
     Intent("zoom_out", ["[もっと](引いて|縮小|ズームアウト|広く)", "縮小して", "全体を見せて"], description="地図を縮小"),
-    Intent("back", ["(全体|路線図|元の画面|一覧)[に](戻って|戻る|戻して)", "戻る", "閉じて"], description="路線図全体に戻る"),
+    Intent("back", ["(全体|路線図|元の画面|一覧|地図|ホーム|最初)[に|へ](戻って|戻る|戻して)", "戻る", "閉じて",
+                    "ホーム[へ|に]", "地図[へ|に]"], description="路線図全体に戻る (いつでも使えます)"),
     Intent("favorite", ["(この駅|ここ)[を](登録|お気に入り|保存)[して]", "お気に入り登録"], risk="high", description="お気に入りに登録 (要確認)"),
     Intent("yes", ["はい", "そうです", "お願いします", "OK", "実行"], description="確認: はい", allow_embed=False, confirmable=False, positive=True),
     Intent("no", ["いいえ", "違います", "キャンセル", "やめて", "取り消し"], description="確認: いいえ", allow_embed=False, confirmable=False, positive=False),
     Intent("help", ["ヘルプ", "何ができる", "コマンド一覧"], description="使えるコマンド"),
-]
+] + pan_intents()
+
+#: どの状態でも受け付ける意図 (確認待ちで行き止まりにならないように)
+GLOBAL_INTENTS = ["back", "help"]
 
 STATES = {
-    "MAP": StateDef("MAP", ["select_station", "route", "help"], "地図全体。駅名を言うと寄ります。「新宿から東京まで」で経路"),
-    "STATION": StateDef("STATION", ["next_station", "prev_station", "switch_line", "zoom_in", "zoom_out", "back", "favorite", "select_station", "route", "help"],
+    "MAP": StateDef("MAP", ["select_station", "route", "zoom_in", "zoom_out", *PAN_INTENT_NAMES, *GLOBAL_INTENTS],
+                    "地図全体。駅名を言うと寄ります。「新宿から東京まで」で経路。拡大縮小と上下左右の移動も"),
+    "STATION": StateDef("STATION", ["next_station", "prev_station", "switch_line", "zoom_in", "zoom_out", "favorite",
+                                    "select_station", "route", *PAN_INTENT_NAMES, *GLOBAL_INTENTS],
                         "駅を選択中。次/前の駅・路線切替・拡大縮小・経路・戻る"),
-    "CONFIRM": StateDef("CONFIRM", ["yes", "no"], "確認待ち。はい / いいえ"),
+    # 確認待ちでも「戻る」と「ヘルプ」は通す。はい / いいえ しか受け付けないと行き止まりに感じる
+    "CONFIRM": StateDef("CONFIRM", ["yes", "no", *GLOBAL_INTENTS], "確認待ち。はい / いいえ (「戻る」で取り消し)"),
 }
 
 #: 事前学習の校正に使う他状態の発話 (状態名, 受理意図, [(発話, 正解意図 | None=該当なし)])
@@ -137,13 +145,27 @@ class StationApp:
     def invalidate(self) -> None:
         self._cs_cache.clear()
 
+    #: コードを振る上限。範囲が広すぎると番号を探す方が大変になる
+    CODE_MAX = 300
+
     def command_set(self):
         st = self.sm.state
         if st not in self._cs_cache:
             ents = self.entities()
             intents = [i for i in self.sm.allowed_intents() if not (i == "route" and len(ents) > ROUTE_MAX_STATIONS)]
-            self._cs_cache[st] = self.grammar.compile(intents, ents, st)
+            cs = self.grammar.compile(intents, ents, st)
+            # 名前を全部覚えなくて済むように、画面の並び順で S01, S02... を振る
+            if SELECT_INTENT in intents and len(ents) <= self.CODE_MAX:
+                from openvons.voice.grammar import CommandSet
+                coded = self.coded_entities()
+                cs = CommandSet(cs.hyps + code_hypotheses(SELECT_INTENT, SLOT, coded)
+                                + number_hypotheses(SELECT_INTENT, SLOT, [e for _, e in coded]), st)
+            self._cs_cache[st] = cs
         return self._cs_cache[st]
+
+    def coded_entities(self) -> list[tuple[str, Entity]]:
+        """画面の並び順に S01, S02, ... を振る。範囲が変われば振り直す。"""
+        return [(f"S{i:02d}", e) for i, e in enumerate(self.entities(), 1)]
 
     # ------------------------------------------------------------ 経路探索 (駅 = 節、同じ路線で隣り合う駅 = 辺、乗換に罰則)
     def _graph(self):
@@ -260,7 +282,14 @@ class StationApp:
                 self.sm.back()
                 return self._execute(pending["intent"], pending["slots"], pending["params"], pending["text"])
             self.sm.back()
+            if intent in ("back", "help"):       # 確認待ちからの逃げ道
+                self.sm.context["pending"] = None
+                return self._execute(intent, slots, params, text)
             return {"intent": intent, "speech": "取り消しました"}
+        # 地図の移動はどの状態でも効く (駅を選んでいなくても)
+        if intent.startswith("pan_"):
+            return {"intent": intent, "map": {"pan": params.get("dir"), "amount": params.get("amount", 0.6)},
+                    "speech": text}
         sid = self.sm.context.get("station")
         if intent == "select_station":
             self.view.route = None

@@ -19,6 +19,7 @@ from typing import Any
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
 from openvons.voice.engine import Decision
+from openvons.voice.common_intents import PAN_INTENT_NAMES, pan_intents
 from openvons.voice.grammar import Grammar, Intent, code_hypotheses, example_of, number_hypotheses
 from openvons.voice.lexicon import Entity, Lexicon, Scope
 from openvons.voice.state import StateDef, StateMachine
@@ -27,35 +28,6 @@ CONFIRM_TIMEOUT_SEC = 8.0
 ZOOM_STEP = 1.5
 DEFAULT_ZOOM = 1.0     # 画像は元の解像度で表示する (引き伸ばすと荒れる)。拡大はホイールか「寄って」で
 MAX_ZOOM = 6.0
-
-#: 地図を動かす意図。方向 8 つ × 量 3 段を組み合わせて作る (1 つずつ書くと 24 個になるため)。
-#: 量は画面の何割動かすかで、端末側が地図に渡す。
-MAP_DIRS = [
-    ("up", "上", ["北"]), ("down", "下", ["南"]), ("left", "左", ["西"]), ("right", "右", ["東"]),
-    ("upleft", "左上", []), ("upright", "右上", []), ("downleft", "左下", []), ("downright", "右下", []),
-]
-MAP_MAGS = [("small", ["ちょっと", "少し"], 0.25), ("normal", [""], 0.6), ("large", ["大きく", "ぐっと", "もっと"], 1.2)]
-
-
-def _pan_intents() -> list["Intent"]:
-    out = []
-    for dkey, dword, alts in MAP_DIRS:
-        words = [dword, *alts]
-        for mkey, mwords, amount in MAP_MAGS:
-            pats = []
-            for m in mwords:
-                for w in words:
-                    if m:
-                        # 「ちょっと右」だけでも通す (5 モーラあるので雑音には強い)
-                        pats.append(f"{m}{w}[に|へ][動かして|ずらして|移動して|寄せて]")
-                    else:
-                        # 量を言わないときは動詞を必須にする (「右」単独は短すぎて雑音に弱い)
-                        pats.append(f"{w}(に|へ)(動かして|ずらして|移動して|寄せて)")
-                        pats.append(f"{w}(の方|のほう)[に|へ][動かして|ずらして]")
-            out.append(Intent(f"pan_{dkey}_{mkey}", pats, params={"dir": dkey, "amount": amount},
-                              description=f"地図を{mwords[0]}{dword}へ"))
-    return out
-
 
 INTENTS = [
     Intent("select_camera", ["{camera}[を](表示|出して|見せて|映して|お願い)", "{camera}[に](切り替え|切り替えて)", "{camera}"], description="地点のカメラを表示"),
@@ -73,11 +45,11 @@ INTENTS = [
     Intent("no", ["いいえ", "違います", "キャンセル", "やめて", "取り消し"], description="確認: いいえ",
            allow_embed=False, confirmable=False, positive=False),
     Intent("help", ["ヘルプ", "何ができる", "コマンド一覧"], description="使えるコマンド"),
-] + _pan_intents()
+] + pan_intents()
 
 #: どの状態でも受け付ける意図。確認待ちで行き止まりにならないように、戻ると助けはいつでも通す
 GLOBAL_INTENTS = ["back", "help"]
-PAN_INTENTS = [f"pan_{d}_{m}" for d, _, _ in MAP_DIRS for m, _, _ in MAP_MAGS]
+PAN_INTENTS = PAN_INTENT_NAMES
 
 STATES = {
     # 地図では地点名に加えて、地図そのものを動かせる (拡大縮小と 8 方向 × 3 段)
