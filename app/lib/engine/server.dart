@@ -2,6 +2,7 @@
 /// 推論そのものは端末で行う。サーバーは「何を選べるか」を配るだけ。
 library;
 
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 import 'package:http/http.dart' as http;

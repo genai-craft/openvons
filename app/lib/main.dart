@@ -91,15 +91,20 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
       final man = await api.manifest();
       final cmds = await api.commands();
       final toks = await api.tokens();
+      // 質問セットは 10 個以上あるので順番に取ると起動が遅い。まとめて取る
       final vsets = await api.visionSets();
+      final keys = [for (final v in vsets) (v as Map)['key'] as String];
+      final fetched = await Future.wait([
+        for (final k in keys)
+          k.startsWith('head:') ? api.visionHead(k.substring(5)) : api.visionChoices(set: k)
+      ]);
       final vch = <String, Map<String, dynamic>>{};
       final vheads = <String, Map<String, dynamic>>{};
-      for (final v in vsets) {
-        final key = (v as Map)['key'] as String;
-        if (key.startsWith('head:')) {
-          vheads[key] = await api.visionHead(key.substring(5));   // 学習済みヘッドの重み
+      for (var i = 0; i < keys.length; i++) {
+        if (keys[i].startsWith('head:')) {
+          vheads[keys[i]] = fetched[i];
         } else {
-          vch[key] = await api.visionChoices(set: key);
+          vch[keys[i]] = fetched[i];
         }
       }
       final voiceFiles = List<Map<String, dynamic>>.from(man['voice']['files']);
@@ -127,7 +132,7 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
       await vision.load(modelPath: imgModel, preprocess: await _readJson(pre), choiceDocs: vch, headDocs: vheads, providers: providers);
       setState(() { status = '準備完了 (${useGpu ? "GPU/NNAPI" : "CPU"})'; progress = 1; loading = false; });
     } catch (e) {
-      setState(() { status = 'エラー: $e'; loading = false; });
+      setState(() { status = '$e'; loading = false; });
     }
   }
 

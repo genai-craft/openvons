@@ -24,6 +24,8 @@ class VisionAnswer {
 /// 数万パラメータなので ONNX にせず、重みを JSON で受け取って端末側で計算する。
 class TrainedHead {
   final String title;
+  /// 前提 (「顔が写っているか」)。崩れていれば答えない
+  Map<String, dynamic>? gate;
   /// 学習時の実測値 (質問ごと)。画面に出して、どこまで信じてよいかを示す
   Map<String, dynamic> metricsOf(String key) =>
       Map<String, dynamic>.from((tasks[key] as Map)['metrics'] as Map? ?? const {});
@@ -33,11 +35,42 @@ class TrainedHead {
   TrainedHead(this.title, this.normW, this.normB, this.w1, this.b1, this.tasks);
 
   factory TrainedHead.fromJson(Map<String, dynamic> j) {
+    final g = j['gate'] == null ? null : Map<String, dynamic>.from(j['gate'] as Map);
     final t = Map<String, dynamic>.from(j['trunk'] as Map);
     List<double> d(dynamic v) => [for (final x in v as List) (x as num).toDouble()];
     List<List<double>> dd(dynamic v) => [for (final r in v as List) d(r)];
     return TrainedHead((j['title'] ?? '学習済み') as String, d(t['norm_w']), d(t['norm_b']),
-        dd(t['w1']), d(t['b1']), Map<String, dynamic>.from(j['tasks'] as Map));
+        dd(t['w1']), d(t['b1']), Map<String, dynamic>.from(j['tasks'] as Map))
+      ..gate = g;
+  }
+
+  /// 前提を確かめる。満たしていなければ (顔が無ければ) 理由を返す。
+  (bool, String, double) checkGate(List<double> emb) {
+    final g = gate;
+    if (g == null) return (true, '', 0);
+    final embs = Map<String, dynamic>.from(g['embeddings'] as Map);
+    final labels = List<Map<String, dynamic>>.from(g['labels'] as List);
+    final scale = ((g['logit_scale'] ?? 100.0) as num).toDouble();
+    final bias = ((g['logit_bias'] ?? 0.0) as num).toDouble();
+    final logits = <double>[];
+    for (final l in labels) {
+      final v = [for (final x in embs[l['id']] as List) (x as num).toDouble()];
+      var dot = 0.0;
+      for (var i = 0; i < v.length; i++) {
+        dot += v[i] * emb[i];
+      }
+      logits.add(dot * scale + bias);
+    }
+    final mx = logits.reduce(max);
+    final ex = logits.map((v) => exp(v - mx)).toList();
+    final sum = ex.reduce((a, b) => a + b);
+    final pr = ex.map((v) => v / sum).toList();
+    var best = 0;
+    for (var i = 1; i < pr.length; i++) {
+      if (pr[i] > pr[best]) best = i;
+    }
+    final ok = labels[best]['id'] == (g['require'] ?? 'yes');
+    return (ok, '${g['title']} が「${labels[best]['label']}」のため', pr[best]);
   }
 
   /// LayerNorm → Linear → GELU (質問間で共有する幹)
@@ -83,6 +116,15 @@ class TrainedHead {
 
   /// 画像の埋め込みから、質問ごとの校正済み確率を返す。
   List<VisionAnswer> answer(List<double> emb) {
+    final (ok, why, gp) = checkGate(emb);
+    if (!ok) {
+      return [
+        VisionAnswer('gate', (gate!['title'] ?? '前提') as String, '写っていません', gp, levelLabel(gp), const []),
+        for (final e in tasks.entries)
+          VisionAnswer(e.key, ((e.value as Map)['title'] ?? e.key) as String, '—', 0, '対象外', const [],
+              skipped: true, skipReason: why),
+      ];
+    }
     final h = _trunk(emb);
     final out = <VisionAnswer>[];
     for (final e in tasks.entries) {

@@ -184,6 +184,34 @@ def calibrate_and_score(head, name: str, xva, yva, xte, yte, labels, device: str
     }
 
 
+GATE_PROMPTS = {
+    "yes": ["a close up photo of a human face", "a portrait of a person looking at the camera",
+            "a face filling the frame"],
+    "no": ["a scene with no people and no faces", "a photo of an object or a room, no face",
+           "a landscape with nobody in it"],
+}
+
+
+def build_gate(model_name: str, device: str) -> dict:
+    """「顔が写っているか」をテキスト側で作る (学習は要らない)。"""
+    from transformers import AutoModel, AutoProcessor
+    m = AutoModel.from_pretrained(model_name).eval().to(device)
+    pr = AutoProcessor.from_pretrained(model_name)
+    emb = {}
+    with torch.no_grad():
+        for key, prompts in GATE_PROMPTS.items():
+            t = m.get_text_features(**pr(text=prompts, padding="max_length", max_length=64,
+                                         return_tensors="pt").to(device))
+            t = t.pooler_output if hasattr(t, "pooler_output") else t
+            t = t / t.norm(dim=-1, keepdim=True)
+            v = t.mean(0)
+            emb[key] = [round(x, 5) for x in (v / v.norm()).cpu().tolist()]
+    return {"title": "顔が写っているか", "require": "yes",
+            "labels": [{"id": "yes", "label": "写っている"}, {"id": "no", "label": "写っていない"}],
+            "embeddings": emb,
+            "logit_scale": float(m.logit_scale.exp()), "logit_bias": float(getattr(m, "logit_bias", torch.tensor(0.0)))}
+
+
 def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--data", default="/data/decision_model/data/vision/fairface")
@@ -240,6 +268,10 @@ def main() -> None:
            "trunk": {"norm_w": r5b(sd["norm.weight"]), "norm_b": r5b(sd["norm.bias"]),
                      "w1": r5(sd["fc1.weight"]), "b1": r5b(sd["fc1.bias"])},
            "tasks": {k: {"title": titles.get(k, k), **v} for k, v in per_task.items()}}
+
+    # 顔が写っていないときに年齢を答えないための前提 (言葉で聞く零ショットの門番)。
+    # 画像が無関係でも年齢の分布は出てしまうので、先に「顔が写っているか」を確かめる
+    doc["gate"] = build_gate(args.model, device)
 
     out = Path(args.out); out.mkdir(parents=True, exist_ok=True)
     p = out / f"head_{args.task}.json"
