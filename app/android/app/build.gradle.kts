@@ -54,6 +54,12 @@ android {
     buildTypes {
         release {
             signingConfig = signingConfigs.getByName(if (keystorePropertiesFile.exists()) "release" else "debug")
+            // onnxruntime の JNI は Java のクラスを名前で引くので、縮小・難読化されると
+            // release だけ "JNI DETECTED ERROR: java_class == null" で落ちる。
+            // keep ルールを入れたうえで、念のため縮小自体も切っておく (大半は native ライブラリで効果も薄い)
+            isMinifyEnabled = false
+            isShrinkResources = false
+            proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
         }
     }
 }

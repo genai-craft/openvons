@@ -60,6 +60,30 @@ class Hypothesis:
         return (self.intent, tuple(sorted(self.slots.items())))
 
 
+def example_of(pattern: str, slot_labels: dict[str, str] | None = None) -> str:
+    """テンプレートから、画面に出す 1 つの例文を作る。
+
+    択一 (a|b) も省略可能 [a|b] も最初のものを採り、{slot} は差し込み文字に置き換える。
+    (省略可能を落とすと「一覧戻って」のような読みにくい例文になるので、付けたまま出す)
+    画面の「いま言えること」に出すので、記号が残らないようにする。
+    """
+    labels = slot_labels or {}
+    out, pos = [], 0
+    for m in _TOKEN_RE.finditer(pattern):
+        if m.start() > pos:
+            out.append(pattern[pos:m.start()])
+        if m.group(1):
+            out.append(labels.get(m.group(1), f"<{m.group(1)}>"))
+        elif m.group(2):
+            out.append(m.group(2).split("|")[0])
+        elif m.group(3):
+            out.append(m.group(3).split("|")[0])
+        pos = m.end()
+    if pos < len(pattern):
+        out.append(pattern[pos:])
+    return "".join(out)
+
+
 def expand_template(pattern: str) -> list[list[tuple[str, str]]]:
     """テンプレートを [(kind, value)...] の列に展開。kind は 'lit' か 'slot'。省略可能・択一を全部展開する。"""
     parts: list[list[tuple[str, str] | None]] = []   # 各位置の選択肢

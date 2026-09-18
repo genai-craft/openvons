@@ -53,7 +53,7 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
   Console? console;
   String status = 'モデル未取得';
   double progress = 0;
-  bool loading = false, useGpu = true;
+  bool loading = false, useGpu = true, speak = true;
 
   @override
   void initState() {
@@ -137,12 +137,14 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
           ]),
         ),
         body: TabBarView(controller: _tabs, children: [
-          VoicePage(engine: voice, status: status, server: server, console: console),
+          VoicePage(engine: voice, status: status, server: server, console: console, speak: speak),
           VisionPage(engine: vision, server: server, console: console),
           SettingsPage(
             server: server, status: status, progress: progress, loading: loading, useGpu: useGpu,
             onServer: (v) async { setState(() => server = v); (await SharedPreferences.getInstance()).setString('server', v); await _loadSites(); },
             onGpu: (v) => setState(() => useGpu = v),
+            speak: speak,
+            onSpeak: (v) => setState(() => speak = v),
             onDownload: _download,
           ),
         ]),

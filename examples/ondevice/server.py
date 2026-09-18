@@ -209,7 +209,7 @@ def build_command_sets(app_module: str):
             "description": APP.STATES[state].description,
             "n": len(cs),
             # ids = カナをトークン化したもの。端末に BPE を実装しなくて済むよう、サーバーで済ませる
-            "hyps": [{"t": h.text, "k": h.kana, "i": h.intent, "s": h.slots, "r": h.risk,
+            "hyps": [{"t": h.text, "k": h.kana, "i": h.intent, "s": h.slots, "r": h.risk, "p": h.params,
                       "ids": G["tok"].encode(h.kana, add_special_tokens=False)} for h in cs.hyps],
         }
     inst.sm.state = list(APP.STATES)[0]

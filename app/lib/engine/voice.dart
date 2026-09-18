@@ -11,7 +11,7 @@ import 'server.dart';
 
 class VoiceResult {
   final String freeKana, action, text, intent;
-  final Map<String, dynamic> slots;
+  final Map<String, dynamic> slots, params;
   final double prob, noneProb;
   final int melMs, encMs, genMs, scoreMs;
   final List<MapEntry<String, double>> top;
@@ -22,7 +22,7 @@ class VoiceResult {
   final double naiveSim;
 
   VoiceResult({required this.freeKana, required this.action, required this.text, required this.intent,
-    required this.slots, required this.prob, required this.noneProb, required this.melMs, required this.encMs,
+    required this.slots, required this.params, required this.prob, required this.noneProb, required this.melMs, required this.encMs,
     required this.genMs, required this.scoreMs, required this.top,
     required this.naiveText, required this.naiveIntent, required this.naiveSlots, required this.naiveSim});
   int get totalMs => melMs + encMs + genMs + scoreMs;
@@ -128,6 +128,7 @@ class VoiceEngine {
       text: top == null ? '-' : (top[0] as Map)['t'] as String,
       intent: top == null ? '' : (top[0] as Map)['i'] as String,
       slots: top == null ? const {} : Map<String, dynamic>.from((top[0] as Map)['s'] as Map? ?? const {}),
+      params: top == null ? const {} : Map<String, dynamic>.from((top[0] as Map)['p'] as Map? ?? const {}),
       prob: top == null ? 0 : top[1] as double, noneProb: noneProb,
       naiveText: nb == null ? '-' : nb['t'] as String,
       naiveIntent: nb == null ? '' : nb['i'] as String,

@@ -15,6 +15,7 @@ import 'dart:typed_data';
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
+import 'package:flutter_tts/flutter_tts.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:http/http.dart' as http;
 import 'package:image/image.dart' as img;
@@ -33,7 +34,9 @@ class VoicePage extends StatefulWidget {
   final String status;
   final String server;
   final Console? console;
-  const VoicePage({super.key, required this.engine, required this.status, required this.server, required this.console});
+  final bool speak;      // 端末の合成音声で返すか (設定タブで切り替え)
+  const VoicePage({super.key, required this.engine, required this.status, required this.server,
+    required this.console, required this.speak});
   @override
   State<VoicePage> createState() => _VoicePageState();
 }
@@ -58,11 +61,34 @@ class _VoicePageState extends State<VoicePage> {
   Site? _picked;                 // 地図で押した地点 (読み方の確認用)
   double _zoom = 9.5;            // ラベルを出すかどうかの判断に使う
   final _mapCtl = MapController();
+  final _tts = FlutterTts();
+  bool _speaking = false;        // 読み上げ中はマイクを止める (自分の声を拾わないため)
+  Timer? _confirmTimer;
 
   @override
-  void dispose() { _sub?.cancel(); _rec.dispose(); super.dispose(); }
+  void initState() {
+    super.initState();
+    _tts.setLanguage('ja-JP');
+    _tts.setSpeechRate(0.55);
+    _tts.setCompletionHandler(() => _speaking = false);
+    _tts.setCancelHandler(() => _speaking = false);
+    _tts.setErrorHandler((_) => _speaking = false);
+  }
+
+  @override
+  void dispose() { _confirmTimer?.cancel(); _sub?.cancel(); _rec.dispose(); _tts.stop(); super.dispose(); }
 
   Console? get _c => widget.console;
+
+  /// 端末の合成音声で返す。読み上げている間はマイクを止めて、自分の声を指示として拾わないようにする。
+  Future<void> _say(String text) async {
+    if (!widget.speak || text.isEmpty) return;
+    _speaking = true;
+    await _tts.stop();
+    await _tts.speak(text);
+    // 完了通知が来ない端末があるので、長さから見積もった時間で必ず解除する
+    Future.delayed(Duration(milliseconds: 600 + text.length * 180), () => _speaking = false);
+  }
 
   /// ハンズフリー待受。一度押したら入れっぱなしで、話し終わりを自分で見つけて判断し、
   /// そのまま次の指示を待つ。手が塞がっている現場を想定しているので、押しっぱなしにはしない。
@@ -84,6 +110,7 @@ class _VoicePageState extends State<VoicePage> {
     final stream = await _rec.startStream(
         const RecordConfig(encoder: AudioEncoder.pcm16bits, sampleRate: 16000, numChannels: 1));
     _sub = stream.listen((bytes) {
+      if (_speaking) return;              // 自分の読み上げは聞かない
       final pcm = Int16List.view(Uint8List.fromList(bytes).buffer);
       final f = Float32List(pcm.length);
       for (var i = 0; i < pcm.length; i++) {
@@ -107,19 +134,52 @@ class _VoicePageState extends State<VoicePage> {
     if (mounted) setState(() => _msg = '');
   }
 
+  /// 声で地図を動かす。画面の何割ぶんかで平行移動し、拡大縮小は 1 段ずつ。
+  void _moveMap(MapMove mv) {
+    final cam = _mapCtl.camera;
+    if (mv.zoom != 0) {
+      _mapCtl.move(cam.center, (cam.zoom + mv.zoom).clamp(4.0, 16.0));
+      return;
+    }
+    final b = cam.visibleBounds;
+    final dLat = (b.north - b.south) * -mv.dy;     // 画面の下が南
+    final dLng = (b.east - b.west) * mv.dx;
+    _mapCtl.move(LatLng(cam.center.latitude + dLat, cam.center.longitude + dLng), cam.zoom);
+  }
+
+  /// 確認待ちのまま黙っていたら自分で取り消す (行き止まりにしない)。
+  void _armConfirmTimeout(Console? c) {
+    _confirmTimer?.cancel();
+    if (c == null || c.state != 'CONFIRM') return;
+    _confirmTimer = Timer(const Duration(seconds: 12), () {
+      if (!mounted || c.state != 'CONFIRM') return;
+      c.cancelPending();
+      setState(() => _msg = '確認の返事が無かったので取り消しました');
+      _say('取り消しました');
+    });
+  }
+
   /// 音声 1 回分。判断して、指令卓に流して、集計する。
   Future<void> _handle(Float32List audio) async {
     final c = _c;
     try {
       if (c != null) widget.engine.state = c.state;
       final r = await widget.engine.run(audio);
-      final ev = c?.apply(r.action, r.intent, r.slots, r.text);
+      final ev = c?.apply(r.action, r.intent, r.slots, r.text, r.params);
       _tally.add(r.action, r.naiveWouldMisfire);
+      if (ev?.map != null) _moveMap(ev!.map!);
+      _armConfirmTimeout(c);
       if (!mounted) return;
       setState(() {
         _turns.insert(0, _Turn(r, ev?.speech ?? ''));
         _msg = '';
       });
+      // 確認は必ず声で聞き返す。実行は短く復唱し、聞き流したときは黙る
+      if (r.action == 'confirm') {
+        await _say('${r.text} でよろしいですか');
+      } else if (r.action == 'execute' && (ev?.speech ?? '').isNotEmpty) {
+        await _say(ev!.speech);
+      }
     } catch (e) {
       if (mounted) setState(() => _msg = 'エラー: $e');
     }
@@ -372,16 +432,20 @@ class _VoicePageState extends State<VoicePage> {
     final hyps = List<Map<String, dynamic>>.from((e.sets[c.state]?['hyps'] ?? const []) as List);
     final byIntent = <String, List<String>>{};
     for (final h in hyps) {
-      final i = h['i'] as String;
+      var i = h['i'] as String;
       if (i == 'select_camera') continue;
-      (byIntent[i] ??= []).add(h['t'] as String);
+      if (i.startsWith('pan_')) i = 'pan';    // 方向 8 × 量 3 を 1 行にまとめる
+      final t = h['t'] as String;
+      final list = byIntent[i] ??= [];
+      if (!list.contains(t)) list.add(t);     // 同じ表示文が複数の読みを持つので重複を落とす
     }
     for (final v in byIntent.values) {
       v.sort((a, b) => a.length.compareTo(b.length));
     }
     const names = {
       'upstream': '上流へ移る', 'downstream': '下流へ移る', 'refresh': '画像を更新', 'zoom_in': '拡大',
-      'zoom_out': '縮小', 'back': '地図に戻る', 'favorite': 'お気に入り登録 (要確認)', 'help': 'ヘルプ',
+      'zoom_out': '縮小', 'back': '地図に戻る (いつでも)', 'favorite': 'お気に入り登録 (要確認)', 'help': 'ヘルプ',
+      'pan': '地図を動かす',
       'yes': 'はい', 'no': 'いいえ', 'select_camera': '地点を選ぶ',
     };
     return Card(child: Padding(padding: const EdgeInsets.all(12), child: Column(
@@ -400,7 +464,11 @@ class _VoicePageState extends State<VoicePage> {
         for (final e2 in byIntent.entries)
           Padding(padding: const EdgeInsets.symmetric(vertical: 2), child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
             SizedBox(width: 108, child: Text(names[e2.key] ?? e2.key, style: const TextStyle(fontSize: 12, color: Colors.white70))),
-            Expanded(child: Text(e2.value.take(3).map((t) => '「$t」').join(' '), style: const TextStyle(fontSize: 12))),
+            Expanded(child: Text(
+                e2.key == 'pan'
+                    ? '「ちょっと右に動かして」「大きく上へ」 上下左右と斜め × ちょっと / 大きく'
+                    : e2.value.take(3).map((t) => '「$t」').join(' '),
+                style: const TextStyle(fontSize: 12))),
           ])),
         const SizedBox(height: 4),
         Text('この一覧が、いま音声が選べる全ての選択肢です。状態が変わると中身も変わります。',
@@ -678,12 +746,14 @@ class _VisionPageState extends State<VisionPage> {
 class SettingsPage extends StatelessWidget {
   final String server, status;
   final double progress;
-  final bool loading, useGpu;
+  final bool loading, useGpu, speak;
   final void Function(String) onServer;
   final void Function(bool) onGpu;
+  final void Function(bool) onSpeak;
   final Future<void> Function() onDownload;
   const SettingsPage({super.key, required this.server, required this.status, required this.progress,
-    required this.loading, required this.useGpu, required this.onServer, required this.onGpu, required this.onDownload});
+    required this.loading, required this.useGpu, required this.onServer, required this.onGpu,
+    required this.onDownload, required this.speak, required this.onSpeak});
 
   @override
   Widget build(BuildContext context) => ListView(padding: const EdgeInsets.all(14), children: [
@@ -693,6 +763,9 @@ class SettingsPage extends StatelessWidget {
     const SizedBox(height: 16),
     SwitchListTile(value: useGpu, onChanged: onGpu, activeThumbColor: acc,
       title: const Text('端末の加速器を使う'), subtitle: const Text('Android: NNAPI / iOS: Core ML。切ると CPU のみ'),
+      contentPadding: EdgeInsets.zero),
+    SwitchListTile(value: speak, onChanged: onSpeak, activeThumbColor: acc,
+      title: const Text('声で返す'), subtitle: const Text('確認は「〜でよろしいですか」と聞き返します。読み上げ中はマイクを止めます'),
       contentPadding: EdgeInsets.zero),
     const SizedBox(height: 8),
     FilledButton.icon(onPressed: loading ? null : onDownload, icon: const Icon(Icons.download),

@@ -19,7 +19,7 @@ from typing import Any
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
 from openvons.voice.engine import Decision
-from openvons.voice.grammar import Grammar, Intent
+from openvons.voice.grammar import Grammar, Intent, example_of
 from openvons.voice.lexicon import Entity, Lexicon, Scope
 from openvons.voice.state import StateDef, StateMachine
 
@@ -28,6 +28,35 @@ ZOOM_STEP = 1.5
 DEFAULT_ZOOM = 1.0     # 画像は元の解像度で表示する (引き伸ばすと荒れる)。拡大はホイールか「寄って」で
 MAX_ZOOM = 6.0
 
+#: 地図を動かす意図。方向 8 つ × 量 3 段を組み合わせて作る (1 つずつ書くと 24 個になるため)。
+#: 量は画面の何割動かすかで、端末側が地図に渡す。
+MAP_DIRS = [
+    ("up", "上", ["北"]), ("down", "下", ["南"]), ("left", "左", ["西"]), ("right", "右", ["東"]),
+    ("upleft", "左上", []), ("upright", "右上", []), ("downleft", "左下", []), ("downright", "右下", []),
+]
+MAP_MAGS = [("small", ["ちょっと", "少し"], 0.25), ("normal", [""], 0.6), ("large", ["大きく", "ぐっと", "もっと"], 1.2)]
+
+
+def _pan_intents() -> list["Intent"]:
+    out = []
+    for dkey, dword, alts in MAP_DIRS:
+        words = [dword, *alts]
+        for mkey, mwords, amount in MAP_MAGS:
+            pats = []
+            for m in mwords:
+                for w in words:
+                    if m:
+                        # 「ちょっと右」だけでも通す (5 モーラあるので雑音には強い)
+                        pats.append(f"{m}{w}[に|へ][動かして|ずらして|移動して|寄せて]")
+                    else:
+                        # 量を言わないときは動詞を必須にする (「右」単独は短すぎて雑音に弱い)
+                        pats.append(f"{w}(に|へ)(動かして|ずらして|移動して|寄せて)")
+                        pats.append(f"{w}(の方|のほう)[に|へ][動かして|ずらして]")
+            out.append(Intent(f"pan_{dkey}_{mkey}", pats, params={"dir": dkey, "amount": amount},
+                              description=f"地図を{mwords[0]}{dword}へ"))
+    return out
+
+
 INTENTS = [
     Intent("select_camera", ["{camera}[を](表示|出して|見せて|映して|お願い)", "{camera}[に](切り替え|切り替えて)", "{camera}"], description="地点のカメラを表示"),
     Intent("upstream", ["(上流|一つ上流|上流側)[へ|に][移って|行って|見せて]", "上流のカメラ", "ひとつ上流"], description="上流のカメラへ"),
@@ -35,18 +64,26 @@ INTENTS = [
     Intent("refresh", ["(更新|最新)[して|の画像]", "リロード", "今の画像"], description="画像を更新"),
     Intent("zoom_in", ["[もっと](寄って|拡大|ズームイン)", "拡大して"], description="画像を拡大"),
     Intent("zoom_out", ["[もっと](引いて|縮小|ズームアウト)", "縮小して", "全体を見せて"], description="画像を縮小"),
-    Intent("back", ["(一覧|全体|地図|元の画面)[に](戻って|戻る|戻して)", "戻る", "閉じて"], description="地図に戻る"),
+    Intent("back", ["(一覧|全体|地図|元の画面|ホーム|最初|トップ)[に|へ](戻って|戻る|戻して)", "戻る", "閉じて",
+                    "ホーム[へ|に]", "地図[へ|に]"], description="地図に戻る (いつでも使えます)"),
     Intent("favorite", ["(この地点|ここ|このカメラ)[を](登録|お気に入り|保存)[して]", "お気に入り登録"], risk="high", description="お気に入りに登録 (要確認)"),
     Intent("yes", ["はい", "そうです", "お願いします", "OK", "実行"], description="確認: はい", allow_embed=False),
     Intent("no", ["いいえ", "違います", "キャンセル", "やめて", "取り消し"], description="確認: いいえ", allow_embed=False),
     Intent("help", ["ヘルプ", "何ができる", "コマンド一覧"], description="使えるコマンド"),
-]
+] + _pan_intents()
+
+#: どの状態でも受け付ける意図。確認待ちで行き止まりにならないように、戻ると助けはいつでも通す
+GLOBAL_INTENTS = ["back", "help"]
+PAN_INTENTS = [f"pan_{d}_{m}" for d, _, _ in MAP_DIRS for m, _, _ in MAP_MAGS]
 
 STATES = {
-    "MAP": StateDef("MAP", ["select_camera", "help"], "地図全体。地点名を言うとそのカメラを表示します"),
-    "CAMERA": StateDef("CAMERA", ["upstream", "downstream", "refresh", "zoom_in", "zoom_out", "back", "favorite", "select_camera", "help"],
+    # 地図では地点名に加えて、地図そのものを動かせる (拡大縮小と 8 方向 × 3 段)
+    "MAP": StateDef("MAP", ["select_camera", "zoom_in", "zoom_out", *PAN_INTENTS, *GLOBAL_INTENTS],
+                    "地図全体。地点名を言うとそのカメラを表示します。拡大縮小と上下左右の移動も"),
+    "CAMERA": StateDef("CAMERA", ["upstream", "downstream", "refresh", "zoom_in", "zoom_out", "favorite", "select_camera", *GLOBAL_INTENTS],
                        "カメラ表示中。上流 / 下流・更新・拡大縮小・戻る"),
-    "CONFIRM": StateDef("CONFIRM", ["yes", "no"], "確認待ち。はい / いいえ"),
+    # 確認待ちでも「戻る」と「ヘルプ」は通す。はい / いいえ しか受け付けないと行き止まりに感じる
+    "CONFIRM": StateDef("CONFIRM", ["yes", "no", *GLOBAL_INTENTS], "確認待ち。はい / いいえ (「戻る」で取り消し)"),
 }
 
 CALIBRATION_STATES = [
@@ -121,10 +158,17 @@ class KasenApp:
 
     def allowed_commands(self) -> list[dict[str, str]]:
         out = []
+        pan_shown = False
         for name in self.sm.allowed_intents():
+            if name.startswith("pan_"):
+                # 24 個を 1 行にまとめる (方向 8 × 量 3 をそのまま並べても読めない)
+                if not pan_shown:
+                    pan_shown = True
+                    out.append({"intent": "pan", "example": "ちょっと右に動かして",
+                                "description": "地図を動かす (上下左右・斜め / ちょっと・大きく)", "risk": "low"})
+                continue
             it = self.grammar.intents[name]
-            ex = it.patterns[0].replace("[", "").replace("]", "")
-            ex = ex.split("(")[0] + (ex.split("(")[1].split("|")[0] + ex.split(")")[1] if "(" in ex else "")
+            ex = example_of(it.patterns[0], {SLOT: "<地点名>"})
             out.append({"intent": name, "example": ex.replace("{camera}", "<地点名>"), "description": it.description, "risk": it.risk})
         return out
 
@@ -169,7 +213,18 @@ class KasenApp:
                 self.sm.back()
                 return self._execute(pending["intent"], pending["slots"], pending["params"], pending["text"])
             self.sm.back()
+            if intent in ("back", "help"):       # 確認待ちからの逃げ道
+                self.sm.context["pending"] = None
+                return self._execute(intent, slots, params, text)
             return {"intent": intent, "speech": "取り消しました"}
+        # 地図の移動と、地図表示中の拡大縮小は、カメラを選んでいなくても効く
+        if intent.startswith("pan_"):
+            return {"intent": intent, "map": {"pan": params.get("dir"), "amount": params.get("amount", 0.6)},
+                    "speech": text}
+        if self.sm.state == "MAP" and intent in ("zoom_in", "zoom_out"):
+            return {"intent": intent, "map": {"zoom": 1 if intent == "zoom_in" else -1},
+                    "speech": "拡大します" if intent == "zoom_in" else "縮小します"}
+
         cid = self.sm.context.get("camera")
         if intent == "select_camera":
             e = self.lexicon.get(slots[SLOT]); self.view.zoom = DEFAULT_ZOOM; self.view.refreshed_at = time.time()

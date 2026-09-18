@@ -17,7 +17,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))  # repo root
 
 from openvons.voice.engine import Decision
-from openvons.voice.grammar import Grammar, Intent
+from openvons.voice.grammar import Grammar, Intent, example_of
 from openvons.voice.lexicon import Entity, Lexicon, Scope
 from openvons.voice.state import StateDef, StateMachine
 
@@ -123,8 +123,7 @@ class CameraApp:
         out = []
         for name in self.sm.allowed_intents():
             it = self.grammar.intents[name]
-            ex = it.patterns[0].replace("[", "").replace("]", "")
-            ex = ex.split("(")[0] + (ex.split("(")[1].split("|")[0] + ex.split(")")[1] if "(" in ex else "")
+            ex = example_of(it.patterns[0], {SLOT: "<カメラ名>"})
             out.append({"intent": name, "example": ex.replace("{camera}", "<カメラ名>"), "description": it.description, "risk": it.risk})
         return out
 
