@@ -3,6 +3,7 @@
    (merged decoder の cache 分岐や fp16 の型で詰まるため、KV cache なしの decoder を自分で回す)。 */
 import { AutoTokenizer, AutoProcessor, env as tjsEnv } from 'https://cdn.jsdelivr.net/npm/@huggingface/transformers@4.3.0';
 import * as ort from 'https://cdn.jsdelivr.net/npm/onnxruntime-web@1.23.0/dist/ort.all.bundle.min.mjs';
+import { makeVad } from '/shared/vad.js';
 
 const $ = (s) => document.querySelector(s);
 const log = (...a) => { const el = $('#log'); el.textContent = a.join(' ') + '\n' + el.textContent; console.log(...a); };
@@ -217,38 +218,64 @@ function encodeWav(f32, sr) {
   return btoa(b);
 }
 
-/* ---------------- マイク ---------------- */
-let media = null, chunks = [];
+/* ---------------- マイク (ハンズフリー待受) ----------------
+   一度押したら入れっぱなし。話し終わって無音が続いたところで 1 発話として切り出し、
+   判断して、そのまま次の指示を待つ。手が塞がっていても続けて操作できるように。 */
+let media = null, vad = null, queue = [], draining = false;
+
+async function drain() {
+  if (draining) return;
+  draining = true;
+  while (queue.length) {
+    const audio = queue.shift();
+    $('#vadChip').textContent = '判断中';
+    $('#vadChip').classList.remove('on');
+    await handle(audio);
+  }
+  draining = false;
+  $('#vadChip').textContent = media && media.on ? '待受中' : '待機';
+}
+
 async function startRec() {
   if (!media) {
     const stream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true } });
     const ac = new AudioContext({ sampleRate: 16000 });
     const src = ac.createMediaStreamSource(stream);
     const proc = ac.createScriptProcessor(4096, 1, 1);
+    vad = makeVad({
+      onUtterance: (audio) => { queue.push(audio); drain(); },
+      onState: (st) => {
+        if (!media || !media.on || draining) return;
+        $('#vadChip').textContent = st === 'speech' ? '聞いています' : '待受中';
+        $('#vadChip').classList.toggle('on', st === 'speech');
+      },
+    });
     proc.onaudioprocess = (e) => {
       const x = e.inputBuffer.getChannelData(0);
       let peak = 0; for (let i = 0; i < x.length; i++) peak = Math.max(peak, Math.abs(x[i]));
       $('#vuBar').style.width = Math.min(100, peak * 300) + '%';
-      if (media && media.on) chunks.push(new Float32Array(x));
+      if (media && media.on) vad.feed(new Float32Array(x));
     };
     src.connect(proc); proc.connect(ac.destination);
     media = { stream, proc, ac, on: false };
     log('マイク開始 (sampleRate', ac.sampleRate, ')');
   }
-  chunks = []; media.on = true; $('#vadChip').textContent = '録音中'; $('#vadChip').classList.add('on');
+  vad.reset(); queue = []; media.on = true;
+  $('#vadChip').textContent = '待受中'; $('#vadChip').classList.remove('on');
 }
+
 async function stopRec() {
   if (!media || !media.on) return;
-  media.on = false; $('#vadChip').textContent = '処理中'; $('#vadChip').classList.remove('on');
-  const n = chunks.reduce((a, c) => a + c.length, 0);
-  const audio = new Float32Array(Math.max(n, 16000)); let o = 0;
-  for (const c of chunks) { audio.set(c, o); o += c.length; }
-  await handle(audio);
-  $('#vadChip').textContent = '待機';
+  media.on = false; vad.reset(); queue = [];
+  $('#vadChip').textContent = '待機'; $('#vadChip').classList.remove('on');
+  $('#vuBar').style.width = '0';
 }
+
 const mb = $('#micBtn');
-mb.addEventListener('click', async () => { if (media && media.on) { await stopRec(); mb.textContent = '🎙 録音開始 (もう一度押すと停止)'; mb.classList.remove('on'); }
-  else { await startRec(); mb.textContent = '⏹ 停止して判断する'; mb.classList.add('on'); } });
+mb.addEventListener('click', async () => {
+  if (media && media.on) { await stopRec(); mb.textContent = '🎙 ハンズフリー待受を始める'; mb.classList.remove('on'); }
+  else { await startRec(); mb.textContent = '⏹ 待受を止める'; mb.classList.add('on'); }
+});
 mb.addEventListener('contextmenu', (e) => e.preventDefault());
 
 window.__handle = handle;     // 自動検証から 1 発話を流すため

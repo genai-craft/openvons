@@ -22,6 +22,7 @@ import 'package:record/record.dart';
 
 import 'engine/console.dart';
 import 'engine/decision.dart';
+import 'engine/vad.dart';
 import 'engine/vision.dart';
 import 'engine/voice.dart';
 import 'main.dart' show acc, bad, ok, panel, warn;
@@ -45,42 +46,65 @@ class _Turn {
 
 class _VoicePageState extends State<VoicePage> {
   final _rec = AudioRecorder();
-  final _chunks = <int>[];
   StreamSubscription<Uint8List>? _sub;
-  bool _recording = false, _testing = false;
+  Vad? _vad;
+  final _queue = <Float32List>[];
+  bool _listening = false, _testing = false, _draining = false, _hearing = false;
   final _turns = <_Turn>[];
   final _tally = Tally();
   String _msg = '';
   bool _showMap = true;          // 地図 / 一覧 の切り替え
   String _filter = '';           // 一覧の絞り込み
   Site? _picked;                 // 地図で押した地点 (読み方の確認用)
-  final _mapCtl = MapController();
   double _zoom = 9.5;            // ラベルを出すかどうかの判断に使う
+  final _mapCtl = MapController();
 
   @override
   void dispose() { _sub?.cancel(); _rec.dispose(); super.dispose(); }
 
   Console? get _c => widget.console;
 
+  /// ハンズフリー待受。一度押したら入れっぱなしで、話し終わりを自分で見つけて判断し、
+  /// そのまま次の指示を待つ。手が塞がっている現場を想定しているので、押しっぱなしにはしない。
   Future<void> _toggle() async {
     if (!widget.engine.ready) { setState(() => _msg = '設定タブでモデルを取得してください'); return; }
-    if (_recording) {
+    if (_listening) {
       await _sub?.cancel();
       await _rec.stop();
-      setState(() { _recording = false; _msg = '端末の中で判断しています…'; });
-      final pcm = Int16List.view(Uint8List.fromList(_chunks).buffer);
-      final audio = Float32List(pcm.length < 16000 ? 16000 : pcm.length);
-      for (var i = 0; i < pcm.length; i++) {
-        audio[i] = pcm[i] / 32768.0;
-      }
-      await _handle(audio);
+      _vad?.reset();
+      _queue.clear();
+      setState(() { _listening = false; _hearing = false; _msg = ''; });
       return;
     }
     if (!await _rec.hasPermission()) { setState(() => _msg = 'マイクの許可が要ります'); return; }
-    _chunks.clear();
-    final stream = await _rec.startStream(const RecordConfig(encoder: AudioEncoder.pcm16bits, sampleRate: 16000, numChannels: 1));
-    _sub = stream.listen(_chunks.addAll);
-    setState(() { _recording = true; _msg = '聞いています… もう一度押すと判断します'; });
+    _vad = Vad(
+      onUtterance: (audio) { _queue.add(audio); _drain(); },
+      onState: (sp) { if (mounted && _listening) setState(() => _hearing = sp); },
+    );
+    final stream = await _rec.startStream(
+        const RecordConfig(encoder: AudioEncoder.pcm16bits, sampleRate: 16000, numChannels: 1));
+    _sub = stream.listen((bytes) {
+      final pcm = Int16List.view(Uint8List.fromList(bytes).buffer);
+      final f = Float32List(pcm.length);
+      for (var i = 0; i < pcm.length; i++) {
+        f[i] = pcm[i] / 32768.0;
+      }
+      _vad?.feed(f);
+    });
+    setState(() { _listening = true; _msg = ''; });
+  }
+
+  /// 溜まった発話を順に処理する (判断中に話されたぶんも取りこぼさない)。
+  Future<void> _drain() async {
+    if (_draining) return;
+    _draining = true;
+    while (_queue.isNotEmpty) {
+      final audio = _queue.removeAt(0);
+      if (mounted) setState(() => _msg = '端末の中で判断しています…');
+      await _handle(audio);
+    }
+    _draining = false;
+    if (mounted) setState(() => _msg = '');
   }
 
   /// 音声 1 回分。判断して、指令卓に流して、集計する。
@@ -91,12 +115,13 @@ class _VoicePageState extends State<VoicePage> {
       final r = await widget.engine.run(audio);
       final ev = c?.apply(r.action, r.intent, r.slots, r.text);
       _tally.add(r.action, r.naiveWouldMisfire);
+      if (!mounted) return;
       setState(() {
         _turns.insert(0, _Turn(r, ev?.speech ?? ''));
         _msg = '';
       });
     } catch (e) {
-      setState(() => _msg = 'エラー: $e');
+      if (mounted) setState(() => _msg = 'エラー: $e');
     }
   }
 
@@ -168,14 +193,20 @@ class _VoicePageState extends State<VoicePage> {
       // 話しかける
       FilledButton.icon(
         onPressed: _testing ? null : _toggle,
-        icon: Icon(_recording ? Icons.stop : Icons.mic),
-        label: Text(_recording ? '話し終わった (判断する)' : '押して話す'),
-        style: FilledButton.styleFrom(backgroundColor: _recording ? bad : acc, foregroundColor: Colors.black,
-            minimumSize: const Size.fromHeight(52)),
+        icon: Icon(_listening ? Icons.stop : Icons.mic),
+        label: Text(_listening
+            ? (_hearing ? '聞いています…' : '待受中 (押すと止める)')
+            : 'ハンズフリー待受を始める'),
+        style: FilledButton.styleFrom(
+            backgroundColor: _listening ? (_hearing ? ok : bad) : acc,
+            foregroundColor: Colors.black, minimumSize: const Size.fromHeight(52)),
       ),
+      if (_listening) const Padding(padding: EdgeInsets.only(top: 6),
+          child: Text('話し終わって少し黙ると、そこまでを 1 つの指示として判断します。そのまま次の指示を続けられます。',
+              style: TextStyle(color: Colors.white38, fontSize: 11))),
       const SizedBox(height: 6),
       OutlinedButton.icon(
-        onPressed: _testing || _recording ? null : _selfTest,
+        onPressed: _testing || _listening ? null : _selfTest,
         icon: const Icon(Icons.play_circle_outline, size: 18),
         label: const Text('マイク無しで試す (合成音声 4 件)'),
         style: OutlinedButton.styleFrom(foregroundColor: acc, minimumSize: const Size.fromHeight(42)),
