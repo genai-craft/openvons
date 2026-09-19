@@ -150,6 +150,11 @@
       <h3>写真から属性を読む</h3>
       <p>カメラの映像から、年齢層や向き、荷物の有無を確率で。自信のない判定は「要確認」と正直に言います。</p>
       <span class="go">試す →</span></a>
+    <a class="demo reveal" href="https://judge.openvons.com" target="_blank" rel="noopener">
+      <div class="thumb t6"></div>
+      <h3>動画を審判する</h3>
+      <p>15 秒〜1 分の動画に、喧嘩・万引き・高所作業のハーネス未着用・倒れている人・火や煙などがあるかを、窓ごとの確率で判定。カメラを向ければロボットの進路 (左 / 右 / 直進 / 停止) もリアルタイムに。</p>
+      <span class="go">試す →</span></a>
     <a class="demo reveal" href="https://shirei.openvons.com" target="_blank" rel="noopener">
       <div class="thumb t5"></div>
       <h3>声で機器を操作する</h3>
@@ -180,6 +185,10 @@
   <h2>更新情報</h2>
   <p class="sub">これまでの成果と、新しく分かったこと。</p>
   <div class="updates">
+    <div class="upd reveal"><time>2026-09-20</time><div>
+      <h4>動画の審判デモ (judge)</h4>
+      <p>動画を窓に切って「喧嘩が起きているか」「ハーネスを着けていないか」など 10 項目を 3 択 (はい / いいえ / 判別できない) で答えさせる。窓の符号化は 1 回、質問を足しても 25 ms。12 秒の動画を 1.4 秒で判定、ライブは 1 フレーム 50 ms でロボットの進路判断まで。
+        <a href="https://judge.openvons.com" target="_blank" rel="noopener">試す ↗</a></p></div></div>
     <div class="upd hl reveal"><time>2026-09-19</time><div>
       <h4>JevPick — 「選ばせる」を AI の文章生成の高速化に使う</h4>
       <p>次に出そうな数語の候補を並べ、モデルの内部状態で 1 つ選び、まとめて検算する。ツール呼び出しで<b>予測モデルなしに 3.2〜4.8 倍</b>、出力は 1 文字も変わらない。4-bit 量子化のモデルでも成立。流行りの先読み手法が 16k の長い文脈で逆効果になることも判明。

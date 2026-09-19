@@ -18,6 +18,8 @@ import sys
 import tempfile
 import time
 from pathlib import Path
+
+import numpy as np
 from typing import Any
 
 from fastapi import FastAPI, File, Form, UploadFile
@@ -58,13 +60,18 @@ def summarize(res: dict) -> dict:
         ps = [s["p"] for s in q["series"]]
         if not ps:
             continue
-        yes = [p[0] for p in ps]; none = [p[2] for p in ps]
+        yes = [p[0] for p in ps]; no = [p[1] for p in ps]; none = [p[2] for p in ps]
         i = max(range(len(yes)), key=lambda k: yes[k])
-        action, reason = decide(yes[i], none[i], c.risk, TH)
-        label = {"execute": "検出", "confirm": "要確認", "reject": "問題なし", "none": "判別できない"}[action]
-        if action == "reject":
-            # 「いいえ」がどれくらい確かかも見せる
-            label = "問題なし" if max(p[1] for p in ps) >= 0.6 else "判別できない"
+        if yes[i] >= TH.confirm:
+            # 「はい」が疑われる窓がある → その窓の分布で判断 (危険度 high は必ず要確認)
+            action, reason = decide(yes[i], none[i], c.risk, TH)
+            if action == "none":
+                action = "confirm"  # 疑いはあるが判別できない側も大きい → 人が見る
+            label = {"execute": "検出", "confirm": "要確認", "reject": "問題なし", "none": "判別できない"}[action]
+        else:
+            # どの窓も「はい」が低い → 「いいえ」が確かなら問題なし、映っていない/見えないなら判別できない
+            action = "reject" if float(np.median(no)) >= 0.6 else "none"
+            label = "問題なし" if action == "reject" else "判別できない"
         segs = []
         for s, p in zip(q["series"], ps):
             if p[0] >= TH.confirm:
