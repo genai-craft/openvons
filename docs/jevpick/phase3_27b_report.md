@@ -152,6 +152,8 @@ scorer は vLLM 未統合のため、ここは transformers (eager)（27B の li
 | vLLM ngram（prompt lookup） | **不可**: draft token に対して PLE 入力が用意されず `PLE inputs were not prepared`。n-gram 埋め込みを持つアーキと外部 n-gram draft の相性問題 |
 | vLLM MTP k=7 | **可**: **590.3 tok/s（5.77x）**、受理 752/833 draft token（6.3/7 per draft）。同梱 MTP は Flash-Next でも Tool Call でほぼ飽和 |
 
+**32 GB 級 GPU で動かす**: llama.cpp + unsloth の GGUF UD-Q4_K_XL (111 GB) で、MoE のエキスパートを CPU に置くと **VRAM 7.3 GB で 38 tok/s**、12 層分のエキスパートだけ GPU に戻すと (`-ncmoe 36`) **25 GB で 47 tok/s** (Tool Call、この機材 = CPU 128 コア・RAM 3 TB。デスクトップでは CPU 側のメモリ帯域で頭打ちになる)。RAM は 120 GB 以上が要る。MTP の sidecar GGUF は本家 llama.cpp では読めず (unsloth のブランチが必要)。
+
 **ChoiceSpec 適用の見立て**:
 
 1. **候補生成（有限候補）は適用可**。tool schema 展開・corpus・prompt n-gram は target の tokenizer と chat template だけに依存し、Flash-Next の tool_call 形式は 27B と同じ XML 形式（同じ chat template 系）。oracle 評価は vLLM の greedy trace だけで回せる。

@@ -1,0 +1,15 @@
+{
+ "none": {
+  "n": 8,
+  "decode_tok_s": 46.69012272263497,
+  "mean_tps": 45.7589341325656,
+  "vram_gb": 25.345703125,
+  "draft_n": 0,
+  "draft_accepted": 0,
+  "texts": [
+   "<tool_call>\n<function=convert_currency>\n<parameter=amount>\n500\n</parameter>\n<parameter=from_currency>\nUSD\n</parameter>\n<",
+   "I'll calculate the distance between New York and Los Angeles for you.\n\n<tool_call>\n<function=calculate_distance>\n<parame",
+   "<tool_call>\n<function=convert_currency>\n<parameter=amount>\n1000\n</parameter>\n<parameter=source_currency>\nUSD\n</parameter"
+  ]
+ }
+}

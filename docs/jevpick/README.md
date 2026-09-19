@@ -56,7 +56,7 @@ VRAM の実測 (ピーク、この repo の quickstart):
 | Qwen3-4B | NF4 | 4.8 GB | 4.3 GB | 4.2 GB | 8 GB 級から |
 | Qwen3.8-27B | NF4 | 25.6 GB | 23.0 GB | 23.1 GB | **32 GB 級 (RTX 5090 など)**。24 GB なら `collect.py --batch 8` |
 | Qwen3.8-27B | bf16 | ~60 GB | ~58 GB | ~58 GB | 80 GB 級 |
-| Qwen3.8-Flash-Next | — | transformers では読めない (FP8 MoE の重み変換が未対応)。llama.cpp の GGUF + MoE の CPU オフロード (`--cpu-moe`) で 32 GB 級を狙う → `phase4_runtime/bench_llamacpp.py --extra "--cpu-moe"`。実測は準備中 | | | |
+| Qwen3.8-Flash-Next (125B MoE, 6B 活性) | GGUF UD-Q4_K_XL (111 GB) | llama.cpp、エキスパートを全部 CPU (`--cpu-moe`): **VRAM 7.3 GB、38 tok/s**。12 層分を GPU に戻す (`-ncmoe 36`): **25 GB、47 tok/s** | | | **32 GB 級で動く** (RAM 120 GB 以上。CPU 128 コア機での値、デスクトップでは CPU 側が律速)。transformers では読めない (FP8 MoE の重み変換が未対応) ので JevPick の hidden state は未取得、MTP 併用 (`-md mtp-*-shared-Q8_0.gguf --spec-type draft-mtp`) は本家 llama.cpp (2026-09-19 master) では `token_embd.weight not found` で draft を読めず、unsloth の MTP 対応ブランチが必要。vLLM (FP8、4 GPU) では MTP k=7 で 5.8x |
 
 本文の数字は N=3000/500 (Tool Call) で出したもの。N=80/40 の quickstart では選ぶ精度が 52 → 67% (4B)、55 → 64% (27B) と、学習データが少ない分だけ低く出る。
 

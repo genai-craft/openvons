@@ -93,6 +93,7 @@
       <tr><td>Qwen3.8-27B GGUF Q4_K_M</td><td>llama.cpp</td><td>未統合</td><td>3.75 倍</td><td>2.0 倍</td><td>—</td></tr>
       <tr><td>Qwen3.8-27B NF4</td><td>transformers</td><td><b>3.2 倍</b></td><td>3.9 倍</td><td>3.3 倍</td><td>3.9 倍</td></tr>
       <tr><td>Qwen3.8-Flash-Next FP8</td><td>vLLM (4 GPU)</td><td>未統合</td><td>—</td><td><b>5.8 倍</b> (590 tok/s)</td><td>—</td></tr>
+      <tr><td>Qwen3.8-Flash-Next GGUF Q4</td><td>llama.cpp (1 GPU、エキスパートは CPU)</td><td colspan="4">32 GB 級で動く: VRAM 7 GB で 38 tok/s、25 GB で 47 tok/s (128 コア機)。MTP 併用は本家 llama.cpp では未対応</td></tr>
     </tbody></table></div>
   <p class="muted small">すべて手元の RTX PRO 6000 Blackwell、1 リクエストずつ、greedy。JevPick を含む列は同一の検算コードで方式だけを変えて比べたもの。詳しい表・ログ・再現手順は <a href="https://github.com/genai-craft/openvons/tree/main/docs/jevpick" target="_blank" rel="noopener">docs/jevpick</a> にあります。</p>
 
