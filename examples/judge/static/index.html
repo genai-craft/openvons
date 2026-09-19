@@ -84,7 +84,7 @@
   <h2>10 項目</h2>
   <table id="checkTable"><thead><tr><th>項目</th><th>シーン</th><th>fps × 窓</th><th>危険度</th><th>VLM への質問</th></tr></thead><tbody></tbody></table>
   <h2>試験動画</h2>
-  <p>各項目について「問題あり」3 本と「問題なし」3 本を MiniMax H3 (ComfyUI) で生成した 15 秒の動画。問題ありは 0〜5 秒 通常 → 5〜10 秒 事象 → 10〜15 秒 通常 の構成で、時刻の当たりも見る。生成動画なので実環境の精度とは別に、方式の動作を確かめる目的。</p>
+  <p>各項目について「問題あり」3 本と「問題なし」3 本を MiniMax H3 (ComfyUI) で生成した 15 秒の動画。問題ありは 0〜5 秒 通常 → 5〜10 秒 事象 → 10〜15 秒 通常 の構成で、時刻の当たりも見る。生成動画なので実環境の精度とは別に、方式の動作を確かめる目的。60 本での正解率は 75%: 喧嘩・倒れている人・火・運転中スマホは全部当たり、ダブルドリブルや「鞄に隠す」などの細かい動作は 4B の VLM では拾えない (詳細 <a href="https://github.com/genai-craft/openvons/blob/main/docs/judge.md" target="_blank" rel="noopener">docs/judge.md</a>)。</p>
   <p class="muted small">コード: <a href="https://github.com/genai-craft/openvons/tree/main/examples/judge" target="_blank" rel="noopener">examples/judge</a> / エンジン: openvons/vision/video_judge.py</p>
 </main>
 

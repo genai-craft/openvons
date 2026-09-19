@@ -45,8 +45,10 @@ def main():
         flagged = it["action"] in ("execute", "confirm")
         # 他項目の誤検出 (false alarm) も数える
         others = [i for i in summ["items"] if i["key"] != c.key and i["action"] in ("execute", "confirm")]
+        same_scene = [o["key"] for o in others if BY_KEY[o["key"]].scene == c.scene]
         rows.append({"file": m["file"], "check": c.key, "label": m["label"], "p_max": it["p_max"], "t_max": it["t_max"], "action": it["action"],
-                     "correct": flagged == (m["label"] == 1), "false_alarms": [o["key"] for o in others]})
+                     "correct": flagged == (m["label"] == 1), "false_alarms": [o["key"] for o in others], "false_alarms_same_scene": same_scene,
+                     "_res": res})
         # 窓単位: 事象区間に重なる窓 = 1、それ以外 = 0 (問題なし動画は全部 0)
         for w in res["questions"][c.key]["series"]:
             p = np.array(w["p"]); lg = np.log(p + 1e-9)
@@ -69,11 +71,26 @@ def main():
                       "specificity": float(np.mean([r["correct"] for r in neg])) if neg else None,
                       "window_auroc": auc, "T": fit_temperature(lg, lb) if lg.size else 1.0}
     fa = sum(len(r["false_alarms"]) for r in rows) / max(len(rows), 1)
-    out = {"rows": rows, "per_check": per, "false_alarms_per_clip": fa, "accuracy": float(np.mean([r["correct"] for r in rows]))}
+    fa_scene = sum(len(r["false_alarms_same_scene"]) for r in rows) / max(len(rows), 1)
+    # 温度校正後の判定 (同じ動画で T を当てているので楽観的。目安)
+    T = {k: v["T"] for k, v in per.items()}
+    cal_correct = []
+    for r in rows:
+        res = r.pop("_res"); c = BY_KEY[r["check"]]
+        for k, q in res["questions"].items():
+            t = T.get(k, 1.0)
+            for w in q["series"]:
+                lg = np.log(np.array(w["p"]) + 1e-9) / t; lg -= lg.max(); pp = np.exp(lg); w["p"] = [float(x) for x in pp / pp.sum()]
+        it = next(i for i in summarize(res)["items"] if i["key"] == c.key)
+        r["action_calibrated"] = it["action"]; r["p_max_calibrated"] = it["p_max"]
+        r["correct_calibrated"] = (it["action"] in ("execute", "confirm")) == (r["label"] == 1)
+        cal_correct.append(r["correct_calibrated"])
+    out = {"rows": rows, "per_check": per, "false_alarms_per_clip": fa, "false_alarms_same_scene_per_clip": fa_scene,
+           "accuracy": float(np.mean([r["correct"] for r in rows])), "accuracy_calibrated": float(np.mean(cal_correct))}
     json.dump(out, open(DATA / "eval.json", "w"), ensure_ascii=False, indent=1)
     json.dump({"temperature": {k: v["T"] for k, v in per.items()} | {"_default": float(np.median([v["T"] for v in per.values()]))}}, open(DATA / "calibration.json", "w"), indent=1)
     print(json.dumps({k: {a: (round(b, 3) if isinstance(b, float) else b) for a, b in v.items()} for k, v in per.items()}, ensure_ascii=False, indent=1))
-    print("accuracy %.3f  false alarms/clip %.2f" % (out["accuracy"], fa))
+    print("accuracy %.3f (calibrated %.3f)  false alarms/clip %.2f (same scene %.2f)" % (out["accuracy"], out["accuracy_calibrated"], fa, fa_scene))
 
 
 if __name__ == "__main__":
