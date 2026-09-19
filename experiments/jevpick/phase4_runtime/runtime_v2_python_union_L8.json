@@ -1,0 +1,87 @@
+{
+ "config": {
+  "model": "Qwen/Qwen3-4B",
+  "draft": "z-lab/Qwen3-4B-DFlash-b16",
+  "scorer": "/data/openvons/jevpick/scorer_python_union_L8_l27_pool.pt",
+  "prompts": "/data/openvons/jevpick/prompts_v2.jsonl",
+  "traces": "/data/openvons/jevpick/traces_v2_Qwen3-4B.jsonl",
+  "domain": "python",
+  "n": 30,
+  "max_new": 128,
+  "L": 8,
+  "th": 0.5,
+  "modes": "baseline,prior,scorer,dflash,union",
+  "dtype": "bfloat16",
+  "out": "experiments/jevpick/phase4_runtime/runtime_v2_python_union_L8.json"
+ },
+ "n": 29,
+ "summary": {
+  "baseline": {
+   "tok_s": 71.70840387669186,
+   "speedup": 1.0,
+   "exact_match": 1.0,
+   "tok_per_step": 1.0,
+   "mean_accepted": 0.0,
+   "zero_accept": 1.0,
+   "time_frac": {
+    "prefill": 0.03316972544803714,
+    "verify": 0.9646297526206269
+   }
+  },
+  "prior": {
+   "tok_s": 85.03222713913404,
+   "speedup": 1.1858056035573392,
+   "exact_match": 0.7241379310344828,
+   "tok_per_step": 1.6291866028708133,
+   "mean_accepted": 0.6477272727272727,
+   "zero_accept": 0.6979665071770335,
+   "time_frac": {
+    "prefill": 0.03808423012116033,
+    "candidates": 0.037160835133990607,
+    "verify": 0.9224577933372364
+   }
+  },
+  "scorer": {
+   "tok_s": 92.38460149778503,
+   "speedup": 1.2883371613827508,
+   "exact_match": 0.7931034482758621,
+   "tok_per_step": 1.6534772182254196,
+   "mean_accepted": 0.6714628297362111,
+   "zero_accept": 0.723621103117506,
+   "time_frac": {
+    "prefill": 0.04069354965649624,
+    "candidates": 0.01837480744793752,
+    "scorer": 0.0589305142528198,
+    "verify": 0.8793837857193848
+   }
+  },
+  "dflash": {
+   "tok_s": 142.711922699906,
+   "speedup": 1.990170119325347,
+   "exact_match": 0.7586206896551724,
+   "tok_per_step": 3.174825174825175,
+   "mean_accepted": 2.210955710955711,
+   "zero_accept": 0.2925407925407925,
+   "time_frac": {
+    "prefill": 0.06364024075064309,
+    "draft": 0.1422827420696558,
+    "verify": 0.790532671834818
+   }
+  },
+  "union": {
+   "tok_s": 132.9302700291569,
+   "speedup": 1.8537613841989953,
+   "exact_match": 0.7931034482758621,
+   "tok_per_step": 3.1178489702517163,
+   "mean_accepted": 2.15675057208238,
+   "zero_accept": 0.36727688787185353,
+   "time_frac": {
+    "prefill": 0.0591289952008924,
+    "candidates": 0.013693957527431648,
+    "draft": 0.13714746566482808,
+    "scorer": 0.051827947766917154,
+    "verify": 0.7346979336107865
+   }
+  }
+ }
+}

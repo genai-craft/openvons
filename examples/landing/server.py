@@ -22,6 +22,12 @@ def index():
     return HTMLResponse(html, headers={"Cache-Control": "no-store"})
 
 
+@app.get("/jevpick")
+def jevpick():
+    html = (HERE / "static" / "jevpick.html").read_text(encoding="utf-8").replace("__V__", V["v"])
+    return HTMLResponse(html, headers={"Cache-Control": "no-store"})
+
+
 @app.get("/healthz")
 def healthz():
     return {"ok": True}

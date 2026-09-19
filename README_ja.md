@@ -18,6 +18,14 @@ LLM / VLM / ASR に**文章を生成させる代わりに、有限の選択肢�
 共通層 `openvons.core`: Noul / Choice / Score の表現 (`Question`)、判断ポリシー (`decide`、確信度ゲート)、
 校正 (温度・isotonic・**該当なし付き校正**)、指標 (ECE / Brier / NLL / macro-F1)。
 
+## JevPick — 「有限のメニューから選ぶ」を文章生成の高速化に使う
+
+[docs/jevpick/README.md](docs/jevpick/README.md)。予測モデルの代わりに、ツール定義・過去の出力・同梱 MTP head から**次の数語の候補メニュー**を作り、
+target モデルの hidden state を見て JevPick が 1 つ選び、target が一括で検算する。ツール呼び出し (Qwen3-4B / Qwen3.8-27B、bf16 と 4-bit) で、
+メニューに正解が 90% 入り、JevPick は 88% で当て (頻度順ルールは 64%)、**出力を 1 文字も変えずに 3.2〜4.8 倍**。bf16 で学習した JevPick は
+FP8 / NF4 の hidden state にそのまま転移する。レポート: [phase 1](docs/jevpick/phase1_oracle_report.md) / [phase 2](docs/jevpick/phase2_report.md) /
+[phase 3 (27B・量子化・MTP / DFlash2・Flash-Next)](docs/jevpick/phase3_27b_report.md) / [一覧表](docs/jevpick/summary_table.md)。
+
 ## 動かす
 
 ```bash

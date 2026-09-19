@@ -21,6 +21,7 @@
     <a href="#how">しくみ</a>
     <a href="#numbers">実測</a>
     <a href="#use">使いどころ</a>
+    <a href="#updates">更新情報</a>
     <a href="https://github.com/genai-craft/openvons" target="_blank" rel="noopener">GitHub</a>
     <a class="cta small" href="https://genai-craft.com" target="_blank" rel="noopener">導入のご相談</a>
   </div>
@@ -172,6 +173,25 @@
     <div class="use reveal"><h4>大量の問い合わせ</h4><p>担当部署、緊急度、感情、必要な一次回答。まとめて判断して、確信の高いものだけ自動で流します。</p></div>
     <div class="use reveal"><h4>写真・映像の確認</h4><p>撮ったその場で、決めた項目に答えさせます。小さなモデルで足りるので、端末や現場の機器にも載ります。</p></div>
     <div class="use reveal"><h4>基幹システムの入口</h4><p>選択肢の集合を業務側で管理できるので、システムの状態に合わせて「今できること」だけを受け付けられます。</p></div>
+  </div>
+</section>
+
+<section id="updates" class="sec">
+  <h2>更新情報</h2>
+  <p class="sub">これまでの成果と、新しく分かったこと。</p>
+  <div class="updates">
+    <div class="upd hl reveal"><time>2026-09-19</time><div>
+      <h4>JevPick — 「選ばせる」を AI の文章生成の高速化に使う</h4>
+      <p>次に出そうな数語の候補を並べ、モデルの内部状態で 1 つ選び、まとめて検算する。ツール呼び出しで<b>予測モデルなしに 3.2〜4.8 倍</b>、出力は 1 文字も変わらない。4-bit 量子化のモデルでも成立。流行りの先読み手法が 16k の長い文脈で逆効果になることも判明。
+        <a href="/jevpick">記事を読む →</a></p></div></div>
+    <div class="upd reveal"><time>2026-09-18</time><div>
+      <h4>Android アプリと、端末の中だけで動く音声判断</h4>
+      <p>認識も判断も端末内で完結する Android アプリを公開 (音声も映像も端末から出ない)。ブラウザ内推論 (WebGPU / WASM) も通し、蒸留した小型モデル (147M) で声の判断が 2 秒。年齢・性別の判定も端末の学習済みヘッドに。
+        <a href="https://github.com/genai-craft/openvons/releases/latest" target="_blank" rel="noopener">APK ↗</a></p></div></div>
+    <div class="upd reveal"><time>2026-09-17</time><div>
+      <h4>openvons 公開 — 音声・画像・テキストの 5 つのデモ</h4>
+      <p>文章の仕分け (8 問 40 ms)、駅名で動く路線図 (8,987 駅)、河川ライブカメラ 195 地点を声で、写真から属性、声で機器を操作。Apache-2.0、TypeSafe Jev 互換 API 付き。
+        <a href="#demos">デモへ</a></p></div></div>
   </div>
 </section>
 

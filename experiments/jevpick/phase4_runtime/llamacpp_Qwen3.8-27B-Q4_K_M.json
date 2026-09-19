@@ -1,0 +1,62 @@
+{
+ "none": {
+  "n": 16,
+  "decode_tok_s": 39.11310628004769,
+  "mean_tps": 38.36764932644185,
+  "draft_n": 0,
+  "draft_accepted": 0,
+  "texts": [
+   "<tool_call>\n<function=convert_currency>\n<parameter=amount>\n500\n</parameter>\n<parameter=from_currency>\nUSD\n</parameter>\n<",
+   "<tool_call>\n<function=calculate_distance>\n<parameter=start_location>\nNew York\n</parameter>\n<parameter=end_location>\nLos ",
+   "<tool_call>\n<function=convert_currency>\n<parameter=amount>\n1000\n</parameter>\n<parameter=source_currency>\nUSD\n</parameter"
+  ]
+ },
+ "ngram": {
+  "n": 16,
+  "decode_tok_s": 38.94661148140749,
+  "mean_tps": 38.00986504592675,
+  "draft_n": 26,
+  "draft_accepted": 3,
+  "texts": [
+   "<tool_call>\n<function=convert_currency>\n<parameter=amount>\n500\n</parameter>\n<parameter=from_currency>\nUSD\n</parameter>\n<",
+   "<tool_call>\n<function=calculate_distance>\n<parameter=start_location>\nNew York\n</parameter>\n<parameter=end_location>\nLos ",
+   "<tool_call>\n<function=convert_currency>\n<parameter=amount>\n1000\n</parameter>\n<parameter=source_currency>\nUSD\n</parameter"
+  ]
+ },
+ "mtp": {
+  "n": 16,
+  "decode_tok_s": 73.22385075065526,
+  "mean_tps": 71.90055364476285,
+  "draft_n": 546,
+  "draft_accepted": 544,
+  "texts": [
+   "<tool_call>\n<function=convert_currency>\n<parameter=amount>\n500\n</parameter>\n<parameter=from_currency>\nUSD\n</parameter>\n<",
+   "<tool_call>\n<function=calculate_distance>\n<parameter=start_location>\nNew York\n</parameter>\n<parameter=end_location>\nLos ",
+   "<tool_call>\n<function=convert_currency>\n<parameter=amount>\n1000\n</parameter>\n<parameter=source_currency>\nUSD\n</parameter"
+  ]
+ },
+ "mtp7": {
+  "n": 16,
+  "decode_tok_s": 79.3101781795336,
+  "mean_tps": 76.76849122438973,
+  "draft_n": 686,
+  "draft_accepted": 667,
+  "texts": [
+   "<tool_call>\n<function=convert_currency>\n<parameter=amount>\n500\n</parameter>\n<parameter=from_currency>\nUSD\n</parameter>\n<",
+   "<tool_call>\n<function=calculate_distance>\n<parameter=start_location>\nNew York\n</parameter>\n<parameter=end_location>\nLos ",
+   "<tool_call>\n<function=convert_currency>\n<parameter=amount>\n1000\n</parameter>\n<parameter=source_currency>\nUSD\n</parameter"
+  ]
+ },
+ "dflash": {
+  "n": 16,
+  "decode_tok_s": 146.71965526733652,
+  "mean_tps": 142.20849597954964,
+  "draft_n": 714,
+  "draft_accepted": 620,
+  "texts": [
+   "<tool_call>\n<function=convert_currency>\n<parameter=amount>\n500\n</parameter>\n<parameter=from_currency>\nUSD\n</parameter>\n<",
+   "<tool_call>\n<function=calculate_distance>\n<parameter=start_location>\nNew York\n</parameter>\n<parameter=end_location>\nLos ",
+   "<tool_call>\n<function=convert_currency>\n<parameter=amount>\n1000\n</parameter>\n<parameter=source_currency>\nUSD\n</parameter"
+  ]
+ }
+}

@@ -1,0 +1,87 @@
+{
+ "config": {
+  "model": "Qwen/Qwen3-4B",
+  "draft": "z-lab/Qwen3-4B-DFlash-b16",
+  "scorer": "/data/openvons/jevpick/scorer_toolcall_union_L8_l27_pool.pt",
+  "prompts": "/data/openvons/jevpick/prompts_v2.jsonl",
+  "traces": "/data/openvons/jevpick/traces_v2_Qwen3-4B.jsonl",
+  "domain": "toolcall",
+  "n": 40,
+  "max_new": 128,
+  "L": 8,
+  "th": 0.5,
+  "modes": "baseline,prior,scorer,dflash,union",
+  "dtype": "bfloat16",
+  "out": "experiments/jevpick/phase4_runtime/runtime_v2_toolcall_union_L8.json"
+ },
+ "n": 39,
+ "summary": {
+  "baseline": {
+   "tok_s": 72.50228138974256,
+   "speedup": 1.0,
+   "exact_match": 1.0,
+   "tok_per_step": 1.0,
+   "mean_accepted": 0.0,
+   "zero_accept": 1.0,
+   "time_frac": {
+    "prefill": 0.04267525593453799,
+    "verify": 0.9555963188554818
+   }
+  },
+  "prior": {
+   "tok_s": 228.68499857216997,
+   "speedup": 3.154176588497307,
+   "exact_match": 1.0,
+   "tok_per_step": 4.459558823529412,
+   "mean_accepted": 3.599264705882353,
+   "zero_accept": 0.35294117647058826,
+   "time_frac": {
+    "prefill": 0.13394782984478856,
+    "candidates": 0.0057486127786467705,
+    "verify": 0.7911174468449131
+   }
+  },
+  "scorer": {
+   "tok_s": 260.3247004411236,
+   "speedup": 3.5905725371829975,
+   "exact_match": 1.0,
+   "tok_per_step": 4.910931174089069,
+   "mean_accepted": 4.076923076923077,
+   "zero_accept": 0.30364372469635625,
+   "time_frac": {
+    "prefill": 0.1526061466607801,
+    "candidates": 0.004914114869837209,
+    "scorer": 0.04481117623691852,
+    "verify": 0.7926966540080985
+   }
+  },
+  "dflash": {
+   "tok_s": 191.5945508752724,
+   "speedup": 2.642600304469574,
+   "exact_match": 1.0,
+   "tok_per_step": 4.05685618729097,
+   "mean_accepted": 3.3411371237458196,
+   "zero_accept": 0.21739130434782608,
+   "time_frac": {
+    "prefill": 0.11211863912629681,
+    "draft": 0.14815437267814377,
+    "verify": 0.7358902543381174
+   }
+  },
+  "union": {
+   "tok_s": 234.99929536270045,
+   "speedup": 3.24126759680072,
+   "exact_match": 1.0,
+   "tok_per_step": 5.296943231441048,
+   "mean_accepted": 4.4847161572052405,
+   "zero_accept": 0.2445414847161572,
+   "time_frac": {
+    "prefill": 0.13722948877490257,
+    "candidates": 0.004134745625279544,
+    "draft": 0.1395477236729773,
+    "scorer": 0.04460666204706841,
+    "verify": 0.6698123657779694
+   }
+  }
+ }
+}

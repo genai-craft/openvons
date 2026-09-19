@@ -174,3 +174,33 @@ h2{font-size:clamp(26px,3.4vw,38px);font-weight:800;letter-spacing:-.02em}
 .applink h3{margin:0 0 6px}
 .applink p{margin:0 0 4px;max-width:62ch}
 @media (max-width:640px){.applink{flex-direction:column;align-items:flex-start}}
+
+/* ---------- article (記事ページ) ---------- */
+.article{max-width:820px;margin:0 auto;padding:56px 16px 80px}
+.article h1{font-size:clamp(28px,4.2vw,44px);margin:6px 0 18px}
+.article h2{font-size:clamp(21px,2.6vw,28px);margin:56px 0 14px}
+.article h3{font-size:18px;margin:34px 0 10px;color:#dbe6f2}
+.article p{color:#c6d3e1}
+.article ul{color:#c6d3e1;padding-left:20px}
+.article li{margin:6px 0}
+.article .steps{margin:18px 0 6px}
+.keypoints{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:26px 0 10px}
+.keypoints div{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:16px}
+.keypoints b{display:block;font-size:24px;letter-spacing:-.02em;background:linear-gradient(120deg,var(--acc),var(--acc2));-webkit-background-clip:text;background-clip:text;color:transparent}
+.keypoints span{font-size:12.5px;color:var(--muted);line-height:1.6;display:block;margin-top:4px}
+.tablewrap{overflow-x:auto;margin:14px 0}
+.article table{border-collapse:collapse;width:100%;font-size:14px;min-width:560px}
+.article th,.article td{border:1px solid var(--line);padding:8px 10px;text-align:left;vertical-align:top}
+.article th{background:var(--bg2);color:var(--muted);font-weight:600;font-size:13px}
+.article .ctarow{margin-top:40px}
+@media (max-width:820px){.keypoints{grid-template-columns:repeat(2,1fr)}}
+
+/* ---------- updates (更新情報) ---------- */
+.updates{display:grid;grid-template-columns:1fr;gap:12px}
+.upd{display:grid;grid-template-columns:120px 1fr;gap:16px;background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:18px 20px}
+.upd time{color:var(--acc);font-weight:700;font-variant-numeric:tabular-nums;font-size:14px}
+.upd h4{font-size:16px;margin-bottom:6px}
+.upd p{margin:0;font-size:14px;color:#bccadb}
+.upd a{color:var(--acc)}
+.upd.hl{border-color:rgba(76,194,255,.55);background:linear-gradient(180deg,rgba(76,194,255,.08),var(--panel))}
+@media (max-width:600px){.upd{grid-template-columns:1fr;gap:6px}}

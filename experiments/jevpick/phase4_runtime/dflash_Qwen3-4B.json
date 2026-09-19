@@ -1,0 +1,42 @@
+{
+ "toolcall": {
+  "n": 29,
+  "baseline_tok_s": 68.73301041940739,
+  "b16": {
+   "tok_s": 221.3234374025927,
+   "speedup": 3.2200457400611686,
+   "mean_produced_per_step": 5.0,
+   "mean_accepted": 4.0,
+   "zero_accept_rate": 0.26519337016574585,
+   "exact_match": 1.0
+  },
+  "b8": {
+   "tok_s": 191.5758215731109,
+   "speedup": 2.787246192246189,
+   "mean_produced_per_step": 4.058295964125561,
+   "mean_accepted": 3.058295964125561,
+   "zero_accept_rate": 0.336322869955157,
+   "exact_match": 1.0
+  }
+ },
+ "python": {
+  "n": 29,
+  "baseline_tok_s": 73.73836765210098,
+  "b16": {
+   "tok_s": 155.9808331460594,
+   "speedup": 2.115327991554952,
+   "mean_produced_per_step": 3.290012033694344,
+   "mean_accepted": 2.290012033694344,
+   "zero_accept_rate": 0.30445246690734057,
+   "exact_match": 0.7666666666666667
+  },
+  "b8": {
+   "tok_s": 142.2292861728537,
+   "speedup": 1.9288369230506184,
+   "mean_produced_per_step": 2.946969696969697,
+   "mean_accepted": 1.9469696969696968,
+   "zero_accept_rate": 0.3365800865800866,
+   "exact_match": 0.8
+  }
+ }
+}

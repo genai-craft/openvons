@@ -18,6 +18,15 @@ The same idea is implemented for three input types:
 The shared layer `openvons.core` provides the Noul / Choice / Score representation (`Question`), the decision policy (`decide`, confidence gating),
 calibration (temperature, isotonic, and **calibration with an explicit "none" option**) and metrics (ECE / Brier / NLL / macro-F1).
 
+## JevPick — the same "pick from a finite menu" idea, applied to speeding up text generation
+
+[docs/jevpick/README.md](docs/jevpick/README.md). Instead of a draft model, JevPick builds a **menu of likely continuations** (from the tool
+definitions, past outputs, or the checkpoint's own MTP head), picks one from the target model's hidden state, and lets the target verify it in
+one pass. Measured on tool calling (Qwen3-4B / Qwen3.8-27B, bf16 and 4-bit): the menu contains the true continuation 90% of the time, JevPick
+picks the right one 88% (vs 64% for a frequency rule), **3.2–4.8x faster decode with byte-identical output**, and a picker trained on bf16
+transfers to FP8 / NF4 hidden states. Reports: [phase 1](docs/jevpick/phase1_oracle_report.md), [phase 2](docs/jevpick/phase2_report.md),
+[phase 3 (27B, quantized, MTP / DFlash2, Flash-Next)](docs/jevpick/phase3_27b_report.md), [all results](docs/jevpick/summary_table.md).
+
 ## Getting started
 
 ```bash

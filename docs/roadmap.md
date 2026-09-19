@@ -23,6 +23,12 @@
 6. **CI**: GPU 不要のテスト (tests/test_voice_core.py、core の校正・判断) を GitHub Actions で。
 7. **テキスト / 画像側の整備**: scripts/lm_* の再現手順を README から辿れるようにし、公開データでの学習ジョブを 1 コマンドに。
 
+## 2026-09-19 JevPick (先読みへの転用)
+
+- `openvons/jevpick/`、`experiments/jevpick/`、`docs/jevpick/`。仕様書 (ChoiceSpec v1.0) の Phase 1〜4 を Tool Call で通し、G0〜G4 通過。
+- 次: vLLM への統合 (hidden state のタップ + 候補の差し込み)、コード補完向けの候補メニュー (AST / identifier 正規化)、
+  混在候補 (MTP + 有限) での学習の改善、sampling 対応、Flash-Next (qwen4_exp) は HF が FP8 MoE を読めるようになったら hidden を取る。
+
 ## スマホ対応の現状 (2026-09-17)
 
 | 段階 | 状態 |

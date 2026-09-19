@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0b0e13">
+<title>JevPick — AIに「選ばせる」を、文章生成の高速化に使う | openvons</title>
+<meta name="description" content="次に出そうな数語の候補を並べ、モデル自身の内部状態で1つ選び、まとめて検算する。ツール呼び出しで3〜5倍速、出力は1文字も変わらない。予測モデルの学習は不要。">
+<meta property="og:title" content="JevPick — AIに「選ばせる」を、文章生成の高速化に使う">
+<meta property="og:description" content="ツール呼び出しで3〜5倍速、出力は変わらない。予測モデル不要。長い文脈では先読み自体が逆効果になるという発見も。">
+<meta property="og:type" content="article">
+<link rel="icon" href="/static/icon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="/static/lp.css?v=__V__">
+</head>
+<body>
+
+<nav class="nav">
+  <a class="logo" href="/"><span class="mark"></span>openvons</a>
+  <div class="navlinks">
+    <a href="/#demos">デモ</a>
+    <a href="/#updates">更新情報</a>
+    <a href="https://github.com/genai-craft/openvons" target="_blank" rel="noopener">GitHub</a>
+    <a class="cta small" href="https://genai-craft.com" target="_blank" rel="noopener">導入のご相談</a>
+  </div>
+</nav>
+
+<article class="article">
+  <p class="eyebrow">2026-09-19 · 研究ノート</p>
+  <h1>JevPick — AIに「選ばせる」を、<br>文章生成そのものの高速化に使う</h1>
+  <p class="lede">openvons は「AI に文章を書かせず、有限の選択肢に確率で答えさせる」層です。同じ考え方で、<b>AI が文章を書く速さ</b>を上げられないか。3 日間で検証した結果、ツール呼び出しでは<b>予測モデルなしで 3〜5 倍</b>、出力は 1 文字も変わりませんでした。長い文脈では、いま流行りの高速化手法がむしろ遅くなることも分かりました。</p>
+
+  <div class="keypoints">
+    <div><b>3.2〜4.8 倍</b><span>ツール呼び出しの生成速度。4B と 27B、4-bit 量子化でも。出力は完全一致</span></div>
+    <div><b>90%</b><span>ツール定義から機械的に作った候補メニューに、正解の続きが入っている割合</span></div>
+    <div><b>64% → 88%</b><span>メニューから正解を選ぶ精度。単純ルール → JevPick</span></div>
+    <div><b>5.4 倍 → 1.0 倍</b><span>流行りの先読み手法 (DFlash) が、300 語 → 16k 語の文脈で失う速さ</span></div>
+  </div>
+
+  <h2>先読み (speculative decoding) とは</h2>
+  <p>LLM は 1 語ずつしか書けません。1 語書くごとに、モデル全体を 1 回動かします。ところが「次の数語」を誰かが<b>仮置き</b>してくれれば、モデルはそれをまとめて 1 回で<b>検算</b>できます。当たっていれば数語ぶん一気に進み、外れていれば外れた所から普通に書き直す。だから<b>出力は変わらず、速くなるだけ</b>です。これを先読みと呼びます。</p>
+  <p>問題は「誰が仮置きするか」。ふつうは小さな予測モデルを別に学習して使います (MTP、EAGLE、DFlash など)。学習が要り、モデルごとに作り直しで、長い文脈では重くなります。</p>
+
+  <h2>JevPick のしくみ</h2>
+  <div class="steps">
+    <div class="step"><div class="num">1</div><h3>候補メニューを作る</h3>
+      <p>次に出そうな数語の候補を、<b>学習なしで</b>集めます。ツール呼び出しならツール定義から関数名・引数名・値の並びを機械的に展開する。過去の出力や入力文に同じ語の並びがあれば拾う。モデルに同梱の予測器 (MTP) があればそれも候補に入れる。</p></div>
+    <div class="step"><div class="num">2</div><h3>JevPick が選ぶ</h3>
+      <p>本体モデルが次の語を考えるときに持っている<b>内部状態</b> (hidden state) を見て、メニューの中から「いま一番当たりそうな候補」と「何語まで当たりそうか」を出します。openvons の「状況 → 選択肢 → 確率」と同じ形です。パラメータ 500 万、学習は 1〜2 分。</p></div>
+    <div class="step"><div class="num">3</div><h3>本体が検算する</h3>
+      <p>選んだ候補を本体モデルに一括で検算させ、当たった分だけ採用します。当たりそうな候補が無いときは、JevPick が「先読みしない」と判断して普通に書きます。</p></div>
+  </div>
+
+  <h2>分かったこと</h2>
+
+  <h3>1. ツール呼び出しは、予測モデルなしで 3〜5 倍速くなる</h3>
+  <p>AI エージェントが出す<b>ツール呼び出し</b> (関数名と引数の JSON や XML) は、形が決まっています。ツール定義と過去の出力から機械的に作った候補メニューの中に、正解の続き (4 語) が <b>90%</b> 入っていました。初めて見るツールでも 70〜80%。あとは選ぶ精度の問題で、単純な頻度順だと 64% しか当たらないところを、JevPick は <b>88%</b> 当てます。</p>
+  <div class="tablewrap"><table>
+    <thead><tr><th>モデル</th><th>精度</th><th>何もしない</th><th>JevPick (予測モデルなし)</th><th>出力の一致</th></tr></thead>
+    <tbody>
+      <tr><td>Qwen3-4B</td><td>bf16</td><td>1.0 倍</td><td><b>3.8 倍</b> (候補を 16 語にすると <b>4.8 倍</b>)</td><td>100%</td></tr>
+      <tr><td>Qwen3.8-27B</td><td>bf16</td><td>1.0 倍</td><td><b>3.9 倍</b></td><td>数値誤差のみ*</td></tr>
+      <tr><td>Qwen3.8-27B</td><td>FP8</td><td>1.0 倍</td><td>3.5 倍</td><td>数値誤差のみ*</td></tr>
+      <tr><td>Qwen3.8-27B</td><td>4-bit (NF4)</td><td>1.0 倍</td><td><b>3.2 倍</b></td><td>数値誤差のみ*</td></tr>
+    </tbody></table></div>
+  <p class="muted small">* 半精度演算では「まとめて検算」と「1 語ずつ」で丸め誤差が異なり、ごく近い確率の 2 語が入れ替わることがあります。単精度 (fp32) では 4B で全 token 一致を確認しました。既存の先読み手法も同じ性質です。</p>
+  <p>量子化への強さも確認しました。<b>bf16 で学習した JevPick を、FP8 版・4-bit 版のモデルの内部状態にそのまま使っても、精度の低下は 0.5〜3 ポイント</b>です。量子化ごとに学習し直す必要はほぼありません。</p>
+
+  <h3>2. 長い文脈では、先読みそのものが逆効果になる</h3>
+  <p>今年注目の DFlash (ブロック拡散型の予測モデル) を vLLM で測ると、300 語の文脈では <b>5.4 倍</b>でしたが、<b>16k 語の文脈では 1.0 倍</b>、つまり効果が消えました。よく使われる n-gram 方式は 0.7 倍と、逆に遅くなります。</p>
+  <p>理由は 2 つ。長い文脈では 1 回の検算が高くつくのに、候補の当たり幅が半分に落ちる (ツール定義 100 個を渡すと予測器が迷う) からです。この条件では「どの予測器が賢いか」より<b>「いま先読みすべきか」の判断</b>が結果を決めます。JevPick をその判断役に使うと 1.0 倍で踏みとどまり、常時先読みする方式は 0.6 倍まで落ちました。</p>
+
+  <h3>3. Qwen3.5 系に同梱の MTP は、ツール呼び出しではほぼ完璧</h3>
+  <p>Qwen3.8-27B や Qwen3.8-Flash-Next には MTP という小さな予測器が同梱されています。これがツール呼び出しで<b>次の語を 99.7% 当て</b>、7 語まとめても平均 6.3 語当たります。4-bit の 27B で <b>6 倍</b> (vLLM)、Flash-Next で <b>5.8 倍</b>、llama.cpp (GGUF) でも 2 倍。エージェント用途なら、まず MTP を有効にする価値があります。</p>
+  <p>この条件では JevPick を上に乗せても上積みは 4〜8% にとどまります。MTP が外す 3% の位置を候補メニューで拾う、予測器を呼ぶかどうかを判断する、という役割に寄ります。</p>
+
+  <h2>正直に言うと</h2>
+  <ul>
+    <li><b>コードの補完には弱い。</b>候補メニューが 3 割しか当たりません。ここは学習済み予測モデルの領分です。</li>
+    <li>速度の絶対値は簡易実装 (HF transformers) で測った比です。製品級の推論エンジン (vLLM / SGLang) への組み込みは次の課題で、そこでは既存手法が 4〜8 倍出ています。</li>
+    <li>1 モデル系列 (Qwen)・1 タスク (ツール呼び出し) での結果です。</li>
+    <li>Qwen3.8-Flash-Next は内部状態を取り出す経路が現時点で無く (HF が FP8 の MoE 重みを読めない)、候補メニューと MTP までの確認です。</li>
+  </ul>
+
+  <h2>全手法 × モデルの一覧 (ツール呼び出し、何もしない = 1.0 倍)</h2>
+  <div class="tablewrap"><table>
+    <thead><tr><th>モデル・精度</th><th>実行環境</th><th>JevPick (予測モデルなし)</th><th>DFlash / DFlash2</th><th>MTP</th><th>JevPick + 予測器</th></tr></thead>
+    <tbody>
+      <tr><td>Qwen3-4B bf16</td><td>HF</td><td><b>3.8〜4.8 倍</b></td><td>2.9 倍 (vLLM 5.4 倍)</td><td>—</td><td><b>4.0〜4.8 倍</b> (hybrid)</td></tr>
+      <tr><td>Qwen3-4B bf16、16k 文脈</td><td>HF / vLLM</td><td>1.0 倍 (損なし)</td><td>0.6 倍 (vLLM 0.99 倍)</td><td>—</td><td>1.0 倍</td></tr>
+      <tr><td>Qwen3.8-27B bf16</td><td>HF / vLLM</td><td>3.9 倍</td><td>4.9 倍 (vLLM 8.3 倍)</td><td>4.3 倍 (vLLM 7.1 倍)</td><td>4.7 倍</td></tr>
+      <tr><td>Qwen3.8-27B NVFP4</td><td>vLLM</td><td>未統合</td><td>4.6 倍</td><td><b>6.0 倍</b></td><td>—</td></tr>
+      <tr><td>Qwen3.8-27B AWQ-INT4</td><td>vLLM</td><td>未統合</td><td><b>6.2 倍</b></td><td>4.3 倍</td><td>—</td></tr>
+      <tr><td>Qwen3.8-27B GGUF Q4_K_M</td><td>llama.cpp</td><td>未統合</td><td>3.75 倍</td><td>2.0 倍</td><td>—</td></tr>
+      <tr><td>Qwen3.8-27B NF4</td><td>HF</td><td><b>3.2 倍</b></td><td>3.9 倍</td><td>3.3 倍</td><td>3.9 倍</td></tr>
+      <tr><td>Qwen3.8-Flash-Next FP8</td><td>vLLM (4 GPU)</td><td>未統合</td><td>—</td><td><b>5.8 倍</b> (590 tok/s)</td><td>—</td></tr>
+    </tbody></table></div>
+  <p class="muted small">すべて手元の RTX PRO 6000 Blackwell、1 リクエストずつ、greedy。JevPick を含む列は同一の検算コードで方式だけを変えて比べたもの。詳しい表・ログ・再現手順は <a href="https://github.com/genai-craft/openvons/tree/main/docs/jevpick" target="_blank" rel="noopener">docs/jevpick</a> にあります。</p>
+
+  <h2>これまでの openvons と、この結果の位置づけ</h2>
+  <p>openvons はこれまで、音声 (数千の地点名から 50 ms で 1 つ選ぶ)、画像 (小さな出力層で大モデルを上回る)、テキスト (8 問まとめて 40 ms) で「選ばせる」を実装してきました。JevPick はその 4 つ目の入口で、選ぶ対象が<b>「AI 自身が次に書く数語」</b>になったものです。文章生成を速くするだけでなく、「いま先読みすべきか」という判断まで確率で扱える点が、他の高速化手法との違いです。</p>
+
+  <div class="ctarow">
+    <a class="cta" href="https://github.com/genai-craft/openvons/tree/main/docs/jevpick" target="_blank" rel="noopener">レポートとコードを見る ↗</a>
+    <a class="ghost" href="https://genai-craft.com" target="_blank" rel="noopener">エージェントの高速化を相談する ↗</a>
+  </div>
+</article>
+
+<footer class="footer">
+  <div><b>openvons</b> <span class="muted">(open-Jev)</span>
+    <p class="muted small">有限の選択肢に確率で答える判断層。音声・画像・テキスト、そして先読み。Apache-2.0。</p></div>
+  <div class="muted small">DFlash / DFlash2 は z-lab、MTP は Qwen の公開モデルに同梱のもの。openvons は TypeSafe AI 社および同社製品 Jev とは無関係の独立実装です。</div>
+</footer>
+</body>
+</html>
