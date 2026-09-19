@@ -17,8 +17,7 @@
 3. **蒸留モデルの評価と配布**。検証 CER と、合成評価 (`scripts/eval_synthetic.py --asr-model <dir>`) で kana-whisper との差を出す。
    実用域なら HF に Apache-2.0 で公開 (ReazonSpeech で学習したモデルの Apache-2.0 配布は kotoba-whisper に先例)。
    モデルカードに疑似ラベルの出自 (kana-whisper, MIT) と学習データ (ReazonSpeech small, 再配布なし) を明記。
-4. **ブラウザ内推論 (スマホ)** — 現状: PWA (サーバー推論) は 4 デモとも完了、蒸留 pilot も完了、ONNX 変換以降が未着手。transformers.js v4 (WebGPU、iOS 26 以降; それ以前は WASM) に蒸留モデルを ONNX 変換して載せ、
-   候補採点 (decoder forward に強制トークン) を JS で実装。サーバー推論への自動フォールバックを付ける。
+4. **スマホ** — 完了: PWA (サーバー推論) 4 デモ、ブラウザ内推論 (onnxruntime-web、https://ondevice.openvons.com)、Android アプリ (端末内で認識・判断、Releases で配布)。残りは iOS のビルド (Mac 待ち) と、小型モデルの候補採点精度 (docs/voice_small_model.md)。
 5. **英語 README とモデルカード**、CONTRIBUTING、Issue テンプレート。
 6. **CI**: GPU 不要のテスト (tests/test_voice_core.py、core の校正・判断) を GitHub Actions で。
 7. **テキスト / 画像側の整備**: scripts/lm_* の再現手順を README から辿れるようにし、公開データでの学習ジョブを 1 コマンドに。
