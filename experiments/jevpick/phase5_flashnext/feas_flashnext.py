@@ -7,6 +7,11 @@
 """
 from __future__ import annotations
 
+import sys as _sys
+from pathlib import Path as _Path
+_sys.path.insert(0, str(_Path(__file__).resolve().parents[3]))
+from openvons.jevpick.paths import DATA  # noqa: E402
+
 import json
 import sys
 import time
@@ -28,7 +33,7 @@ tok = AutoTokenizer.from_pretrained(mid)
 t0 = time.time()
 m = AutoModelForCausalLM.from_pretrained(mid, dtype=torch.bfloat16, attn_implementation="sdpa", device_map="auto").eval()
 print("loaded %.0fs" % (time.time() - t0), type(m).__name__, {i: round(torch.cuda.memory_allocated(i) / 1e9, 1) for i in range(torch.cuda.device_count())}, flush=True)
-rows = [json.loads(l) for l in open("/data/openvons/jevpick/prompts_v2.jsonl")]
+rows = [json.loads(l) for l in open(f"{DATA}/prompts_v2.jsonl")]
 tests = [x for x in rows if x["domain"] == "toolcall" and x["split"] == "test"][:3]
 dev = m.get_input_embeddings().weight.device
 with torch.inference_mode():

@@ -17,6 +17,7 @@ import torch
 from safetensors import safe_open
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
+from openvons.jevpick.paths import DATA  # noqa: E402
 from openvons.jevpick.scorer.model import SOURCES, BlockScorer, scorer_loss  # noqa: E402
 
 SRC_ID = {s: i + 1 for i, s in enumerate(SOURCES)}
@@ -167,11 +168,11 @@ def summarize(ev, L, cost_ratio, tag=""):
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--pkl", default="/data/openvons/jevpick/oracle_v2_Qwen3-4B.pkl")
-    ap.add_argument("--extract", default="/data/openvons/jevpick/extract_v2_Qwen3-4B_0,/data/openvons/jevpick/extract_v2_Qwen3-4B_1")
-    ap.add_argument("--traces", default="/data/openvons/jevpick/traces_v2_Qwen3-4B.jsonl")
+    ap.add_argument("--pkl", default=f"{DATA}/oracle_v2_Qwen3-4B.pkl")
+    ap.add_argument("--extract", default=f"{DATA}/extract_v2_Qwen3-4B_0,{DATA}/extract_v2_Qwen3-4B_1")
+    ap.add_argument("--traces", default=f"{DATA}/traces_v2_Qwen3-4B.jsonl")
     ap.add_argument("--model", default="Qwen/Qwen3-4B")
-    ap.add_argument("--bench", default="/data/openvons/jevpick/bench_verify.json")
+    ap.add_argument("--bench", default=f"{DATA}/bench_verify.json")
     ap.add_argument("--domain", default="toolcall")
     ap.add_argument("--source", default="finite", help="finite / union")
     ap.add_argument("--L", type=int, default=8)

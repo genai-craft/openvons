@@ -19,6 +19,7 @@ from pathlib import Path
 import numpy as np
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
+from openvons.jevpick.paths import DATA  # noqa: E402
 from openvons.jevpick.candidates.base import Candidate, match_len  # noqa: E402
 from openvons.jevpick.candidates.grammar import build_grammar_index  # noqa: E402
 from openvons.jevpick.candidates.macro_copy import build_macro_index  # noqa: E402
@@ -144,9 +145,9 @@ def process(sample):
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--traces", default="/data/openvons/jevpick/traces_v2_Qwen3-4B.jsonl")
-    ap.add_argument("--prompts", default="/data/openvons/jevpick/prompts_v2.jsonl")
-    ap.add_argument("--extract", default="/data/openvons/jevpick/extract_v2_Qwen3-4B", help="extract.py の出力 (dflash 候補)。無ければ dflash 抜き")
+    ap.add_argument("--traces", default=f"{DATA}/traces_v2_Qwen3-4B.jsonl")
+    ap.add_argument("--prompts", default=f"{DATA}/prompts_v2.jsonl")
+    ap.add_argument("--extract", default=f"{DATA}/extract_v2_Qwen3-4B", help="extract.py の出力 (dflash 候補)。無ければ dflash 抜き")
     ap.add_argument("--model", default="Qwen/Qwen3-4B")
     ap.add_argument("--out", default=None)
     ap.add_argument("--workers", type=int, default=48)
@@ -223,7 +224,7 @@ def main():
             if (i + 1) % 200 == 0:
                 print(i + 1, flush=True)
     tag = Path(args.traces).stem.replace("traces_", "")
-    out = Path(args.out or f"/data/openvons/jevpick/oracle_{tag}.pkl")
+    out = Path(args.out or f"{DATA}/oracle_{tag}.pkl")
     pickle.dump({"blocks": BLOCKS, "ks": KS, "samples": results}, open(out, "wb"))
     print("->", out)
 

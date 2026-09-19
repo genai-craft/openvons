@@ -2,6 +2,11 @@
 KV cache あり、batch=1、context ~1024。CUDA event と wall clock を併記 (§17.3)。"""
 from __future__ import annotations
 
+import sys as _sys
+from pathlib import Path as _Path
+_sys.path.insert(0, str(_Path(__file__).resolve().parents[3]))
+from openvons.jevpick.paths import DATA  # noqa: E402
+
 import argparse
 import json
 import time
@@ -16,7 +21,7 @@ def main():
     ap.add_argument("--model", default="Qwen/Qwen3-4B-Instruct-2507")
     ap.add_argument("--ctx", type=int, default=1024)
     ap.add_argument("--iters", type=int, default=100)
-    ap.add_argument("--out", default="/data/openvons/jevpick/bench_verify.json")
+    ap.add_argument("--out", default=f"{DATA}/bench_verify.json")
     args = ap.parse_args()
     dev = "cuda:0"
     tok = AutoTokenizer.from_pretrained(args.model)

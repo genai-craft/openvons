@@ -1,6 +1,11 @@
 """Oracle Study v2 の集計。domain × (split group) × source × L。"""
 from __future__ import annotations
 
+import sys as _sys
+from pathlib import Path as _Path
+_sys.path.insert(0, str(_Path(__file__).resolve().parents[3]))
+from openvons.jevpick.paths import DATA  # noqa: E402
+
 import argparse
 import json
 import pickle
@@ -27,8 +32,8 @@ def group_of(s):
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--pkl", default="/data/openvons/jevpick/oracle_v2_Qwen3-4B.pkl")
-    ap.add_argument("--bench", default="/data/openvons/jevpick/bench_verify.json")
+    ap.add_argument("--pkl", default=f"{DATA}/oracle_v2_Qwen3-4B.pkl")
+    ap.add_argument("--bench", default=f"{DATA}/bench_verify.json")
     ap.add_argument("--out", default="experiments/jevpick/phase1_oracle/results_v2_Qwen3-4B.md")
     args = ap.parse_args()
     d = pickle.load(open(args.pkl, "rb"))

@@ -15,6 +15,7 @@ dependencies = [
 [project.optional-dependencies]
 dev = ["pytest"]
 serve = ["vllm"]          # LLM ベースライン / 教師 (任意)
+jevpick = ["dflash", "matplotlib", "requests", "bitsandbytes", "kernels==0.16.0"]   # 先読み (JevPick): DFlash 公式 draft、図、4-bit/FP8 量子化
 
 [tool.setuptools]
 packages = ["openvons", "openvons.core", "openvons.voice", "openvons.voice.distill", "openvons.lm", "openvons.lm.models", "openvons.lm.training", "openvons.lm.backends", "openvons.lm.teacher", "openvons.lm.api", "openvons.lm.benchmark", "openvons.vision", "openvons.tts", "jev"]

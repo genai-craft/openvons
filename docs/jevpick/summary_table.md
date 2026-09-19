@@ -1,6 +1,6 @@
 # 手法 × タスク × モデル: 何もしない (1.00x) 比の decode 高速化
 
-decode 専用 tok/s の比 (prefill 除外)、batch=1、greedy。transformers (eager) は kernel 未最適化 (特に 27B の linear attention) なので比のみ参考。
+decode 専用 tok/s の比 (prefill 除外)、batch=1、greedy。transformers (Hugging Face の推論ライブラリ、eager 実行) は kernel 未最適化 (特に 27B の linear attention) なので比のみ参考。
 
 | Model | 量子化 | Runtime | ctx | Task | 手法 | speedup | tok/s | 備考 |
 |---|---|---|---|---|---|---:|---:|---|
@@ -47,14 +47,14 @@ decode 専用 tok/s の比 (prefill 除外)、batch=1、greedy。transformers (e
 | Qwen3.8-27B | NF4 (Q4, bitsandbytes) | transformers (eager) | 300 | Tool Call | 有限候補 (prior top-1) | **2.31x** | 53.9 | 受理 2.35/step, 一致 31% |
 | Qwen3.8-27B | NF4 (Q4, bitsandbytes) | transformers (eager) | 300 | Tool Call | ChoiceSpec: 有限候補+scorer | **3.16x** | 73.6 | 受理 3.48/step, 一致 55% |
 | Qwen3.8-27B | NF4 (Q4, bitsandbytes) | transformers (eager) | 300 | Tool Call | DFlash2 (draft のみ) | **3.89x** | 90.5 | 受理 5.70/step, 一致 90% |
-| Qwen3.8-27B | NF4 (Q4, bitsandbytes) | transformers (eager) | 300 | Tool Call | MTP head (draft のみ, transformers 実装) | **3.30x** | 76.7 | 受理 6.97/step, 一致 86% |
+| Qwen3.8-27B | NF4 (Q4, bitsandbytes) | transformers (eager) | 300 | Tool Call | MTP head (draft のみ, HF 実装) | **3.30x** | 76.7 | 受理 6.97/step, 一致 86% |
 | Qwen3.8-27B | NF4 (Q4, bitsandbytes) | transformers (eager) | 300 | Tool Call | ChoiceSpec: DFlash2+有限候補+scorer | **3.91x** | 91.0 | 受理 5.84/step, 一致 86% |
 | Qwen3.8-27B | NF4 (Q4, bitsandbytes) | transformers (eager) | 300 | Tool Call | ChoiceSpec: MTP+DFlash2+有限候補+scorer | **2.93x** | 68.3 | 受理 6.28/step, 一致 86% |
 | Qwen3.8-27B | NF4 (Q4, bitsandbytes) | transformers (eager) | 300 | Tool Call | ChoiceSpec hybrid_all (scorer が MTP/DFlash2 呼び出しを制御) | **3.26x** | 75.9 | 受理 5.33/step, 一致 69% |
 | Qwen3.8-27B | bf16 (+MTP) | transformers (eager) | 300 | Tool Call | なし | **1.00x** | 18.3 | 受理 0.00/step, 一致 100% |
 | Qwen3.8-27B | bf16 (+MTP) | transformers (eager) | 300 | Tool Call | ChoiceSpec: 有限候補+scorer | **3.88x** | 71.1 | 受理 3.50/step, 一致 59% |
 | Qwen3.8-27B | bf16 (+MTP) | transformers (eager) | 300 | Tool Call | DFlash2 (draft のみ) | **4.87x** | 89.3 | 受理 5.82/step, 一致 90% |
-| Qwen3.8-27B | bf16 (+MTP) | transformers (eager) | 300 | Tool Call | MTP head (draft のみ, transformers 実装) | **4.28x** | 78.4 | 受理 7.02/step, 一致 93% |
+| Qwen3.8-27B | bf16 (+MTP) | transformers (eager) | 300 | Tool Call | MTP head (draft のみ, HF 実装) | **4.28x** | 78.4 | 受理 7.02/step, 一致 93% |
 | Qwen3.8-27B | bf16 (+MTP) | transformers (eager) | 300 | Tool Call | ChoiceSpec: MTP+DFlash2+有限候補+scorer | **3.70x** | 67.8 | 受理 6.31/step, 一致 93% |
 | Qwen3.8-27B | bf16 (+MTP) | transformers (eager) | 300 | Tool Call | ChoiceSpec hybrid_all (scorer が MTP/DFlash2 呼び出しを制御) | **3.92x** | 71.9 | 受理 5.15/step, 一致 69% |
 | Qwen3-4B | bf16 | vLLM 0.29 | 300 | Tool Call | なし | **1.00x** | 125.1 |  |

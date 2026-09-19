@@ -2,9 +2,14 @@
 
 python : 同 repo の他ファイルを文脈として前置し、そのあとに補完対象ファイルの prefix を置く (repo-level 補完)。
 toolcall: 自分の tools + 他サンプルの tools を混ぜた大きな tool カタログ (~100 tools) を与える。
-出力: /data/openvons/jevpick/prompts_long.jsonl (split=test)
+出力: {DATA}/prompts_long.jsonl (split=test)
 """
 from __future__ import annotations
+
+import sys as _sys
+from pathlib import Path as _Path
+_sys.path.insert(0, str(_Path(__file__).resolve().parents[3]))
+from openvons.jevpick.paths import DATA  # noqa: E402
 
 import json
 import random
@@ -14,7 +19,7 @@ from pathlib import Path
 from transformers import AutoTokenizer
 
 SITE = Path(sys.prefix) / "lib/python3.12/site-packages"
-OUT = Path("/data/openvons/jevpick/prompts_long.jsonl")
+OUT = Path(f"{DATA}/prompts_long.jsonl")
 TARGET_TOK = int(sys.argv[1]) if len(sys.argv) > 1 else 16000
 N = int(sys.argv[2]) if len(sys.argv) > 2 else 40
 rng = random.Random(1)
@@ -22,7 +27,7 @@ rng = random.Random(1)
 
 def main():
     tok = AutoTokenizer.from_pretrained("Qwen/Qwen3-4B")
-    rows = [json.loads(l) for l in open("/data/openvons/jevpick/prompts_v2.jsonl")]
+    rows = [json.loads(l) for l in open(f"{DATA}/prompts_v2.jsonl")]
     py_test = [r for r in rows if r["domain"] == "python" and r["split"] == "test"]
     tc_test = [r for r in rows if r["domain"] == "toolcall" and r["split"] == "test"]
     tc_all = [r for r in rows if r["domain"] == "toolcall"]

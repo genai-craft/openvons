@@ -16,6 +16,7 @@ from dflash.model import DFlashDraftModel, extract_context_feature
 from transformers import AutoModelForCausalLM, DynamicCache
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
+from openvons.jevpick.paths import DATA  # noqa: E402
 from openvons.jevpick.candidates.ngram import SuffixIndex  # noqa: E402
 
 
@@ -34,7 +35,7 @@ def main():
     ap.add_argument("--model", default="Qwen/Qwen3-4B")
     ap.add_argument("--draft", default="z-lab/Qwen3-4B-DFlash-b16")
     ap.add_argument("--ctxs", default="1024,4096,16384,32768")
-    ap.add_argument("--out", default="/data/openvons/jevpick/bench_ctx.json")
+    ap.add_argument("--out", default=f"{DATA}/bench_ctx.json")
     args = ap.parse_args()
     dev = "cuda:0"
     target = AutoModelForCausalLM.from_pretrained(args.model, dtype=torch.bfloat16, attn_implementation="sdpa").to(dev).eval()

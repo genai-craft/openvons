@@ -14,6 +14,7 @@ from dflash.model import DFlashDraftModel, dflash_generate
 from transformers import AutoModelForCausalLM, AutoTokenizer
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
+from openvons.jevpick.paths import DATA  # noqa: E402
 from openvons.jevpick.runtime.verifier import GreedyVerifier  # noqa: E402
 
 
@@ -21,7 +22,7 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--model", default="Qwen/Qwen3-4B")
     ap.add_argument("--draft", default="z-lab/Qwen3-4B-DFlash-b16")
-    ap.add_argument("--prompts", default="/data/openvons/jevpick/prompts_v2.jsonl")
+    ap.add_argument("--prompts", default=f"{DATA}/prompts_v2.jsonl")
     ap.add_argument("--per-domain", type=int, default=30)
     ap.add_argument("--max-new", type=int, default=128)
     ap.add_argument("--blocks", default="16,8")

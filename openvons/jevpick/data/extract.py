@@ -4,13 +4,18 @@
 その時点で使える状態は「x = full[P+t-1] が確定済みだが未 forward」なので、
   hidden[t]  = target hidden at index P+t-2 (x を生んだ位置)   ← scorer 入力
   dflash[t]  = anchor x と hidden[:P+t-1] から draft した block  ← Source F
-出力 (/data/openvons/jevpick/<tag>/):
+出力 ({DATA}/<tag>/):
   hidden.f16      memmap (total_pos, n_layers, H)
   dflash_tok.i32  memmap (total_pos, 15, 4)   位置別 top-4 token
   dflash_lp.f16   memmap (total_pos, 15, 4)   その log prob
   index.jsonl     {sample_id, domain, split, offset, N, P}
 """
 from __future__ import annotations
+
+import sys as _sys
+from pathlib import Path as _Path
+_sys.path.insert(0, str(_Path(__file__).resolve().parents[3]))
+from openvons.jevpick.paths import DATA  # noqa: E402
 
 import argparse
 import json
@@ -30,7 +35,7 @@ def main():
     ap.add_argument("--model", default="Qwen/Qwen3-4B")
     ap.add_argument("--draft", default="z-lab/Qwen3-4B-DFlash-b16")
     ap.add_argument("--traces", required=True)
-    ap.add_argument("--prompts", default="/data/openvons/jevpick/prompts_v2.jsonl")
+    ap.add_argument("--prompts", default=f"{DATA}/prompts_v2.jsonl")
     ap.add_argument("--out", required=True)
     ap.add_argument("--no-dflash", action="store_true")
     ap.add_argument("--limit", type=int, default=0)

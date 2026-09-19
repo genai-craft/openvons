@@ -4,6 +4,11 @@ ChoiceSpec の scorer は vLLM 未統合なので、ここでは「有限候補 
 長文脈での挙動を、kernel が最適化された runtime 上で確認する目的。"""
 from __future__ import annotations
 
+import sys as _sys
+from pathlib import Path as _Path
+_sys.path.insert(0, str(_Path(__file__).resolve().parents[3]))
+from openvons.jevpick.paths import DATA  # noqa: E402
+
 import argparse
 import gc
 import json
@@ -84,8 +89,8 @@ def main():
             by[r["domain"]].append({"sample_id": r["sample_id"], "prompt_ids": tok.encode(text, add_special_tokens=False)})
         return by
 
-    short = load("/data/openvons/jevpick/prompts_v2.jsonl")
-    long_ = {} if args.no_long else load("/data/openvons/jevpick/prompts_long.jsonl")
+    short = load(f"{DATA}/prompts_v2.jsonl")
+    long_ = {} if args.no_long else load(f"{DATA}/prompts_long.jsonl")
     prompts = {f"{d}_short": v for d, v in short.items()} | {f"{d}_16k": v for d, v in long_.items()}
     for d, v in prompts.items():
         print(d, len(v), "mean prompt tokens", int(np.mean([len(x["prompt_ids"]) for x in v])), flush=True)

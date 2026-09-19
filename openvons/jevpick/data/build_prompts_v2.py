@@ -1,11 +1,16 @@
 """v2 データ: Tool Call (既知/未知 schema split, 学習用 3000 + test 500) と repo-level Python (site-packages の実 repo)。
 
-出力: /data/openvons/jevpick/prompts_v2.jsonl
+出力: {DATA}/prompts_v2.jsonl
   {sample_id, domain, split (train/test), messages, tools, meta}
   toolcall.meta = {tool_names, schema_known: bool}
   python.meta   = {repo, path, cut_line}
 """
 from __future__ import annotations
+
+import sys as _sys
+from pathlib import Path as _Path
+_sys.path.insert(0, str(_Path(__file__).resolve().parents[3]))
+from openvons.jevpick.paths import DATA  # noqa: E402
 
 import json
 import random
@@ -15,7 +20,7 @@ from pathlib import Path
 
 from datasets import load_dataset
 
-OUT = Path("/data/openvons/jevpick/prompts_v2.jsonl")
+OUT = Path(f"{DATA}/prompts_v2.jsonl")
 SITE = Path(sys.prefix) / "lib/python3.12/site-packages"
 REPOS = ["transformers", "huggingface_hub", "fastapi", "pydantic", "rich", "datasets", "anyio", "httpx",
          "jinja2", "click", "attr", "fsspec", "aiohttp", "starlette", "uvicorn", "peft", "PIL", "yaml",
@@ -132,7 +137,17 @@ def python_repo(n_train=1500, n_test=500):
 
 
 def main():
-    rows = toolcall() + python_repo()
+    import argparse
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--toolcall-train", type=int, default=3000)
+    ap.add_argument("--toolcall-test", type=int, default=500)
+    ap.add_argument("--python-train", type=int, default=1500)
+    ap.add_argument("--python-test", type=int, default=500)
+    ap.add_argument("--no-python", action="store_true", help="repo-level Python を作らない (Tool Call だけ)")
+    args = ap.parse_args()
+    rows = toolcall(args.toolcall_train, args.toolcall_test)
+    if not args.no_python:
+        rows += python_repo(args.python_train, args.python_test)
     with OUT.open("w") as f:
         for r in rows:
             f.write(json.dumps(r, ensure_ascii=False) + "\n")

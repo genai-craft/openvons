@@ -13,6 +13,7 @@ import torch
 from transformers import AutoModelForCausalLM, AutoTokenizer
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
+from openvons.jevpick.paths import DATA  # noqa: E402
 from openvons.jevpick.candidates.grammar import build_grammar_index  # noqa: E402
 from openvons.jevpick.candidates.ngram import SuffixIndex, rank  # noqa: E402
 from openvons.jevpick.runtime.verifier import GreedyVerifier  # noqa: E402
@@ -69,7 +70,7 @@ def run(verifier, prompt_ids, max_new, stop_ids, block_len, indexes, timing):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--model", default="Qwen/Qwen3-4B-Instruct-2507")
-    ap.add_argument("--traces", default="/data/openvons/jevpick/traces_Qwen3-4B-Instruct-2507.jsonl")
+    ap.add_argument("--traces", default=f"{DATA}/traces_Qwen3-4B-Instruct-2507.jsonl")
     ap.add_argument("--per-domain", type=int, default=20)
     ap.add_argument("--max-new", type=int, default=128)
     ap.add_argument("--blocks", default="4,8")

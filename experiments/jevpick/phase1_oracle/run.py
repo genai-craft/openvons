@@ -3,7 +3,7 @@
 trace (prompt_ids, greedy output_ids) を replay し、各 decode 位置で
 source 別に候補を作り、oracle 最長一致 / prior top-1 一致を記録する。
 
-出力: /data/openvons/jevpick/oracle_<tag>.pkl
+出力: {DATA}/oracle_<tag>.pkl
   samples: [{sample_id, domain, N, res: {(source, L): int8 array (N, 4) = [m@1, m@4, m@16, n_cands]}}]
 """
 from __future__ import annotations
@@ -17,6 +17,7 @@ from pathlib import Path
 import numpy as np
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
+from openvons.jevpick.paths import DATA  # noqa: E402
 from openvons.jevpick.candidates.base import match_len  # noqa: E402
 from openvons.jevpick.candidates.grammar import build_grammar_index  # noqa: E402
 from openvons.jevpick.candidates.ngram import SuffixIndex, rank  # noqa: E402
@@ -77,7 +78,7 @@ def process(sample):
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--traces", default="/data/openvons/jevpick/traces_Qwen3-4B-Instruct-2507.jsonl")
+    ap.add_argument("--traces", default=f"{DATA}/traces_Qwen3-4B-Instruct-2507.jsonl")
     ap.add_argument("--model", default="Qwen/Qwen3-4B-Instruct-2507")
     ap.add_argument("--out", default=None)
     ap.add_argument("--workers", type=int, default=32)
@@ -112,7 +113,7 @@ def main():
             if (i + 1) % 100 == 0:
                 print(i + 1, flush=True)
     tag = Path(args.traces).stem.replace("traces_", "")
-    out = Path(args.out or f"/data/openvons/jevpick/oracle_{tag}.pkl")
+    out = Path(args.out or f"{DATA}/oracle_{tag}.pkl")
     pickle.dump({"blocks": BLOCKS, "ks": KS, "samples": results}, open(out, "wb"))
     print("->", out)
 

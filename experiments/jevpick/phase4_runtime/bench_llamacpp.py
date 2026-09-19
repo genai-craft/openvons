@@ -3,6 +3,11 @@ llama-server を構成ごとに起動し、/completion に chat template 済み 
 """
 from __future__ import annotations
 
+import sys as _sys
+from pathlib import Path as _Path
+_sys.path.insert(0, str(_Path(__file__).resolve().parents[3]))
+from openvons.jevpick.paths import DATA  # noqa: E402
+
 import argparse
 import json
 import subprocess
@@ -29,11 +34,11 @@ def wait_ready(port, proc, timeout=900):
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--server", default="/data/openvons/jevpick/tools/llama.cpp/build/bin/llama-server")
+    ap.add_argument("--server", default=f"{DATA}/tools/llama.cpp/build/bin/llama-server")
     ap.add_argument("--model", required=True, help="main GGUF path")
     ap.add_argument("--draft", default="", help="DFlash2 GGUF path")
     ap.add_argument("--tokenizer", default="Qwen/Qwen3.8-27B")
-    ap.add_argument("--prompts", default="/data/openvons/jevpick/prompts_v2.jsonl")
+    ap.add_argument("--prompts", default=f"{DATA}/prompts_v2.jsonl")
     ap.add_argument("--n", type=int, default=16)
     ap.add_argument("--max-tokens", type=int, default=128)
     ap.add_argument("--port", type=int, default=8477)
@@ -58,7 +63,7 @@ def main():
         if name == "dflash" and not args.draft:
             continue
         cmd = common + configs[name]
-        log = open(f"/data/openvons/jevpick/llamacpp_{name}.log", "w")
+        log = open(f"{DATA}/llamacpp_{name}.log", "w")
         proc = subprocess.Popen(cmd, stdout=log, stderr=subprocess.STDOUT, env={"CUDA_VISIBLE_DEVICES": args.gpu, "PATH": "/usr/bin:/bin"})
         if not wait_ready(args.port, proc):
             res[name] = {"error": "server failed to start; see log"}

@@ -14,6 +14,7 @@ from transformers import AutoModelForCausalLM
 
 import sys
 sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
+from openvons.jevpick.paths import DATA  # noqa: E402
 from openvons.jevpick.candidates.mtp_qwen35 import Qwen35MTP  # noqa: E402
 
 
@@ -21,7 +22,7 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--model", default="Qwen/Qwen3.8-27B")
     ap.add_argument("--traces", required=True)
-    ap.add_argument("--prompts", default="/data/openvons/jevpick/prompts_v2.jsonl")
+    ap.add_argument("--prompts", default=f"{DATA}/prompts_v2.jsonl")
     ap.add_argument("--out", required=True)
     ap.add_argument("--K", type=int, default=7)
     ap.add_argument("--quant", default="")

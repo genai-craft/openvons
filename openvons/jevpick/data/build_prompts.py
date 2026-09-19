@@ -1,9 +1,14 @@
 """§22 最小実験用の prompt セットを作る。Python / Tool Call / Chat 各 500 件。
 
-出力: /data/openvons/jevpick/prompts.jsonl
+出力: {DATA}/prompts.jsonl
   {sample_id, domain, messages, tools}
 """
 from __future__ import annotations
+
+import sys as _sys
+from pathlib import Path as _Path
+_sys.path.insert(0, str(_Path(__file__).resolve().parents[3]))
+from openvons.jevpick.paths import DATA  # noqa: E402
 
 import json
 import re
@@ -12,7 +17,7 @@ from pathlib import Path
 
 from datasets import load_dataset
 
-OUT = Path("/data/openvons/jevpick/prompts.jsonl")
+OUT = Path(f"{DATA}/prompts.jsonl")
 N = int(sys.argv[1]) if len(sys.argv) > 1 else 500
 
 

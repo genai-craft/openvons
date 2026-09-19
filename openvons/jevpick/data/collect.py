@@ -1,10 +1,15 @@
 """Phase 1: target LLM の greedy continuation を記録する (§13 Phase 1 / §10.2)。
 
-出力: /data/openvons/jevpick/traces_<model_tag>.jsonl
+出力: {DATA}/traces_<model_tag>.jsonl
   {sample_id, domain, prompt_ids, output_ids, finished}
 hidden state はこの段階では保存しない (oracle study に不要)。
 """
 from __future__ import annotations
+
+import sys as _sys
+from pathlib import Path as _Path
+_sys.path.insert(0, str(_Path(__file__).resolve().parents[3]))
+from openvons.jevpick.paths import DATA  # noqa: E402
 
 import argparse
 import json
@@ -18,7 +23,7 @@ from transformers import AutoModelForCausalLM, AutoTokenizer
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--model", default="Qwen/Qwen3-4B-Instruct-2507")
-    ap.add_argument("--prompts", default="/data/openvons/jevpick/prompts.jsonl")
+    ap.add_argument("--prompts", default=f"{DATA}/prompts.jsonl")
     ap.add_argument("--out", default=None)
     ap.add_argument("--max-new", type=int, default=256)
     ap.add_argument("--batch", type=int, default=32)
@@ -31,7 +36,7 @@ def main():
     args = ap.parse_args()
 
     tag = args.model.split("/")[-1]
-    out = Path(args.out or f"/data/openvons/jevpick/traces_{tag}.jsonl")
+    out = Path(args.out or f"{DATA}/traces_{tag}.jsonl")
     tok = AutoTokenizer.from_pretrained(args.model)
     tok.padding_side = "left"
     if args.quant == "fp8":

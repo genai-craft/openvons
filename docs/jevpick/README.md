@@ -35,19 +35,36 @@ LLM の文章生成そのものを速くする **先読み (speculative decoding
 | `experiments/jevpick/phase2_scorer/train.py` | JevPick の学習と評価 (量子化モデルへの転移評価つき) |
 | `experiments/jevpick/phase4_runtime/` | 実測: 同一 verifier での比較 (`runtime_v2.py`)、vLLM (`bench_vllm.py`)、llama.cpp (`bench_llamacpp.py`)、DFlash 公式 (`bench_dflash.py`)、文脈長別コスト (`bench_ctx.py`) |
 
-## 動かす (Tool Call、Qwen3-4B の例)
+## 動かす
+
+### 一通り試す (1 GPU、20〜40 分)
 
 ```bash
-.venv/bin/python openvons/jevpick/data/build_prompts_v2.py                       # prompt (glaive tool call + repo-level Python)
-CUDA_VISIBLE_DEVICES=0 .venv/bin/python openvons/jevpick/data/collect.py --model Qwen/Qwen3-4B --no-think \
-    --prompts /data/openvons/choice_spec/prompts_v2.jsonl --out /data/openvons/choice_spec/traces_v2_Qwen3-4B.jsonl
-CUDA_VISIBLE_DEVICES=0 .venv/bin/python openvons/jevpick/data/extract.py --traces .../traces_v2_Qwen3-4B.jsonl --out .../extract_v2_Qwen3-4B_0   # hidden + DFlash 候補
-.venv/bin/python experiments/jevpick/phase1_oracle/run_v2.py && .venv/bin/python experiments/jevpick/phase1_oracle/report_v2.py
-CUDA_VISIBLE_DEVICES=0 .venv/bin/python experiments/jevpick/phase2_scorer/train.py --domain toolcall --source finite --L 8 --save scorer.pt
-CUDA_VISIBLE_DEVICES=0 .venv/bin/python experiments/jevpick/phase4_runtime/runtime_v2.py --domain toolcall --modes baseline,scorer,dflash,union,hybrid --scorer scorer.pt
+uv venv --python 3.12 .venv && uv pip install --python .venv/bin/python -e ".[dev,jevpick]"   # torch は自分の CUDA に合う index から
+scripts/jevpick_quickstart.sh 0 300 100      # GPU 0、Tool Call の学習用 300 件 / 評価用 100 件
 ```
 
-データは `/data/openvons/choice_spec/` 以下 (歴史的な名前のまま)。
+Qwen3-4B と DFlash の公開 draft (z-lab/Qwen3-4B-DFlash-b16) を Hugging Face から取得し、
+prompt 作成 → greedy trace → hidden state と DFlash 候補の抽出 → 候補メニューの上限値 → JevPick の学習と評価 → 同一 verifier での速度比較、を順に回す。
+結果は `experiments/jevpick/phase1_oracle/results_quickstart_*.md`、`phase2_scorer/result_quickstart_*.json`、`phase4_runtime/runtime_quickstart_*.json`。
+本文の数字は N=3000/500 (Tool Call) で出したもので、小さな N では上限値や精度が数ポイント動く。
+
+- データ置き場は環境変数 `JEVPICK_DATA` (既定 `state/jevpick`)。hidden state が大半で、N=3000 だと ~15 GB
+- 別のモデルは `JEVPICK_MODEL=Qwen/Qwen3.8-27B JEVPICK_DRAFT=incoai/Qwen3.8-27B-DFlash2` のように指定 (27B bf16 は 60 GB 級の GPU が要る)
+- 量子化: `collect.py` / `extract.py` / `runtime_v2.py` に `--quant fp8` (FineGrainedFP8、`kernels==0.16.0`) と `--quant nf4` (bitsandbytes)
+- 同梱 MTP head (Qwen3.5 系): `data/extract_mtp.py` で候補を抽出、`runtime_v2.py --mtp` で draft source に使う
+- vLLM / llama.cpp の比較 (`phase4_runtime/bench_vllm.py`, `bench_llamacpp.py`) は別 venv / 別ビルドが前提。スクリプト冒頭に手順
+
+### 個別に
+
+```bash
+.venv/bin/python openvons/jevpick/data/build_prompts_v2.py --toolcall-train 3000 --toolcall-test 500        # + repo-level Python (site-packages の実 repo)
+CUDA_VISIBLE_DEVICES=0 .venv/bin/python openvons/jevpick/data/collect.py --model Qwen/Qwen3-4B --no-think --prompts $JEVPICK_DATA/prompts_v2.jsonl --out $JEVPICK_DATA/traces_v2_Qwen3-4B.jsonl
+CUDA_VISIBLE_DEVICES=0 .venv/bin/python openvons/jevpick/data/extract.py --traces $JEVPICK_DATA/traces_v2_Qwen3-4B.jsonl --out $JEVPICK_DATA/extract_v2_Qwen3-4B_0   # --shard i/n で GPU 分割
+.venv/bin/python experiments/jevpick/phase1_oracle/run_v2.py && .venv/bin/python experiments/jevpick/phase1_oracle/report_v2.py
+CUDA_VISIBLE_DEVICES=0 .venv/bin/python experiments/jevpick/phase2_scorer/train.py --domain toolcall --source union --L 8 --layer 3 --save $JEVPICK_DATA/jevpick.pt
+CUDA_VISIBLE_DEVICES=0 .venv/bin/python experiments/jevpick/phase4_runtime/runtime_v2.py --domain toolcall --modes baseline,prior,scorer,dflash,union,hybrid --scorer $JEVPICK_DATA/jevpick.pt
+```
 
 ## 用語
 

@@ -24,6 +24,7 @@ import torch.nn.functional as F
 from transformers import AutoModelForCausalLM, AutoTokenizer, DynamicCache
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
+from openvons.jevpick.paths import DATA  # noqa: E402
 from openvons.jevpick.candidates.base import Candidate  # noqa: E402
 from openvons.jevpick.candidates.grammar import build_grammar_index  # noqa: E402
 from openvons.jevpick.candidates.macro_copy import build_macro_index  # noqa: E402
@@ -239,8 +240,8 @@ def main():
     ap.add_argument("--model", default="Qwen/Qwen3-4B")
     ap.add_argument("--draft", default="z-lab/Qwen3-4B-DFlash-b16")
     ap.add_argument("--scorer", default=None, help="train.py --save の出力 (無ければ scorer/union モード不可)")
-    ap.add_argument("--prompts", default="/data/openvons/jevpick/prompts_v2.jsonl")
-    ap.add_argument("--traces", default="/data/openvons/jevpick/traces_v2_Qwen3-4B.jsonl")
+    ap.add_argument("--prompts", default=f"{DATA}/prompts_v2.jsonl")
+    ap.add_argument("--traces", default=f"{DATA}/traces_v2_Qwen3-4B.jsonl")
     ap.add_argument("--domain", default="toolcall")
     ap.add_argument("--n", type=int, default=40)
     ap.add_argument("--max-new", type=int, default=128)
