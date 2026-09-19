@@ -139,6 +139,7 @@ def main():
         dtok.flush(); dlp.flush()
     idx_f.close()
     json.dump({"layers": LAYERS, "total": total, "hidden": Hd}, open(out / "meta.json", "w"))
+    print("peak VRAM %.1f GB" % (torch.cuda.max_memory_allocated() / 1e9))
     print("->", out)
 
 

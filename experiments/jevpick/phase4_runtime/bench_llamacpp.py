@@ -44,18 +44,22 @@ def main():
     ap.add_argument("--port", type=int, default=8477)
     ap.add_argument("--gpu", default="7")
     ap.add_argument("--configs", default="none,ngram,mtp,dflash")
+    ap.add_argument("--extra", default="", help="llama-server に追加で渡す引数 (例: '--cpu-moe' でMoEのexpertをCPUに置く、'-ncmoe 30')")
+    ap.add_argument("--mtp-draft", default="", help="MTP 用の別 GGUF (unsloth の MTP/ フォルダなど)。無ければ本体同梱の MTP を使う")
+    ap.add_argument("--ctx", type=int, default=8192)
     ap.add_argument("--out", default="experiments/jevpick/phase4_runtime/llamacpp_Qwen3.8-27B-Q4_K_M.json")
     args = ap.parse_args()
     tok = AutoTokenizer.from_pretrained(args.tokenizer)
     rows = [json.loads(l) for l in open(args.prompts)]
     test = [r for r in rows if r["domain"] == "toolcall" and r.get("split") == "test"][: args.n + 1]
     prompts = [tok.apply_chat_template(r["messages"], tools=r["tools"], tokenize=False, add_generation_prompt=True, enable_thinking=False) for r in test]
-    common = [args.server, "-m", args.model, "--port", str(args.port), "-ngl", "999", "-c", "8192", "-np", "1", "--temp", "0", "-fa", "on", "--no-warmup"]
+    common = [args.server, "-m", args.model, "--port", str(args.port), "-ngl", "999", "-c", str(args.ctx), "-np", "1", "--temp", "0", "-fa", "on", "--no-warmup"] + (args.extra.split() if args.extra else [])
+    mtp_d = ["-md", args.mtp_draft] if args.mtp_draft else []
     configs = {
         "none": [],
         "ngram": ["--spec-type", "ngram-simple", "--spec-draft-n-max", "8"],
-        "mtp": ["--spec-type", "draft-mtp", "--spec-draft-n-max", "3"],
-        "mtp7": ["--spec-type", "draft-mtp", "--spec-draft-n-max", "7"],
+        "mtp": mtp_d + ["--spec-type", "draft-mtp", "--spec-draft-n-max", "3"],
+        "mtp7": mtp_d + ["--spec-type", "draft-mtp", "--spec-draft-n-max", "7"],
         "dflash": ["-md", args.draft, "--spec-type", "draft-dflash", "--spec-draft-n-max", "7"],
     }
     res = {}
@@ -70,7 +74,16 @@ def main():
             print(name, res[name], flush=True)
             proc.kill(); continue
         recs = []
+        vram = []
+        def _vram():
+            try:
+                q = subprocess.run(["nvidia-smi", "--query-compute-apps=pid,used_memory", "--format=csv,noheader,nounits"], capture_output=True, text=True, timeout=5).stdout
+                return sum(int(l.split(",")[1]) for l in q.strip().splitlines() if l and int(l.split(",")[0]) == proc.pid) / 1024
+            except Exception:  # noqa: BLE001
+                return 0.0
         for i, p in enumerate(prompts):
+            if i in (1, 5):
+                vram.append(_vram())
             r = requests.post(f"http://127.0.0.1:{args.port}/completion", json={"prompt": p, "n_predict": args.max_tokens, "temperature": 0, "cache_prompt": False}, timeout=600).json()
             t = r.get("timings", {})
             if i > 0:
@@ -78,7 +91,7 @@ def main():
                              "draft_n": t.get("draft_n"), "draft_acc": t.get("draft_n_accepted"), "text": r.get("content", "")[:120]})
         proc.terminate(); proc.wait(timeout=60)
         tot_n = sum(x["n"] for x in recs); tot_ms = sum(x["ms"] for x in recs)
-        out = {"n": len(recs), "decode_tok_s": 1000 * tot_n / tot_ms, "mean_tps": float(np.mean([x["tps"] for x in recs])),
+        out = {"n": len(recs), "decode_tok_s": 1000 * tot_n / tot_ms, "mean_tps": float(np.mean([x["tps"] for x in recs])), "vram_gb": max(vram) if vram else None,
                "draft_n": sum(x["draft_n"] or 0 for x in recs), "draft_accepted": sum(x["draft_acc"] or 0 for x in recs), "texts": [x["text"] for x in recs[:3]]}
         res[name] = out
         print(name, {k: v for k, v in out.items() if k != "texts"}, flush=True)

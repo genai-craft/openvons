@@ -100,6 +100,7 @@ def main():
             n += 1
         f.flush()
         print(f"{n}/{len(rows)}  {time.time()-t0:.0f}s", flush=True)
+    print("peak VRAM %.1f GB" % (torch.cuda.max_memory_allocated() / 1e9))
     print("->", out)
 
 

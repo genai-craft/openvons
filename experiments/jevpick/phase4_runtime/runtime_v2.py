@@ -348,7 +348,8 @@ def main():
                    "time_frac": {k: v / r["sec"] for k, v in r["timing"].items()}, "draft_skip_frac": r.get("skip_draft", 0) / len(acc)}
     print(json.dumps(summ, indent=1))
     out = Path(args.out or f"experiments/jevpick/phase4_runtime/runtime_v2_{args.domain}_L{args.L}_{args.dtype}{args.tag}.json")
-    json.dump({"config": vars(args), "n": n, "summary": summ}, open(out, "w"), indent=1)
+    json.dump({"config": vars(args), "n": n, "summary": summ, "peak_vram_gb": torch.cuda.max_memory_allocated() / 1e9}, open(out, "w"), indent=1)
+    print("peak VRAM %.1f GB" % (torch.cuda.max_memory_allocated() / 1e9))
     print("->", out)
 
 

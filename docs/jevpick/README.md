@@ -37,21 +37,31 @@ LLM の文章生成そのものを速くする **先読み (speculative decoding
 
 ## 動かす
 
-### 一通り試す (1 GPU、20〜40 分)
+### 一通り試す (1 GPU、4-bit が既定、20〜40 分)
 
 ```bash
 uv venv --python 3.12 .venv && uv pip install --python .venv/bin/python -e ".[dev,jevpick]"   # torch は自分の CUDA に合う index から
-scripts/jevpick_quickstart.sh 0 300 100      # GPU 0、Tool Call の学習用 300 件 / 評価用 100 件
+scripts/jevpick_quickstart.sh 0 300 100      # GPU 0、Qwen3-4B を 4-bit (NF4) で、Tool Call 学習 300 件 / 評価 100 件
+JEVPICK_MODEL=Qwen/Qwen3.8-27B JEVPICK_DRAFT=incoai/Qwen3.8-27B-DFlash2 scripts/jevpick_quickstart.sh 0 300 100   # 27B を 4-bit で
 ```
 
-Qwen3-4B と DFlash の公開 draft (z-lab/Qwen3-4B-DFlash-b16) を Hugging Face から取得し、
+target を bitsandbytes の NF4 (4-bit) で読み、DFlash の公開 draft と一緒に Hugging Face から取得して、
 prompt 作成 → greedy trace → hidden state と DFlash 候補の抽出 → 候補メニューの上限値 → JevPick の学習と評価 → 同一 verifier での速度比較、を順に回す。
-結果は `experiments/jevpick/phase1_oracle/results_quickstart_*.md`、`phase2_scorer/result_quickstart_*.json`、`phase4_runtime/runtime_quickstart_*.json`。
-本文の数字は N=3000/500 (Tool Call) で出したもので、小さな N では上限値や精度が数ポイント動く。
+bf16 で回すなら `JEVPICK_QUANT=none`。結果は `experiments/jevpick/phase1_oracle/results_quickstart_*.md`、`phase2_scorer/result_quickstart_*.json`、`phase4_runtime/runtime_quickstart_*.json`。
+
+VRAM の実測 (ピーク、この repo の quickstart):
+
+| モデル | 精度 | trace 収集 (batch 24) | hidden 抽出 | runtime 比較 | 動く GPU |
+|---|---|---:|---:|---:|---|
+| Qwen3-4B | NF4 | 4.8 GB | 4.3 GB | 4.2 GB | 8 GB 級から |
+| Qwen3.8-27B | NF4 | 25.6 GB | 23.0 GB | 23.1 GB | **32 GB 級 (RTX 5090 など)**。24 GB なら `collect.py --batch 8` |
+| Qwen3.8-27B | bf16 | ~60 GB | ~58 GB | ~58 GB | 80 GB 級 |
+| Qwen3.8-Flash-Next | — | transformers では読めない (FP8 MoE の重み変換が未対応)。llama.cpp の GGUF + MoE の CPU オフロード (`--cpu-moe`) で 32 GB 級を狙う → `phase4_runtime/bench_llamacpp.py --extra "--cpu-moe"`。実測は準備中 | | | |
+
+本文の数字は N=3000/500 (Tool Call) で出したもの。N=80/40 の quickstart では選ぶ精度が 52 → 67% (4B)、55 → 64% (27B) と、学習データが少ない分だけ低く出る。
 
 - データ置き場は環境変数 `JEVPICK_DATA` (既定 `state/jevpick`)。hidden state が大半で、N=3000 だと ~15 GB
-- 別のモデルは `JEVPICK_MODEL=Qwen/Qwen3.8-27B JEVPICK_DRAFT=incoai/Qwen3.8-27B-DFlash2` のように指定 (27B bf16 は 60 GB 級の GPU が要る)
-- 量子化: `collect.py` / `extract.py` / `runtime_v2.py` に `--quant fp8` (FineGrainedFP8、`kernels==0.16.0`) と `--quant nf4` (bitsandbytes)
+- 量子化は `collect.py` / `extract.py` / `runtime_v2.py` の `--quant nf4` (bitsandbytes) と `--quant fp8` (FineGrainedFP8、`kernels==0.16.0`)。bf16 で学習した JevPick は FP8 / NF4 の hidden state に転移する (−0.5 / −3pt)
 - 同梱 MTP head (Qwen3.5 系): `data/extract_mtp.py` で候補を抽出、`runtime_v2.py --mtp` で draft source に使う
 - vLLM / llama.cpp の比較 (`phase4_runtime/bench_vllm.py`, `bench_llamacpp.py`) は別 venv / 別ビルドが前提。スクリプト冒頭に手順
 
