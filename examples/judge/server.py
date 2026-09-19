@@ -93,8 +93,6 @@ def _load():
     G["model"] = model
     static = HERE / "static"
     V["v"] = str(int(max(p.stat().st_mtime for p in static.glob("*"))))
-    if CLIPS.exists():
-        app.mount("/clips", StaticFiles(directory=str(CLIPS)), name="clips")
 
 
 @app.get("/")
@@ -202,6 +200,8 @@ def main():
     ap.add_argument("--host", default="0.0.0.0")
     a = ap.parse_args()
     app.mount("/static", StaticFiles(directory=str(HERE / "static")), name="static")
+    CLIPS.mkdir(parents=True, exist_ok=True)
+    app.mount("/clips", StaticFiles(directory=str(CLIPS.resolve()), follow_symlink=True), name="clips")   # 起動前に mount。state/judge は symlink なので follow_symlink
     import uvicorn
     uvicorn.run(app, host=a.host, port=a.port, log_level="warning")
 

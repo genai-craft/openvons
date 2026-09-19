@@ -28,7 +28,7 @@ fetch('/api/samples').then(r => r.json()).then(d => {
   Object.entries(byScene).forEach(([title, arr]) => {
     arr.forEach(s => {
       const el = document.createElement('div'); el.className = 'sample'; el.dataset.file = s.file;
-      el.innerHTML = `<video src="/clips/${s.file}#t=6" preload="metadata" muted></video><div class="t">${title}</div><div class="t muted">${s.id}</div>`;
+      el.innerHTML = `<img src="/clips/${s.id}.jpg" alt="" loading="lazy"><div class="t">${title}</div><div class="t muted">${s.id}</div>`;
       el.addEventListener('click', () => pickSample(s, el));
       box.appendChild(el);
     });
@@ -38,7 +38,7 @@ fetch('/api/samples').then(r => r.json()).then(d => {
 function pickSample(s, el) {
   document.querySelectorAll('.sample').forEach(x => x.classList.toggle('on', x === el));
   current = { file: null, sample: s.file };
-  $('#player').src = '/clips/' + s.file; $('#judgeBtn').disabled = false; $('#answer').hidden = true;
+  $('#player').src = '/clips/' + s.file; $('#player').poster = '/clips/' + s.id + '.jpg'; $('#judgeBtn').disabled = false; $('#answer').hidden = true;
   $('#status').textContent = s.title + ' の試験動画';
   const sc = checks.find(c => c.key === s.check)?.scene; if (sc) $('#scene').value = sc;
 }

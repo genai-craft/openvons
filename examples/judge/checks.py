@@ -36,9 +36,9 @@ CHECKS: list[Check] = [
                           "On a night street two friends greet each other with a handshake and a hug, then walk together talking.",
                           "In a bar two men sit at the counter, toast with glasses and talk calmly."]),
     Check("shoplift", "万引き", "店舗・街", "Does a person put store merchandise into their own bag, pocket or clothing (not a basket or cart) and walk away without paying?", risk="medium", style=CCTV,
-          event_prompts=["In a small shop a woman looks around nervously, slips a cosmetics box into her handbag and walks toward the exit without going to the register.",
-                         "A man in a supermarket aisle glances over his shoulder and tucks a bottle inside his jacket, then keeps walking.",
-                         "A teenager in a convenience store puts a snack pack into his backpack quickly and zips it up while looking at the staff."],
+          event_prompts=["Close view in a small shop: a woman glances around, takes a cosmetics box from the shelf and clearly pushes it deep into her open handbag, closes the bag and walks toward the exit past the register.",
+                         "Supermarket aisle, a man looks over his shoulder, opens his jacket and hides a bottle inside it against his chest, zips the jacket and walks away with his hands empty.",
+                         "Convenience store, a teenager swings his backpack to the front, stuffs two snack packs into it while watching the clerk, zips it and walks out without paying."],
           normal_prompts=["In a small shop a woman picks up a cosmetics box, reads the label and puts it into her shopping basket.",
                           "A man in a supermarket aisle takes a bottle from the shelf and places it in his shopping cart, then pushes the cart on.",
                           "A teenager in a convenience store picks a snack pack and walks to the cash register and pays."]),
@@ -50,9 +50,9 @@ CHECKS: list[Check] = [
                           "A man works on a roof edge wearing a safety harness connected by a rope to an anchor, helmet on.",
                           "A worker on a tall ladder wears a harness clipped to the structure and works on the wall carefully."]),
     Check("no_helmet", "ヘルメット未着用", "工事現場", "Is this a construction site where a worker's head is bare, with no hard hat (safety helmet) on?", risk="medium", style=SITE,
-          event_prompts=["Construction site with two workers carrying steel pipes; one wears a hard hat, the other is bareheaded with short hair.",
-                         "A worker without a helmet operates a small excavator control panel on a construction site, other workers in the background.",
-                         "A man in a high-visibility vest but no hard hat walks under scaffolding carrying a bucket."],
+          event_prompts=["Construction site, two workers carry a steel pipe together; the worker on the left has NO helmet at all, his bare head and dark hair clearly visible, the other wears a yellow hard hat.",
+                         "Close view of a bareheaded construction worker (no hard hat, hair uncovered) standing next to a small excavator on a dusty site, pointing at the ground.",
+                         "A man in a high-visibility vest with his bare head fully visible (no helmet, no cap) walks under scaffolding carrying a bucket, other workers with helmets behind."],
           normal_prompts=["Construction site with two workers carrying steel pipes, both wearing yellow hard hats and vests.",
                           "A worker wearing a white hard hat operates a small excavator control panel on a construction site.",
                           "A man in a high-visibility vest and a hard hat walks under scaffolding carrying a bucket."]),
@@ -99,6 +99,13 @@ CHECKS: list[Check] = [
           normal_prompts=["Train station concourse, a man with a black backpack on his shoulders checks the departure board and walks on.",
                           "Airport waiting area, a woman sits beside her suitcase, then pulls it along with her when she leaves.",
                           "Shopping mall bench, a person sits with a shopping bag, then picks it up and walks away with it."]),
+]
+
+VARIANTS = [
+    "",
+    " Camera slightly lower and closer than a typical security camera. Late afternoon light.",
+    " Wide shot from a corner-mounted camera, fluorescent lighting, a few other people in the background.",
+    " Overcast daylight, handheld-looking but steady camera, muted colors.",
 ]
 
 BY_KEY = {c.key: c for c in CHECKS}

@@ -18,13 +18,19 @@ import time
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
-from examples.judge.checks import CHECKS  # noqa: E402
+from examples.judge.checks import CHECKS, VARIANTS  # noqa: E402
 from examples.judge.h3_client import Cluster, build_t2v  # noqa: E402
 
 OUT = Path(os.environ.get("JUDGE_DATA", str(Path(__file__).resolve().parents[2] / "state" / "judge")))
 CLIPS = OUT / "clips"
 TAIL = ("\n\nCamera: one continuous fixed camera position for the whole video, no cuts, no zoom, the same location and the same people throughout. "
         "Audio: ambient sound only. No text, subtitles, logos or watermarks of any kind, no animation or cartoon rendering, realistic live-action look.")
+
+
+def poster(mp4: Path):
+    """サムネイル用に 7 秒のフレームを JPEG で置く (ブラウザの <video> は preload だけだと真っ黒になる)。"""
+    import subprocess
+    subprocess.run(["ffmpeg", "-y", "-loglevel", "error", "-ss", "7", "-i", str(mp4), "-frames:v", "1", "-vf", "scale=432:-1", str(mp4.with_suffix(".jpg"))], check=False)
 
 
 def storyboard(shots: list[str], style: str) -> str:
@@ -34,15 +40,21 @@ def storyboard(shots: list[str], style: str) -> str:
     return "\n".join(lines) + TAIL
 
 
+PER = int(os.environ.get("JUDGE_PER", "10"))  # 項目ごとの 問題あり / なし の本数
+
+
 def jobs():
+    """i < 3 は元の 3 本 (修飾なし)、以降は 事象/通常 の組と修飾を回して増やす。"""
     js = []
     for c in CHECKS:
         n, e = c.normal_prompts, c.event_prompts
-        for i in range(3):
+        for i in range(PER):
+            v = VARIANTS[(i // 3) % len(VARIANTS)] if i >= 3 else ""
+            style = c.style + v
             js.append({"name": f"{c.key}_problem{i}", "check": c.key, "label": 1, "event_start": 5.0, "event_end": 10.0,
-                       "prompt": storyboard([n[i], e[i], n[(i + 1) % 3]], c.style), "title": c.title, "scene": c.scene})
+                       "prompt": storyboard([n[i % 3], e[i % 3], n[(i + 1) % 3]], style), "title": c.title, "scene": c.scene, "variant": i // 3})
             js.append({"name": f"{c.key}_ok{i}", "check": c.key, "label": 0, "event_start": None, "event_end": None,
-                       "prompt": storyboard([n[i], n[(i + 1) % 3], n[(i + 2) % 3]], c.style), "title": c.title, "scene": c.scene})
+                       "prompt": storyboard([n[i % 3], n[(i + 1) % 3], n[(i + 2) % 3]], style), "title": c.title, "scene": c.scene, "variant": i // 3})
     return js
 
 
@@ -76,6 +88,7 @@ def run(args):
                 files = cl.wait(url, pid, timeout=args.timeout)
                 f = next((x for x in files if x["filename"].lower().endswith((".mp4", ".webm", ".mkv"))), files[0])
                 cl.download(url, f, CLIPS / f"{j['name']}.mp4")
+                poster(CLIPS / f"{j['name']}.mp4")
                 print(f"{j['name']}  {url.split('//')[1].split(':')[0]}  {time.time()-t0:.0f}s", flush=True)
                 with lock:
                     results.append(j)
