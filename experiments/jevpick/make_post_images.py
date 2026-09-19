@@ -68,13 +68,13 @@ fig.text(0.05, 0.86, "JevPick", color=FG, fontsize=44, fontweight="bold", va="ce
 fig.text(0.05, 0.75, "AIに「選ばせる」を、AIが文章を書く速さそのものに使う", color=MUTED, fontsize=19, va="center")
 cards = [("3.2〜4.8倍", "ツール呼び出しの生成速度。\n予測モデルなし、\n出力は完全一致"),
          ("90%", "ツール定義から作った\n候補メニューに正解の\n続きが入っている割合"),
-         ("64% → 88%", "メニューから正解を\n選ぶ精度。\n単純ルール → JevPick"),
-         ("5.4倍 → 1.0倍", "流行りの先読み手法が\n16k語の長い文脈で\n失う速さ")]
+         ("64%→88%", "メニューから正解を\n選ぶ精度。\n単純ルール → JevPick"),
+         ("5.4倍→1.0倍", "流行りの先読み手法が\n16k語の長い文脈で\n失う速さ")]
 for k, (big, small) in enumerate(cards):
     x = 0.05 + k * 0.2275
     fig.patches.append(FancyBboxPatch((x, 0.16), 0.205, 0.48, boxstyle="round,pad=0,rounding_size=0.012",
                                       transform=fig.transFigure, facecolor=PANEL, edgecolor=LINE, lw=1))
-    fig.text(x + 0.016, 0.54, big, color=BLUE, fontsize=27, fontweight="bold", va="center")
+    fig.text(x + 0.016, 0.54, big, color=BLUE, fontsize=23, fontweight="bold", va="center")
     fig.text(x + 0.016, 0.35, small, color=FG, fontsize=13, va="center", linespacing=1.7)
 brand(fig)
 fig.savefig(OUT / "01_hero.png", facecolor=BG); plt.close(fig)
@@ -128,4 +128,21 @@ hbar_chart(ax, [("メニューに正解の続きが入っている", 90, "base")
 fig.text(0.05, 0.1, "JevPick: パラメータ 500万、学習 1〜2分。bf16 で学習したものを FP8 / 4-bit のモデルにそのまま使っても低下は 0.5〜3pt。", color=MUTED, fontsize=12.5, va="center")
 brand(fig, y=0.04)
 fig.savefig(OUT / "04_accuracy.png", facecolor=BG); plt.close(fig)
+
+# ---------- 5. 4 枚を 1 枚に (2x2)。各タイルの下部フッターは切り、フッターを 1 つだけ付ける ----------
+from PIL import Image, ImageDraw, ImageFont
+CUT = 625
+tiles = [Image.open(OUT / n).crop((0, 0, W, CUT)) for n in ("01_hero.png", "04_accuracy.png", "02_methods.png", "03_long_context.png")]
+gap, foot = 24, 70
+sheet = Image.new("RGB", (W * 2 + gap * 3, CUT * 2 + gap * 3 + foot), BG)
+for k, im in enumerate(tiles):
+    sheet.paste(im, (gap + (k % 2) * (W + gap), gap + (k // 2) * (CUT + gap)))
+d = ImageDraw.Draw(sheet)
+fpath = next((f for f in font_manager.findSystemFonts() if "ipagp" in f.lower()), None)
+font = ImageFont.truetype(fpath, 26) if fpath else ImageFont.load_default()
+y = CUT * 2 + gap * 3 + foot // 2
+d.rounded_rectangle((gap + 12, y - 12, gap + 36, y + 12), radius=6, fill=BLUE)
+d.text((gap + 48, y), "openvons", fill=FG, font=font, anchor="lm")
+d.text((sheet.width - gap - 12, y), "openvons.com/jevpick", fill=MUTED, font=font, anchor="rm")
+sheet.save(OUT / "00_all_in_one.png")
 print("->", OUT, sorted(p.name for p in OUT.glob("*.png")))
