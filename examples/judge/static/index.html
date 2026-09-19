@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0f1318">
+<link rel="manifest" href="/static/manifest.webmanifest">
+<link rel="icon" href="/static/icon.svg" type="image/svg+xml">
+<title>動画の審判 — openvons (open-Jev) judge demo</title>
+<meta name="description" content="15 秒〜1 分の動画に「喧嘩」「万引き」「ハーネス未着用」などの事象があるかを、生成せず選択肢に確率で答えて判定する。ライブ判定とロボットの進路判断も。">
+<link rel="stylesheet" href="/static/judge.css?v=__V__">
+</head>
+<body>
+<header>
+  <div class="brand">動画の審判 <span class="sub">openvons (open-Jev) — 動画を見て、決めた項目に確率で答える</span></div>
+  <a class="contact" href="https://genai-craft.com" target="_blank" rel="noopener">導入・カスタマイズのご相談 ↗</a>
+  <nav class="tabs">
+    <button class="tab on" data-tab="video">動画を判定</button>
+    <button class="tab" data-tab="live">ライブ (カメラ)</button>
+    <button class="tab" data-tab="about">しくみ</button>
+  </nav>
+</header>
+
+<main id="tab-video" class="tabpane">
+  <section class="stage">
+    <div class="bar">
+      <label class="upl">動画を選ぶ (15 秒〜1 分)<input type="file" id="file" accept="video/*" hidden></label>
+      <select id="scene"><option value="">全部の項目 (10)</option></select>
+      <button id="judgeBtn" class="mic" disabled>判定する</button>
+      <span class="muted small" id="status"></span>
+    </div>
+    <div class="viewport"><video id="player" controls playsinline></video>
+      <div class="marker" id="marker" hidden></div></div>
+    <div class="timeline" id="timeline"></div>
+    <div class="timings muted" id="timings"></div>
+    <h3>試験動画 <span class="muted small">(H3 で生成。項目ごとに 問題あり 3 本 / 問題なし 3 本。正解は判定後に開きます)</span></h3>
+    <div class="samples" id="samples"><div class="muted small">試験動画はまだありません。手元の動画を選んでください。</div></div>
+  </section>
+  <aside class="panel">
+    <h3>判定 <span class="muted" id="resInfo"></span></h3>
+    <div id="results" class="cards"><div class="muted">動画を選んで「判定する」を押すと、項目ごとに 検出 / 要確認 / 問題なし が出ます。</div></div>
+    <div id="answer" class="answer" hidden></div>
+    <h3>読み方</h3>
+    <ul class="legend">
+      <li><span class="lv 検出">検出</span> 「はい」の確率が高い窓がある。危険度の高い項目は必ず要確認に回す</li>
+      <li><span class="lv 要確認">要確認</span> 迷っている。人が該当時刻を見る帯</li>
+      <li><span class="lv 問題なし">問題なし</span> 全部の窓で「いいえ」が確か</li>
+      <li><span class="lv 判別できない">判別できない</span> 映っていない・見えない。「該当なし」を選択肢に入れてあるので、無理に答えない</li>
+    </ul>
+    <p class="muted small">動画を 2 fps (スポーツは 10 fps) で切り、4 秒 (1.6 秒) の窓をずらしながら、窓ごとに 10 個の質問を選択肢で答えさせる。
+    動画の符号化は窓ごとに 1 回、質問は追加 1 問あたり約 25 ms。動画はサーバーに保存しない。</p>
+  </aside>
+</main>
+
+<main id="tab-live" class="tabpane" hidden>
+  <section class="stage">
+    <div class="bar">
+      <button id="camBtn" class="mic">📷 カメラ開始</button>
+      <select id="facing"><option value="environment">背面カメラ</option><option value="user">前面カメラ</option></select>
+      <select id="liveMode"><option value="nav">ロボットの進路 (左 / 右 / 直進 / 停止)</option><option value="checks">審判項目 (10)</option></select>
+      <select id="liveFps"><option value="2">2 fps</option><option value="5" selected>5 fps</option><option value="10">10 fps</option></select>
+    </div>
+    <div class="viewport"><video id="cam" playsinline muted autoplay></video><canvas id="grab" hidden></canvas>
+      <div class="navhud" id="navhud" hidden><div class="arrow" id="arrow">▲</div><div class="navlabel" id="navlabel"></div></div></div>
+    <div class="hint">カメラをロボットの前方カメラのつもりで動かしてください。1 フレームの符号化 約 25 ms + 質問 1 つ 約 25 ms。フレームは判定に使うだけで保存しません。</div>
+    <div class="timings muted" id="liveTimings"></div>
+  </section>
+  <aside class="panel">
+    <h3>いまの判断 <span class="muted" id="liveInfo"></span></h3>
+    <div id="liveResults" class="cards"><div class="muted">カメラを開始すると、フレームごとの確率がここに出ます。</div></div>
+    <p class="muted small">ロボットの進路は Choice (左 / 右 / 直進 / 停止) と、障害物の有無 (はい / いいえ / 判別できない)、床の状態の 3 問。
+    確信度が低いときは「停止」側に倒すのが実装の作法 (該当なしと同じ考え方)。</p>
+  </aside>
+</main>
+
+<main id="tab-about" class="tabpane about" hidden>
+  <h2>しくみ</h2>
+  <ol>
+    <li><b>動画を窓に切る</b> — 監視・安全系は 2 fps × 4 秒、スポーツの反則は 10 fps × 1.6 秒。窓は半分ずつ重ねてずらす。</li>
+    <li><b>窓ごとに質問を並べる</b> — 「喧嘩が起きているか」「高所で作業している人がハーネスを着けていないか」など 10 項目。答えは はい / いいえ / 判別できない の 3 択。「判別できない」があるので、見えないものに無理に答えない。</li>
+    <li><b>確率で答えさせる</b> — VLM (Qwen3-VL-4B) に文章を書かせず、選択肢の 1 文字の確率だけを読む。動画の符号化は窓につき 1 回で、質問を 10 個にしても符号化はやり直さない (KV cache の複製)。</li>
+    <li><b>判断に変える</b> — 温度で校正した確率を、openvons 共通の 3 段 (確定 / 要確認 / 棄却) に。危険度の高い項目 (喧嘩・火・倒れている人・ハーネス) は確信があっても人に回す。</li>
+  </ol>
+  <h2>10 項目</h2>
+  <table id="checkTable"><thead><tr><th>項目</th><th>シーン</th><th>fps × 窓</th><th>危険度</th><th>VLM への質問</th></tr></thead><tbody></tbody></table>
+  <h2>試験動画</h2>
+  <p>各項目について「問題あり」3 本と「問題なし」3 本を MiniMax H3 (ComfyUI) で生成した 15 秒の動画。問題ありは 0〜5 秒 通常 → 5〜10 秒 事象 → 10〜15 秒 通常 の構成で、時刻の当たりも見る。生成動画なので実環境の精度とは別に、方式の動作を確かめる目的。</p>
+  <p class="muted small">コード: <a href="https://github.com/genai-craft/openvons/tree/main/examples/judge" target="_blank" rel="noopener">examples/judge</a> / エンジン: openvons/vision/video_judge.py</p>
+</main>
+
+<script src="/static/judge.js?v=__V__"></script>
+</body>
+</html>
