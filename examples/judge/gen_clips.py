@@ -27,6 +27,17 @@ TAIL = ("\n\nCamera: one continuous fixed camera position for the whole video, n
         "Audio: ambient sound only. No text, subtitles, logos or watermarks of any kind, no animation or cartoon rendering, realistic live-action look.")
 
 
+def transcode(mp4: Path):
+    """ComfyUI の出力をブラウザで確実に再生できる形 (H.264 High, yuv420p, CFR 24fps, AAC 48k, faststart) に再エンコードする。"""
+    import subprocess
+    tmp = mp4.with_name("tmp_" + mp4.name)
+    r = subprocess.run(["ffmpeg", "-y", "-loglevel", "error", "-i", str(mp4), "-map", "0:v:0", "-map", "0:a?", "-c:v", "libx264", "-profile:v", "high", "-level", "4.0",
+                        "-pix_fmt", "yuv420p", "-r", "24", "-vsync", "cfr", "-preset", "fast", "-crf", "20", "-c:a", "aac", "-b:a", "128k", "-ar", "48000", "-ac", "2",
+                        "-movflags", "+faststart", str(tmp)])
+    if r.returncode == 0:
+        tmp.replace(mp4)
+
+
 def poster(mp4: Path):
     """サムネイル用に 7 秒のフレームを JPEG で置く (ブラウザの <video> は preload だけだと真っ黒になる)。"""
     import subprocess
@@ -88,6 +99,7 @@ def run(args):
                 files = cl.wait(url, pid, timeout=args.timeout)
                 f = next((x for x in files if x["filename"].lower().endswith((".mp4", ".webm", ".mkv"))), files[0])
                 cl.download(url, f, CLIPS / f"{j['name']}.mp4")
+                transcode(CLIPS / f"{j['name']}.mp4")
                 poster(CLIPS / f"{j['name']}.mp4")
                 print(f"{j['name']}  {url.split('//')[1].split(':')[0]}  {time.time()-t0:.0f}s", flush=True)
                 with lock:

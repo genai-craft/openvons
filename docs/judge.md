@@ -39,7 +39,7 @@
 
 ## 試験動画
 
-各項目について「問題あり」3 本と「問題なし」3 本、計 60 本の 15 秒動画を MiniMax H3 (feel-dance / mojidance の ComfyUI クラスタ) で生成。
+各項目について「問題あり」10 本と「問題なし」10 本、計 200 本の 15 秒動画 (最初の 60 本 = 修飾なし、以降はカメラ位置・時間帯・照明の修飾を回す)を MiniMax H3 (feel-dance / mojidance の ComfyUI クラスタ) で生成。
 問題ありは `[0-5s] 通常 → [5-10s] 事象 → [10-15s] 通常` の絵コンテで、事象の時刻の当たりも見る。生成: `examples/judge/gen_clips.py` (mojidance の workflow builder を Python 化、turbo LoRA 8 step、864×480、1 本 ≈ 76 秒/台)。
 評価と温度校正: `examples/judge/eval_clips.py` → `state/judge/eval.json`、`calibration.json`。
 
