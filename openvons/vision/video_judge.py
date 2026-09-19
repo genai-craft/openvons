@@ -68,6 +68,8 @@ class VideoJudge:
         self.letter_ids = [self.tok.encode(f" {L}", add_special_tokens=False)[-1] for L in OPTION_LETTERS]
         self.letter_ids_nospace = [self.tok.encode(L, add_special_tokens=False)[-1] for L in OPTION_LETTERS]
         self.T: dict[str, float] = {}
+        self.want_hidden = False      # True なら prefill のたびに last_hidden (最終層 + 3/4 層の最終 token) を残す
+        self.last_hidden = None
         if calibration and Path(calibration).exists():
             self.T = json.load(open(calibration)).get("temperature", {})
 
@@ -84,7 +86,10 @@ class VideoJudge:
         msgs = [{"role": "user", "content": content}]
         kw = {"fps": 2.0} if video and len(frames) > 1 else {}
         inp = self.proc.apply_chat_template(msgs, add_generation_prompt=False, tokenize=True, return_dict=True, return_tensors="pt", **kw).to(self.dev)
-        out = self.model(**inp, use_cache=True)
+        out = self.model(**inp, use_cache=True, output_hidden_states=self.want_hidden)
+        if self.want_hidden:
+            hs = out.hidden_states; L = len(hs) - 1
+            self.last_hidden = torch.cat([hs[L][0, -1], hs[(3 * L) // 4][0, -1]]).float()
         return inp, out.past_key_values
 
     def _ask(self, inp, cache, q: VQuestion) -> np.ndarray:
@@ -129,9 +134,14 @@ class VideoJudge:
                 inp, cache = self._prefill(fr, state)
                 result["timing"]["encode_s"] += time.perf_counter() - t0
                 t0 = time.perf_counter()
+                hid = self.last_hidden.cpu().numpy() if self.want_hidden else None
                 for q in qs:
-                    p = self._probs(q.key, self._ask(inp, cache, q))
-                    series[q.key].append({"t0": ts[s], "t1": ts[min(s + n_win, len(ts)) - 1], "p": [float(x) for x in p]})
+                    lg = self._ask(inp, cache, q)
+                    p = self._probs(q.key, lg)
+                    rec = {"t0": ts[s], "t1": ts[min(s + n_win, len(ts)) - 1], "p": [float(x) for x in p], "logit": [float(x) for x in lg]}
+                    if hid is not None:
+                        rec["_hidden"] = hid
+                    series[q.key].append(rec)
                 result["timing"]["ask_s"] += time.perf_counter() - t0
                 result["timing"]["windows"] += 1; result["timing"]["asks"] += len(qs)
                 if progress:

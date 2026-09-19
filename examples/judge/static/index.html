@@ -26,6 +26,7 @@
     <div class="bar">
       <label class="upl">動画を選ぶ (15 秒〜1 分)<input type="file" id="file" accept="video/*" hidden></label>
       <select id="scene"><option value="">全部の項目 (10)</option></select>
+      <select id="mode" title="判定のしかた"><option value="zeroshot">質問方式 (学習なし)</option><option value="head">学習 head (凍結 VLM + 小さな head)</option></select>
       <button id="judgeBtn" class="mic" disabled>判定する</button>
       <span class="muted small" id="status"></span>
     </div>

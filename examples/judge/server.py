@@ -86,10 +86,52 @@ def summarize(res: dict) -> dict:
     return {"items": out}
 
 
+def _load_heads():
+    """学習 head (state/judge/head_<key>.pt) があれば読む。"""
+    import torch
+    from examples.judge.train_head import Head
+    heads = {}
+    for c in CHECKS:
+        f = DATA / f"head_{c.key}.pt"
+        if f.exists():
+            ck = torch.load(f, map_location="cuda")
+            h = Head(ck["d_h"], ck["d_z"]).cuda().eval(); h.load_state_dict(ck["state"]); heads[c.key] = (h, ck.get("thr", 0.5))
+    return heads
+
+
+def apply_heads(res: dict, keys: list[str]) -> None:
+    """窓の確率を head の出力 [p, 1-p, 0] に置き換える (head がある項目のみ)。質問方式の 30 logit も入力に使う。"""
+    import numpy as np
+    import torch
+    heads = G.get("heads") or {}
+    order = [c.key for c in CHECKS]
+    for key in keys:
+        if key not in heads or key not in res["questions"]:
+            continue
+        h, thr = heads[key]
+        q = res["questions"][key]
+        for i, w in enumerate(q["series"]):
+            if "_hidden" not in w:
+                continue
+            z = np.zeros(len(order) * 3, np.float32)
+            for k2, q2 in res["questions"].items():
+                if k2 in order and i < len(q2["series"]) and (q2["fps"], q2["window_s"]) == (q["fps"], q["window_s"]):
+                    z[order.index(k2) * 3 : order.index(k2) * 3 + 3] = q2["series"][i]["logit"]
+            with torch.no_grad():
+                p = float(torch.sigmoid(h(torch.tensor(w["_hidden"])[None].cuda(), torch.tensor(z)[None].cuda()))[0])
+            # head の閾値を 0.5 に写像して decide の閾値 (0.4 / 0.85) と揃える
+            p = 0.5 * p / thr if p < thr else 0.5 + 0.5 * (p - thr) / max(1 - thr, 1e-6)
+            w["p"] = [p, 1 - p, 0.0]
+        q["mode"] = "head"
+
+
 @app.on_event("startup")
 def _load():
     model = os.environ.get("JUDGE_MODEL", "Qwen/Qwen3-VL-4B-Instruct")
     G["judge"] = VideoJudge(model, calibration=str(DATA / "calibration.json"))
+    G["heads"] = _load_heads()
+    G["judge"].want_hidden = bool(G["heads"])
+    print("heads loaded:", sorted(G["heads"]), flush=True)
     G["model"] = model
     static = HERE / "static"
     V["v"] = str(int(max(p.stat().st_mtime for p in static.glob("*"))))
@@ -102,7 +144,7 @@ def index():
 
 @app.get("/healthz")
 def healthz():
-    return {"ok": True, "model": G.get("model")}
+    return {"ok": True, "model": G.get("model"), "heads": sorted(G.get("heads") or {})}
 
 
 @app.get("/api/checks")
@@ -129,7 +171,7 @@ def sample_answer(file: str):
 
 
 @app.post("/api/judge")
-async def judge(file: UploadFile | None = File(None), sample: str = Form(""), scene: str = Form(""), checks: str = Form(""), state: str = Form("")):
+async def judge(file: UploadFile | None = File(None), sample: str = Form(""), scene: str = Form(""), checks: str = Form(""), state: str = Form(""), mode: str = Form("zeroshot")):
     t0 = time.time()
     keys = [k for k in checks.split(",") if k] or [c.key for c in CHECKS if not scene or c.scene == scene]
     qs = [vq(BY_KEY[k]) for k in keys if k in BY_KEY]
@@ -152,8 +194,13 @@ async def judge(file: UploadFile | None = File(None), sample: str = Form(""), sc
     finally:
         if tmp:
             os.unlink(tmp.name)
+    if mode == "head":
+        apply_heads(res, keys)
+    for v in res["questions"].values():
+        for w in v["series"]:
+            w.pop("_hidden", None)
     summ = summarize(res)
-    return {"duration": res["duration"], "timing": res["timing"], "summary": summ["items"],
+    return {"duration": res["duration"], "timing": res["timing"], "summary": summ["items"], "mode": mode, "heads": sorted(G.get("heads") or {}),
             "series": {k: {"windows": v["series"], "fps": v["fps"], "window_s": v["window_s"]} for k, v in res["questions"].items()},
             "model": G["model"], "elapsed_s": time.time() - t0}
 

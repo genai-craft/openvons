@@ -79,7 +79,7 @@ def auroc(s, y):
     return float(np.mean([[1.0 if a > b else 0.5 if a == b else 0.0 for b in neg] for a in pos]))
 
 
-def train(test_from: int = 7, epochs: int = 300, use_z: bool = True):
+def train(test_from: int = 7, epochs: int = 300, use_z: bool = True, mil_epochs: int = 150, agg: str = 'top2'):
     d = np.load(FEAT, allow_pickle=True)
     H = torch.tensor(d["h"].astype(np.float32)); Z = torch.tensor(d["z"]); meta = json.loads(str(d["meta"]))
     dev = "cuda" if torch.cuda.is_available() else "cpu"
@@ -105,6 +105,18 @@ def train(test_from: int = 7, epochs: int = 300, use_z: bool = True):
             logit = head(H[ii][trm], Zc[trm])
             loss = torch.nn.functional.binary_cross_entropy_with_logits(logit, yt[trm], pos_weight=pos_w)
             loss.backward(); opt.step()
+        # MIL 微調整: 動画ごとに窓 logit の top-2 平均を動画スコアにし、動画ラベルで BCE
+        files = np.array([meta[i]["file"] for i in idx_all]); ylab = np.array([meta[i]["label"] if meta[i]["check"] == c.key else 0 for i in idx_all])
+        tr_files = sorted({files[k] for k in range(len(idx_all)) if tr[k]})
+        groups = [torch.tensor(np.where(files == f)[0], device=dev) for f in tr_files]
+        glabel = torch.tensor([float(ylab[np.where(files == f)[0][0]]) for f in tr_files], device=dev)
+        opt2 = torch.optim.AdamW(head.parameters(), lr=3e-4, weight_decay=0.05)
+        for ep in range(mil_epochs):
+            head.train(); opt2.zero_grad()
+            lg = head(H[ii], Zc)
+            cs = torch.stack([lg[g].topk(min(2, len(g))).values.mean() for g in groups])
+            loss = torch.nn.functional.binary_cross_entropy_with_logits(cs, glabel)
+            loss.backward(); opt2.step()
         head.eval()
         with torch.no_grad():
             p = torch.sigmoid(head(H[ii], Zc)).cpu().numpy()
@@ -122,9 +134,16 @@ def train(test_from: int = 7, epochs: int = 300, use_z: bool = True):
         trclips = {}
         for k in np.where(tr & same)[0]:
             m = meta[idx_all[k]]; trclips.setdefault(m["file"], {"label": m["label"], "p": []})["p"].append(p[k])
-        pos_max = [max(v["p"]) for v in trclips.values() if v["label"] == 1]; neg_max = [max(v["p"]) for v in trclips.values() if v["label"] == 0]
-        thr = float((np.median(pos_max) + np.median(neg_max)) / 2) if pos_max and neg_max else 0.5
-        acc = float(np.mean([(max(v["p"]) >= thr) == (v["label"] == 1) for v in clips.values()])) if clips else None
+        # 閾値は学習側の動画で正解率が最大になる点 (max p を使う)
+        def score(ps):
+            ps = sorted(ps, reverse=True); return float(np.mean(ps[:2])) if agg == "top2" else float(ps[0])
+        tr_scores = np.array([score(v["p"]) for v in trclips.values()]); tr_labels = np.array([v["label"] for v in trclips.values()])
+        thr = 0.5
+        if len(tr_scores):
+            cands = np.unique(np.concatenate([tr_scores, [0.5]]))
+            accs = [((tr_scores >= t) == (tr_labels == 1)).mean() for t in cands]
+            best = max(accs); thr = float(np.median([t for t, a_ in zip(cands, accs) if a_ == best]))
+        acc = float(np.mean([(score(v["p"]) >= thr) == (v["label"] == 1) for v in clips.values()])) if clips else None
         zacc = float(np.mean([(max(v["p"]) >= 0.4) == (v["label"] == 1) for v in zclips.values()])) if zclips else None
         za = auroc(zp[te], y[te])
         results[c.key] = {"title": c.title, "n_train_windows": int(tr.sum()), "n_test_clips": len(clips), "head_window_auroc": a, "head_clip_acc": acc, "thr": thr,
@@ -143,8 +162,10 @@ if __name__ == "__main__":
     ap.add_argument("--model", default=os.environ.get("JUDGE_MODEL", "Qwen/Qwen3-VL-4B-Instruct"))
     ap.add_argument("--test-from", type=int, default=7)
     ap.add_argument("--no-z", action="store_true")
+    ap.add_argument("--mil-epochs", type=int, default=150)
+    ap.add_argument("--agg", default="top2")
     a = ap.parse_args()
     if a.extract:
         extract(a.model)
     if a.train:
-        train(a.test_from, use_z=not a.no_z)
+        train(a.test_from, use_z=not a.no_z, mil_epochs=a.mil_epochs, agg=a.agg)

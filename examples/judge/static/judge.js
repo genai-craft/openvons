@@ -53,7 +53,7 @@ $('#file').addEventListener('change', (e) => {
 $('#judgeBtn').addEventListener('click', async () => {
   const fd = new FormData();
   if (current.sample) fd.append('sample', current.sample); else if (current.file) fd.append('file', current.file); else return;
-  fd.append('scene', $('#scene').value);
+  fd.append('scene', $('#scene').value); fd.append('mode', $('#mode').value);
   $('#judgeBtn').disabled = true; $('#status').textContent = '判定中… (動画の長さの 1/5 程度の時間)'; $('#results').innerHTML = '<div class="muted">判定中…</div>';
   const t0 = performance.now();
   try {
@@ -68,7 +68,7 @@ $('#judgeBtn').addEventListener('click', async () => {
 function render(d) {
   const tm = d.timing;
   $('#timings').textContent = `動画 ${d.duration.toFixed(1)} 秒 → 窓 ${tm.windows} 個 / 質問 ${tm.asks} 回 | 読み込み ${tm.decode_s.toFixed(2)}s + 符号化 ${tm.encode_s.toFixed(2)}s + 質問 ${tm.ask_s.toFixed(2)}s = ${tm.total_s.toFixed(2)}s (${(d.duration / tm.total_s).toFixed(1)}x リアルタイム) | ${d.model}`;
-  $('#resInfo').textContent = `${d.summary.length} 項目`;
+  $('#resInfo').textContent = `${d.summary.length} 項目 (${d.mode === 'head' ? '学習 head' : '質問方式'})`;
   const res = $('#results'); res.innerHTML = '';
   d.summary.forEach(it => {
     const segs = it.segments.map(s => `${s[0].toFixed(0)}〜${s[1].toFixed(0)} 秒`).join(', ');
