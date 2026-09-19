@@ -27,7 +27,7 @@
 
 - `openvons/jevpick/`、`experiments/jevpick/`、`docs/jevpick/`。仕様書 (ChoiceSpec v1.0) の Phase 1〜4 を Tool Call で通し、G0〜G4 通過。
 - 次: vLLM への統合 (hidden state のタップ + 候補の差し込み)、コード補完向けの候補メニュー (AST / identifier 正規化)、
-  混在候補 (MTP + 有限) での学習の改善、sampling 対応、Flash-Next (qwen4_exp) は HF が FP8 MoE を読めるようになったら hidden を取る。
+  混在候補 (MTP + 有限) での学習の改善、sampling 対応、Flash-Next (qwen4_exp) は transformers が FP8 MoE を読めるようになったら hidden を取る。
 
 ## スマホ対応の現状 (2026-09-17)
 

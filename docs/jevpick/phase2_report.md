@@ -15,9 +15,9 @@
 | Python (repo-level) G0 | finite 28.5% (v1 MBPP 19.2% から改善、まだ <50%)。DFlash 43.1%、**union 50.0% で通過** |
 | Python G1 | finite で +7.8pt (63 → 71%) と **10pt 未満**。union では scorer が DFlash argmax を上回れず (75.2 vs 73.5%) |
 | Python 実測 | dflash 1.99x > union 1.85x > scorer 1.33x > prior 1.22x |
-| 併用 (union) | 受理長は常に最大 (Tool Call 4.48 vs finite 4.22 vs DFlash 3.34 token/step)。HF eager では draft コスト (総時間の 14%) で finite+scorer に届かない |
+| 併用 (union) | 受理長は常に最大 (Tool Call 4.48 vs finite 4.22 vs DFlash 3.34 token/step)。transformers (eager) では draft コスト (総時間の 14%) で finite+scorer に届かない |
 | 複合 controller (hybrid) | 有限候補の期待受理長が高い step では draft を呼ばない。Tool Call 16k で draft 呼び出しを 43% 削減しつつ受理長は union と同じ |
-| 長文脈 16k | **vLLM 実測: DFlash 5.4x (300tok) → 0.99x (16k)、ngram 1.9x → 0.76x** で「DFlash は数 k までしか速くない」を確認。受理長は DFlash 3.3 → 1.5 に半減、有限候補 (schema/corpus) は 2.0 維持、union 2.5。HF eager では 16k で多 token verify が decode の 3 倍かかり全構成 1x 未満だが、scorer/hybrid の skip で 1.0x に踏みとどまる (常時投機の prior/dflash は 0.63〜0.78x) |
+| 長文脈 16k | **vLLM 実測: DFlash 5.4x (300tok) → 0.99x (16k)、ngram 1.9x → 0.76x** で「DFlash は数 k までしか速くない」を確認。受理長は DFlash 3.3 → 1.5 に半減、有限候補 (schema/corpus) は 2.0 維持、union 2.5。transformers (eager) では 16k で多 token verify が decode の 3 倍かかり全構成 1x 未満だが、scorer/hybrid の skip で 1.0x に踏みとどまる (常時投機の prior/dflash は 0.63〜0.78x) |
 
 ## 1. 条件
 
@@ -80,7 +80,7 @@ Ablation (toolcall / finite / L=8):
 
 layer は深いほど良く (仕様書の「中間層が有利」仮説は今回は否定的)、差は小さい。候補 encoder は S2 が +3pt。
 
-## 4. Phase 4: Runtime 実測 (短文脈, L=8, bf16, HF eager)
+## 4. Phase 4: Runtime 実測 (短文脈, L=8, bf16, transformers (eager))
 
 `experiments/jevpick/phase4_runtime/runtime_v2.py`。同一 verifier 経路で mode だけ変える。n=39 (toolcall) / 29 (python)、max_new 128、warm-up 1 本除外。
 
@@ -107,7 +107,7 @@ DFlash 公式実装との整合: 公式 `dflash_generate` は toolcall b16 で 3
 読み方:
 
 - Tool Call は「有限候補 + scorer」が **DFlash を 1.4 倍上回る**。draft model を走らせずに CPU の suffix index (総時間の 0.5%) と 5M param の scorer で済む。
-- union は受理長で最良だが、HF eager では DFlash draft 1 回 (~2.8 ms) が decode step (13 ms) の 20% に相当し、その分を受理長の増加 (+0.26 token/step) で回収できない。draft を fused kernel で回す runtime なら逆転しうる。
+- union は受理長で最良だが、transformers (eager) では DFlash draft 1 回 (~2.8 ms) が decode step (13 ms) の 20% に相当し、その分を受理長の増加 (+0.26 token/step) で回収できない。draft を fused kernel で回す runtime なら逆転しうる。
 - Python は DFlash が支配的。有限候補の当たりが少なく (zero-accept 70%)、scorer も DFlash の判断を改善できない。
 
 ## 5. 併用 (複合技) の整理
@@ -119,7 +119,7 @@ DFlash 公式実装との整合: 公式 `dflash_generate` は toolcall b16 で 3
 | DFlash の候補選択器を scorer で置換 | DFlash2 は位置ごとの top-k から「selector」で 1 経路を選ぶ。OpenVons scorer を target hidden 付きの selector として使い、有限候補も同じ土俵に載せる | 未実施。DFlash2 の selector は codebook 内積の軽量モデルなので、scorer 側が重くなる分の損益分岐を要確認 |
 | MTP head との併用 | MTP 出力 (未来 k token の分布) を候補 source として union に入れる | Qwen3-4B に MTP head が無いため未実施。構造は dflash source と同じ (位置別 top-k → chain 化) |
 
-## 6. 長文脈 (16k) — HF eager
+## 6. 長文脈 (16k) — transformers (eager)
 
 prompt ~15.7k token (python: 同 repo の他ファイルを文脈として前置 / toolcall: 100 tool のカタログ)。n=24、L=8、th_hi=3。**decode 専用 tok/s** (prefill を除外, §17.3)。
 
@@ -143,7 +143,7 @@ prompt ~15.7k token (python: 同 repo の他ファイルを文脈として前置
 | toolcall | 3.34 → **1.53** (−54%) | 4.22 → 2.04 (−52%) | 4.48 → 2.52 (−44%) |
 | python | 2.21 → 1.60 (−28%) | 0.72 → 0.73 (±0) | 2.16 → 1.46 (−32%) |
 
-**なぜ HF eager では全構成が 1x 未満か**: 実測 (`bench_ctx.py`, batch=1):
+**なぜ transformers (eager) では全構成が 1x 未満か**: 実測 (`bench_ctx.py`, batch=1):
 
 | ctx | decode 1 token | verify 9 token | 比 | verify 17 | DFlash draft | n-gram lookup (CPU) |
 |---|---:|---:|---:|---:|---:|---:|
@@ -152,7 +152,7 @@ prompt ~15.7k token (python: 同 repo の他ファイルを文脈として前置
 | 16k | 20.2 | 60.8 | **3.02** | 62.0 | 3.8 | 0.004 |
 | 32k | 26.2 | 103.5 | **3.95** | 105.2 | 4.8 | 0.005 |
 
-HF eager は q_len>1 の attention で 4D mask 経路 (flash kernel 不可) に落ち、16k で verify が decode の 3 倍になる。**投機の損益分岐が「受理 2 token 以上」に上がり、どの draft 方式でも赤字**。これは runtime の kernel の問題で、方式固有ではない。DFlash draft 自体のコストは 2.8 → 4.8 ms と緩やかで、「DFlash が 4k までしか速くない」の主因はコストより **受理長の低下** (Tool Call で半減) にある。有限候補は文脈が長いほど候補が増えるため相対的に強くなり、Tool Call 16k では finite+scorer が DFlash を tok/step で上回る (3.04 vs 2.40)。
+transformers (eager) は q_len>1 の attention で 4D mask 経路 (flash kernel 不可) に落ち、16k で verify が decode の 3 倍になる。**投機の損益分岐が「受理 2 token 以上」に上がり、どの draft 方式でも赤字**。これは runtime の kernel の問題で、方式固有ではない。DFlash draft 自体のコストは 2.8 → 4.8 ms と緩やかで、「DFlash が 4k までしか速くない」の主因はコストより **受理長の低下** (Tool Call で半減) にある。有限候補は文脈が長いほど候補が増えるため相対的に強くなり、Tool Call 16k では finite+scorer が DFlash を tok/step で上回る (3.04 vs 2.40)。
 
 ## 7. 長文脈 — vLLM (kernel 最適化済 runtime) での確認
 
@@ -170,11 +170,11 @@ vLLM 0.29 (`experiments/jevpick/phase4_runtime/bench_vllm.py`)、同じ prompt�
 
 所見:
 
-- **vLLM の通常 decode は 16k でも 121 tok/s と平坦** (HF eager は 78 → 51)。一方 **DFlash は 5.4x → 1.0x、ngram は 1.9x → 0.76x に落ちる**。「DFlash は数 k token までしか速くない」は本環境 (Blackwell 1 枚, batch=1, vLLM 0.29) でそのまま再現した。
+- **vLLM の通常 decode は 16k でも 121 tok/s と平坦** (transformers (eager) は 78 → 51)。一方 **DFlash は 5.4x → 1.0x、ngram は 1.9x → 0.76x に落ちる**。「DFlash は数 k token までしか速くない」は本環境 (Blackwell 1 枚, batch=1, vLLM 0.29) でそのまま再現した。
 - 原因は 2 つ。(a) 受理長の低下: §6 の HF 計測で Tool Call の DFlash 受理長が 3.3 → 1.5 に半減 (100 tool のカタログで draft が迷う)。(b) 投機 1 step のコスト増: 16k では draft (target 全文脈 hidden への attention) と 16 token verify の両方が伸びるのに対し、1 token decode は KV 読みが支配的で伸びない。損益分岐の受理長が上がり、常時投機 (vLLM の ngram/dflash は controller を持たない) は赤字になる。
 - **ここが ChoiceSpec の controller の出番**: HF 16k (§6) で prior/dflash 固定は 0.63〜0.78x に落ちたが、scorer の期待受理長で skip する scorer/hybrid は 0.98〜1.00x で損失を止めた。長文脈では「投機するか否か」の判断だけで方式間の差が決まる。
 - 有限候補は文脈が長いほど候補が増えて相対的に強くなる (Tool Call 16k: finite+scorer 3.04 vs DFlash 2.40 token/step)。速度に変えるには、多 token verify のコストが文脈長に対して平坦な kernel (FlashInfer 系の decode attention で query 数 9〜17) と、suffix index の incremental 構築が前提。
-- 短文脈では vLLM 上の DFlash が 5.4x と HF eager の 2.9x より大きく伸びる (draft/verify が fused)。ChoiceSpec も vLLM 統合後の再測定が必要で、HF eager の 3.7〜4.8x は下限側と見る。
+- 短文脈では vLLM 上の DFlash が 5.4x と transformers (eager) の 2.9x より大きく伸びる (draft/verify が fused)。ChoiceSpec も vLLM 統合後の再測定が必要で、transformers (eager) の 3.7〜4.8x は下限側と見る。
 
 ## 8. 判定と次の一手
 

@@ -27,7 +27,7 @@ LLM の文章生成そのものを速くする **先読み (speculative decoding
 
 | 場所 | 中身 |
 |---|---|
-| `openvons/jevpick/candidates/` | 候補メニュー: `ngram` (prompt / 出力の n-gram 索引)、`tool_schema` (ツール定義の展開、Qwen3 JSON / Qwen3.5 XML 両形式)、`repository` (同 repo のコード)、`grammar` / `macro_copy` (定型)、`mtp_qwen35` (Qwen3.5 系同梱 MTP head の HF 実装) |
+| `openvons/jevpick/candidates/` | 候補メニュー: `ngram` (prompt / 出力の n-gram 索引)、`tool_schema` (ツール定義の展開、Qwen3 JSON / Qwen3.5 XML 両形式)、`repository` (同 repo のコード)、`grammar` / `macro_copy` (定型)、`mtp_qwen35` (Qwen3.5 系同梱 MTP head の transformers 実装) |
 | `openvons/jevpick/scorer/model.py` | JevPick 本体 (`BlockScorer`)。hidden state + 候補 token 列 → 各候補の期待受理長。5〜10M パラメータ、学習 1〜2 分 |
 | `openvons/jevpick/runtime/verifier.py` | greedy の一括検算と KV cache の巻き戻し |
 | `openvons/jevpick/data/` | prompt 作成、greedy trace の収集、hidden state / MTP 候補の抽出 (bf16 / FP8 / NF4) |
@@ -58,5 +58,7 @@ CUDA_VISIBLE_DEVICES=0 .venv/bin/python experiments/jevpick/phase4_runtime/runti
 | 当たり幅 / 受理長 | 1 回の検算で何語進めたか |
 | 上限値 (oracle) | メニューに正解があれば必ず選べたと仮定したときの当たり幅。候補メニューの天井 |
 | prior | 学習なしの単純ルールで選ぶ baseline (出現頻度順、MTP / DFlash の第一候補) |
+| transformers | Hugging Face 社の推論ライブラリ (Python)。本文の速度比較で「簡易実装」と呼ぶもの。モデル置き場の Hugging Face Hub とは別 |
+| vLLM / llama.cpp | 製品級の推論エンジン。kernel が最適化されており絶対速度が出る |
 | MTP | モデルに同梱された「次の次」を予測する小さな head (Qwen3.5 系) |
 | DFlash / DFlash2 | 数語をまとめて生成する学習済みの予測モデル (z-lab)。ブロック拡散型 |

@@ -12,8 +12,8 @@
 | 量子化しても成り立つか | **成り立つ**。bf16 で学習した scorer を **FP8 モデルの hidden state にそのまま適用して 83.8%**（−0.5pt）。候補の当たり方も bf16/FP8 でほぼ同じ（oracle recall 90.1 vs 90.8%）。FP8 の greedy 出力は bf16 と 96.6% 一致 |
 | MTP（checkpoint 同梱 head）は | Tool Call で非常に強い: 1 層 0.42B の head で step-1 正解率 99%、7 token chain の平均一致 6.27 token（K=7）。vLLM 実測では bf16 27B で MTP k=15 が 7.1x、NVFP4 で k=7 が 6.0x。Tool Call では MTP がほぼ飽和しており、scorer の上積み余地は小さい |
 | DFlash2（2B draft）との併用は | DFlash2 単独で平均受理 6.11/8 と強く、有限候補を足した union は 6.30（oracle 6.83）。**27B では「有限候補 + scorer」の単独価値より、生成型 draft（MTP/DFlash2）の候補を選ぶ/skip する controller としての価値が主** |
-| Flash-Next（qwen4_exp MoE, FP8 186GB） | HF は load 不可（FP8 MoE 重み変換失敗）→ scorer 用 hidden tap は vLLM 側に要実装。vLLM TP=4 で通常 102 tok/s、**MTP k=7 で 590 tok/s（5.77x）**、ngram は PLE 衝突で不可（§6） |
-| 実測速度 | vLLM（scorer 未統合）: 4-bit 27B で DFlash2 4.6〜6.2x、MTP 4.3〜6.0x。HF runtime（scorer 込み）: 有限候補+scorer 3.5〜3.8x、DFlash2 併用 4.7x（bf16/FP8）、NF4 は §5.2 |
+| Flash-Next（qwen4_exp MoE, FP8 186GB） | transformers (Hugging Face の推論ライブラリ) では load 不可（FP8 MoE 重みの変換失敗）→ scorer 用 hidden tap は vLLM 側に要実装。vLLM TP=4 で通常 102 tok/s、**MTP k=7 で 590 tok/s（5.77x）**、ngram は PLE 衝突で不可（§6） |
+| 実測速度 | vLLM（scorer 未統合）: 4-bit 27B で DFlash2 4.6〜6.2x、MTP 4.3〜6.0x。transformers 上の runtime（scorer 込み）: 有限候補+scorer 3.5〜3.8x、DFlash2 併用 4.7x（bf16/FP8）、NF4 は §5.2 |
 
 ## 1. 条件
 
@@ -21,11 +21,11 @@
 |---|---|
 | target | Qwen/Qwen3.8-27B（Qwen3_5ForCausalLM、64 層 = linear attention 48 + full attention 16、hidden 5120）、non-thinking、greedy |
 | 量子化 | HF: FineGrainedFP8（on-the-fly、weight 128×128 block、linear_attn の in_proj_a/b・lm_head・norm は除外）29.5 GB。vLLM: unsloth/Qwen3.8-27B-NVFP4（速度のみ） |
-| draft | incoai/Qwen3.8-27B-DFlash2（2B、block 8、candidate selector 付き）／ checkpoint 同梱 MTP head（1 層、fc + full-attention layer、0.42B）を HF 上で自前実装（`candidates/mtp_qwen35.py`、vLLM の qwen3_5_mtp.py と同じ式） |
+| draft | incoai/Qwen3.8-27B-DFlash2（2B、block 8、candidate selector 付き）／ checkpoint 同梱 MTP head（1 層、fc + full-attention layer、0.42B）を transformers 上で自前実装（`candidates/mtp_qwen35.py`、vLLM の qwen3_5_mtp.py と同じ式） |
 | data | Tool Call のみ。train 3000 / test 500（既知 250 + 未知 schema 250）。bf16 trace 150k 位置、FP8 trace は test 500 件 |
 | tool_call 形式 | Qwen3.5 系は `<tool_call>\n<function=NAME>\n<parameter=KEY>\nVALUE\n</parameter>...` 形式。schema source（Source D）はこの形式で展開（chat template から自動判定） |
 | scorer | BlockScorer pooling、layer 48（75%）、L=8、3 epoch |
-| HF runtime 注意 | linear attention の fused kernel（flash-linear-attention / causal_conv1d）が無く reference 実装で動く。1 token decode 60 ms（FP8）と遅いので、HF 上の絶対 tok/s は参考値。速度は vLLM で測る |
+| transformers 上の runtime 注意 | linear attention の fused kernel（flash-linear-attention / causal_conv1d）が無く reference 実装で動く。1 token decode 60 ms（FP8）と遅いので、transformers 上の絶対 tok/s は参考値。速度は vLLM で測る |
 
 ## 2. Oracle（G0）— bf16 と FP8
 
@@ -66,7 +66,7 @@ L=8、候補あり位置。
 
 ## 4. MTP head
 
-Qwen3.8-27B checkpoint 同梱の MTP head（`mtp.*` 15 tensor、fc + full-attention 1 層 + norm、0.42B）を HF 上で実装し（`openvons/jevpick/candidates/mtp_qwen35.py`、vLLM `qwen3_5_mtp.py` と同式）、各 decode 位置で 7 token を chain で draft した（150k 位置）。
+Qwen3.8-27B checkpoint 同梱の MTP head（`mtp.*` 15 tensor、fc + full-attention 1 層 + norm、0.42B）を transformers 上で実装し（`openvons/jevpick/candidates/mtp_qwen35.py`、vLLM `qwen3_5_mtp.py` と同式）、各 decode 位置で 7 token を chain で draft した（150k 位置）。
 
 | 指標 | 値 |
 |---|---|
@@ -94,9 +94,9 @@ llama.cpp（GGUF Q4_K_M, GPU7 を MTP 抽出と共用）: MTP k=3 1.87x、k=7 2.
 - vLLM/llama.cpp の ngram は Tool Call でほぼ効かない（受理 1.2〜1.3 token/draft、min n-gram=1 で外れ draft を出し続ける）。ChoiceSpec の有限候補（schema 展開 + corpus、oracle 90%）とは別物。
 - NVFP4 は vLLM が FlashInfer を要求（`nvcc` を PATH に置いて JIT）。AWQ は Marlin kernel で追加依存なし。
 
-### 5.2 ChoiceSpec との組み合わせ（HF runtime、同一 verifier 経路、L=8、n=29）
+### 5.2 ChoiceSpec との組み合わせ（transformers 上の runtime、同一 verifier 経路、L=8、n=29）
 
-scorer は vLLM 未統合のため、ここは HF eager（27B の linear attention は reference 実装で 1 token decode が 60 ms 前後と遅い）。**比のみ**を見る。
+scorer は vLLM 未統合のため、ここは transformers (eager)（27B の linear attention は reference 実装で 1 token decode が 60 ms 前後と遅い）。**比のみ**を見る。
 
 | 量子化 | mode | decode tok/s | 対 baseline | 平均受理/step | 一致 |
 |---|---|---:|---:|---:|---:|
@@ -113,14 +113,14 @@ scorer は vLLM 未統合のため、ここは HF eager（27B の linear attenti
 | **NF4 (Q4)** | baseline | 23.3 | 1.00x | - | 100% |
 | NF4 | 有限候補 + scorer | 73.6 | **3.16x** | 3.48 | 55%* |
 | NF4 | DFlash2 のみ | 90.5 | 3.89x | 5.70 | 90%* |
-| NF4 | MTP head のみ（HF 自前実装、draft 時間 20%） | 76.7 | 3.30x | **6.97** | 86%* |
+| NF4 | MTP head のみ（transformers 上の自前実装、draft 時間 20%） | 76.7 | 3.30x | **6.97** | 86%* |
 | NF4 | DFlash2 + 有限候補 + scorer (union) | 91.0 | **3.91x** | 5.84 | 86%* |
 | NF4 | MTP + DFlash2 + 有限候補 + scorer (union_all) | 68.3 | 2.93x | 6.28 | 86%* |
 | NF4 | hybrid_all（draft 呼び出し 68% skip） | 75.9 | 3.26x | 5.33 | 69%* |
 | bf16 (+MTP run) | baseline | 18.3 | 1.00x | - | 100% |
 | bf16 | 有限候補 + scorer | 71.1 | 3.88x | 3.50 | 59%* |
 | bf16 | DFlash2 のみ | 89.3 | **4.87x** | 5.82 | 90%* |
-| bf16 | MTP head のみ（HF 自前実装、draft 時間 22%） | 78.4 | 4.28x | **7.02** | 93%* |
+| bf16 | MTP head のみ（transformers 上の自前実装、draft 時間 22%） | 78.4 | 4.28x | **7.02** | 93%* |
 | bf16 | MTP + DFlash2 + 有限候補 + scorer (union_all) | 67.8 | 3.70x | 6.31 | 93%* |
 | bf16 | hybrid_all（draft 呼び出し 66% skip） | 71.9 | 3.92x | 5.15 | 69%* |
 
@@ -138,7 +138,7 @@ scorer は vLLM 未統合のため、ここは HF eager（27B の linear attenti
 | MTP + DFlash2 + 有限 | 6.11 | 6.57 | 6.95 | +0.46（+8%） |
 
 - **draft model が無い条件では scorer が主役**（+26%、oracle の 93% まで到達）。学習 1〜2 分、5M param、CPU の suffix index で済み、量子化版にも転移する。
-- **学習済み draft（MTP / DFlash2）がある条件では上積み 4〜8%**。Tool Call は MTP の次 token 正解率が 99.7% と飽和しているため。online（HF runtime）では scorer の選択が MTP 単独を下回る場面もあり（union_all 6.28 vs mtp 6.97）、draft と有限候補の混在時の学習（位置分布・候補長の不一致）が課題。
+- **学習済み draft（MTP / DFlash2）がある条件では上積み 4〜8%**。Tool Call は MTP の次 token 正解率が 99.7% と飽和しているため。online（transformers 上の runtime）では scorer の選択が MTP 単独を下回る場面もあり（union_all 6.28 vs mtp 6.97）、draft と有限候補の混在時の学習（位置分布・候補長の不一致）が課題。
 - scorer の**もう一つの価値は controller**: 期待受理長で draft 呼び出しを 60〜68% skip（hybrid）、長文脈で投機を止めて損失を防ぐ（v2 §6）。
 
 ## 6. Qwen3.8-Flash-Next への適用可否
@@ -147,7 +147,7 @@ scorer は vLLM 未統合のため、ここは HF eager（27B の linear attenti
 
 | 経路 | 結果 |
 |---|---|
-| HF transformers 5.17（hidden state 取得 → scorer） | **不可**。`qwen4_exp` のクラスはあるが、FP8 checkpoint の fused expert 重み（`mlp.experts.gate_up_proj` / `down_proj`）の自動変換が失敗。bf16 版は 370 GB でこの機材に乗らない |
+| Hugging Face の推論ライブラリ transformers 5.17（hidden state 取得 → JevPick） | **不可**。`qwen4_exp` のクラスはあるが、FP8 checkpoint の fused expert 重み（`mlp.experts.gate_up_proj` / `down_proj`）の自動変換が失敗。bf16 版は 370 GB でこの機材に乗らない |
 | vLLM 0.29、TP=4、block_size=320（QSA ring capacity 20 の倍数が必要）、通常 decode | **可**: Tool Call 300 token で **102.3 tok/s**（27B bf16 の 27 tok/s、NVFP4 の 50 tok/s より速い: 活性 ~4B の MoE） |
 | vLLM ngram（prompt lookup） | **不可**: draft token に対して PLE 入力が用意されず `PLE inputs were not prepared`。n-gram 埋め込みを持つアーキと外部 n-gram draft の相性問題 |
 | vLLM MTP k=7 | **可**: **590.3 tok/s（5.77x）**、受理 752/833 draft token（6.3/7 per draft）。同梱 MTP は Flash-Next でも Tool Call でほぼ飽和 |
@@ -155,7 +155,7 @@ scorer は vLLM 未統合のため、ここは HF eager（27B の linear attenti
 **ChoiceSpec 適用の見立て**:
 
 1. **候補生成（有限候補）は適用可**。tool schema 展開・corpus・prompt n-gram は target の tokenizer と chat template だけに依存し、Flash-Next の tool_call 形式は 27B と同じ XML 形式（同じ chat template 系）。oracle 評価は vLLM の greedy trace だけで回せる。
-2. **scorer は hidden state のタップが前提**。HF で読めないため、vLLM 内部（`Qwen4ExpModel.forward` の最終 hidden）にフックを入れるか、transformers の qwen4_exp FP8 変換が直るのを待つ必要がある。scorer 自体は「hidden 1 本 + 候補 token 列」しか見ないので、タップさえ取れれば 27B と同じ手順（1〜2 分の学習）で載る。
+2. **scorer は hidden state のタップが前提**。transformers で読めないため、vLLM 内部（`Qwen4ExpModel.forward` の最終 hidden）にフックを入れるか、transformers の qwen4_exp FP8 変換が直るのを待つ必要がある。scorer 自体は「hidden 1 本 + 候補 token 列」しか見ないので、タップさえ取れれば 27B と同じ手順（1〜2 分の学習）で載る。
 3. **verifier（KV 巻き戻し）**は Gated DeltaNet + QSA の両方で recurrent/sparse 状態の巻き戻しが要る。vLLM の MTP が動くなら runtime 側には巻き戻し機構が既にあり、そこに候補を差し込む形になる。
 4. **MTP head が同梱**なので、Tool Call では 27B と同様に MTP 単独でほぼ飽和すると予想。ChoiceSpec の役割は controller（投機の可否・長さ）と未知 schema の補完に寄る。
 5. **PLE（n-gram 埋め込み）が draft と衝突**する点は要注意。vLLM の ngram が壊れたのと同じ理由で、外部候補を verify する際に draft token 分の PLE 入力を作る実装が必要。
@@ -165,4 +165,4 @@ scorer は vLLM 未統合のため、ここは HF eager（27B の linear attenti
 1. **予測機として**: 27B・FP8 で成り立つ。scorer は target ごとに 1〜2 分の学習、量子化版への転移可。
 2. **Tool Call 単独の高速化器として**: 有限候補 + scorer で replay 4.5〜4.6x（L=8）。draft model 不要・VRAM 増ほぼ 0（scorer 5M param + CPU index）。
 3. **MTP / DFlash2 がある場合**: 生成型 draft の方が受理長で勝つ（MTP 6.3/7、DFlash2 6.1/8 vs 有限 5.4/8）。ChoiceSpec の役割は「候補の選択」より「投機の可否・長さの判断（controller）」と「未知 schema での補完」に寄る。
-4. **量子化の実運用**: HF の FP8 は kernel 未整備で遅い。NVFP4/FP8 は vLLM/SGLang で動かし、scorer は最終層近くの hidden を 1 本抜くだけなので統合コストは小さい（DFlash も同じ hidden tap を使う）。
+4. **量子化の実運用**: transformers の FP8 は kernel 未整備で遅い。NVFP4/FP8 は vLLM/SGLang で動かし、scorer は最終層近くの hidden を 1 本抜くだけなので統合コストは小さい（DFlash も同じ hidden tap を使う）。

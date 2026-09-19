@@ -76,22 +76,22 @@
   <h2>正直に言うと</h2>
   <ul>
     <li><b>コードの補完には弱い。</b>候補メニューが 3 割しか当たりません。ここは学習済み予測モデルの領分です。</li>
-    <li>速度の絶対値は簡易実装 (HF transformers) で測った比です。製品級の推論エンジン (vLLM / SGLang) への組み込みは次の課題で、そこでは既存手法が 4〜8 倍出ています。</li>
+    <li>速度の絶対値は簡易実装 (Hugging Face の推論ライブラリ transformers) で測った比です。製品級の推論エンジン (vLLM / SGLang) への組み込みは次の課題で、そこでは既存手法が 4〜8 倍出ています。</li>
     <li>1 モデル系列 (Qwen)・1 タスク (ツール呼び出し) での結果です。</li>
-    <li>Qwen3.8-Flash-Next は内部状態を取り出す経路が現時点で無く (HF が FP8 の MoE 重みを読めない)、候補メニューと MTP までの確認です。</li>
+    <li>Qwen3.8-Flash-Next は内部状態を取り出す経路が現時点で無く (推論ライブラリ transformers が FP8 の MoE 重みを読めない)、候補メニューと MTP までの確認です。</li>
   </ul>
 
   <h2>全手法 × モデルの一覧 (ツール呼び出し、何もしない = 1.0 倍)</h2>
   <div class="tablewrap"><table>
     <thead><tr><th>モデル・精度</th><th>実行環境</th><th>JevPick (予測モデルなし)</th><th>DFlash / DFlash2</th><th>MTP</th><th>JevPick + 予測器</th></tr></thead>
     <tbody>
-      <tr><td>Qwen3-4B bf16</td><td>HF</td><td><b>3.8〜4.8 倍</b></td><td>2.9 倍 (vLLM 5.4 倍)</td><td>—</td><td><b>4.0〜4.8 倍</b> (hybrid)</td></tr>
-      <tr><td>Qwen3-4B bf16、16k 文脈</td><td>HF / vLLM</td><td>1.0 倍 (損なし)</td><td>0.6 倍 (vLLM 0.99 倍)</td><td>—</td><td>1.0 倍</td></tr>
-      <tr><td>Qwen3.8-27B bf16</td><td>HF / vLLM</td><td>3.9 倍</td><td>4.9 倍 (vLLM 8.3 倍)</td><td>4.3 倍 (vLLM 7.1 倍)</td><td>4.7 倍</td></tr>
+      <tr><td>Qwen3-4B bf16</td><td>transformers</td><td><b>3.8〜4.8 倍</b></td><td>2.9 倍 (vLLM 5.4 倍)</td><td>—</td><td><b>4.0〜4.8 倍</b> (hybrid)</td></tr>
+      <tr><td>Qwen3-4B bf16、16k 文脈</td><td>transformers / vLLM</td><td>1.0 倍 (損なし)</td><td>0.6 倍 (vLLM 0.99 倍)</td><td>—</td><td>1.0 倍</td></tr>
+      <tr><td>Qwen3.8-27B bf16</td><td>transformers / vLLM</td><td>3.9 倍</td><td>4.9 倍 (vLLM 8.3 倍)</td><td>4.3 倍 (vLLM 7.1 倍)</td><td>4.7 倍</td></tr>
       <tr><td>Qwen3.8-27B NVFP4</td><td>vLLM</td><td>未統合</td><td>4.6 倍</td><td><b>6.0 倍</b></td><td>—</td></tr>
       <tr><td>Qwen3.8-27B AWQ-INT4</td><td>vLLM</td><td>未統合</td><td><b>6.2 倍</b></td><td>4.3 倍</td><td>—</td></tr>
       <tr><td>Qwen3.8-27B GGUF Q4_K_M</td><td>llama.cpp</td><td>未統合</td><td>3.75 倍</td><td>2.0 倍</td><td>—</td></tr>
-      <tr><td>Qwen3.8-27B NF4</td><td>HF</td><td><b>3.2 倍</b></td><td>3.9 倍</td><td>3.3 倍</td><td>3.9 倍</td></tr>
+      <tr><td>Qwen3.8-27B NF4</td><td>transformers</td><td><b>3.2 倍</b></td><td>3.9 倍</td><td>3.3 倍</td><td>3.9 倍</td></tr>
       <tr><td>Qwen3.8-Flash-Next FP8</td><td>vLLM (4 GPU)</td><td>未統合</td><td>—</td><td><b>5.8 倍</b> (590 tok/s)</td><td>—</td></tr>
     </tbody></table></div>
   <p class="muted small">すべて手元の RTX PRO 6000 Blackwell、1 リクエストずつ、greedy。JevPick を含む列は同一の検算コードで方式だけを変えて比べたもの。詳しい表・ログ・再現手順は <a href="https://github.com/genai-craft/openvons/tree/main/docs/jevpick" target="_blank" rel="noopener">docs/jevpick</a> にあります。</p>

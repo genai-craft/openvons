@@ -20,7 +20,7 @@ def hf_runtime(path, model, quant, ctx, task, label_map):
     bdec = b.get("decode_tok_s", b["tok_s"] / (1 - b["time_frac"].get("prefill", 0)))
     for m, r in s.items():
         dec = r.get("decode_tok_s", r["tok_s"] / (1 - r["time_frac"].get("prefill", 0)))
-        add(model, quant, "HF eager", ctx, task, label_map.get(m, m), dec / bdec, dec,
+        add(model, quant, "transformers (eager)", ctx, task, label_map.get(m, m), dec / bdec, dec,
             f"受理 {r['mean_accepted']:.2f}/step, 一致 {r['exact_match']:.0%}")
 
 
@@ -84,7 +84,7 @@ if Path(f).exists():
 
 # --- 出力 ---
 lines = ["# 手法 × タスク × モデル: 何もしない (1.00x) 比の decode 高速化", "",
-         "decode 専用 tok/s の比 (prefill 除外)、batch=1、greedy。HF eager は kernel 未最適化 (特に 27B の linear attention) なので比のみ参考。", "",
+         "decode 専用 tok/s の比 (prefill 除外)、batch=1、greedy。transformers (Hugging Face の推論ライブラリ、eager 実行) は kernel 未最適化 (特に 27B の linear attention) なので比のみ参考。", "",
          "| Model | 量子化 | Runtime | ctx | Task | 手法 | speedup | tok/s | 備考 |", "|---|---|---|---|---|---|---:|---:|---|"]
 for r in rows:
     lines.append(f"| {r[0]} | {r[1]} | {r[2]} | {r[3]} | {r[4]} | {r[5]} | **{r[6]:.2f}x** | {r[7]:.1f} | {r[8]} |")
