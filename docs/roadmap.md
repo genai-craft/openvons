@@ -38,8 +38,8 @@
 | 端末のマイク入力 | 完了。サンプルレートを毎コールバック読む (機種でルートが変わると壊れる罠の対策) |
 | 小型モデルの蒸留 | pilot 完了。whisper-small 2 層 decoder、147M、検証 kana CER 0.23 (docs/voice_small_model.md) |
 | 小型モデルの品質 | 課題。自由認識は同等だが候補の尤度採点が弱い (PTZ 0.58)。ReazonSpeech medium (1,000h) + KL 蒸留 + decoder 4 層が次 |
-| ONNX 変換 → ブラウザ内推論 | **通った** (2026-09-18)。onnxruntime-web 直叩き + KV cache なし decoder。headless WASM 4 スレッドで encoder 2.2s / 採点 0.6s。実機 (WebGPU) の測定はこれから。int8 で 318MB |
-| ネイティブアプリ (Capacitor) | 未着手。PWA で足りる間は不要 |
+| ONNX 変換 → ブラウザ内推論 | **完了** (2026-09-18)。onnxruntime-web 直叩き + KV cache なし decoder。デモ https://ondevice.openvons.com。int8 で 318MB |
+| ネイティブアプリ | **完了 (Flutter、Android)**。認識・判断ともに端末内、APK は Releases (app-v0.1.7)。iOS はビルド機待ち。詳細 docs/ondevice_app.md |
 
 ## 残課題 (技術)
 - 短い固有名詞だけの小さな範囲では該当なしとの分離が甘い (山手線 30 駅: 文法外の誤受理 8%)。担体付きの言い方 (〜まで / 〜駅) を

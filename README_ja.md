@@ -79,10 +79,20 @@ DM_LLM_URL=http://127.0.0.1:8300/v1 .venv/bin/python -m openvons.lm.api.server  
 `/v1/systemone` は typesafe-sdk のワイヤフォーマット (state + questions{type, instructions, criteria} → answers) と同じ形で、
 SDK の base_url を向けるだけで手元の Decision Model が答える。公開仕様との対応と規約上の注意は [docs/jev_api.md](docs/jev_api.md)。
 
-### スマホ搭載に向けた小型化 (進行中)
+### スマホの中だけで動くアプリ (Android、公開済み)
 
-kana-whisper (809M) の疑似ラベルで whisper-small を 2 層 decoder のカナ出力に蒸留する (`openvons/voice/distill/`)。
-候補採点方式は自由認識の精度に寛容なので、小型化との相性がよい。目標はブラウザ内推論 (transformers.js, WebGPU)。
+Flutter のアプリ (`app/`) が、音声も画像も **端末内で** 処理する: log-mel → 認識 → 候補採点 → 校正 → 判断、画像の埋め込み → 選択肢との照合。
+サーバーはモデルと「選べるものの一覧」を配るだけで、音声・画像は端末から出ない。
+
+- **[Android APK をダウンロード](https://github.com/genai-craft/openvons/releases/latest)** (arm64 39 MB、32bit 31 MB、universal 111 MB。Android 8.0 以上、提供元不明のアプリの許可が要る)
+- 3 画面: 声で操作 (河川カメラを声で選んで動かす。従来方式との 2 列比較と「従来なら誤作動 n 回」)、映像の状態 (端末カメラか河川ライブカメラを状態として答える)、設定 (モデル配布元、アクセラレータ)
+- 初回だけ約 300 MB のモデルを取得 (既定 `https://ondevice.openvons.com`)。自前で配るなら `scripts/serve_ondevice.sh start 0 8606`
+- 実測 (Nothing Phone 3、NNAPI、int8): 音声 1 回 2.0–2.2 秒、画像の埋め込み 260–290 ms、9 個の質問に答える 11 ms
+- ブラウザ内推論 (WebGPU / WASM) のデモは https://ondevice.openvons.com
+- 小型モデル: kana-whisper (809M) の疑似ラベルで whisper-small を蒸留 (decoder 2〜4 層、147M、`openvons/voice/distill/`)。候補採点方式は自由認識の精度に寛容なので小型化と相性がよい。比較と実機の数字は [docs/voice_small_model.md](docs/voice_small_model.md)、実装の罠は [docs/ondevice_app.md](docs/ondevice_app.md)
+- iOS は設定済みだが Mac が無いとビルドできないため未配布
+
+ビルド: `cd app && flutter pub get && flutter build apk --release` ([app/README.md](app/README.md))。
 
 ## 構成
 
