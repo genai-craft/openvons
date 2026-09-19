@@ -16,6 +16,7 @@
 | Qwen3-0.6B (INT4, optimum-intel) | テキストの判断 (prompt 195 token → 選択肢 logit) | int4 | 564 ms | **348 ms** |
 | Qwen3-1.7B (INT4) | 同上 | int4 | 632 ms | **410 ms** |
 | 同、生成 1 token あたり | (参考: 生成させた場合) | int4 | 71〜102 ms | 71〜91 ms |
+| Qwen3-VL-2B-Instruct (optimum-intel、transformers 5.0 系で変換) | judge のライブ判定 1 フレーム (画像 + 4 択、185 token) | fp16 | 1,472 ms | **919 ms** |
 
 ## 読み方
 
@@ -23,5 +24,5 @@
 - **ONNX の int8 (QDQ) は OpenVINO では逆効果**。CPU でも fp32 より遅く、iGPU では 10〜40 倍遅い。Intel 向けには fp16 (GPU) / fp32 (CPU) をそのまま使い、量子化するなら OpenVINO 側 (NNCF) でやる。
 - decoder head (採点) だけは GPU より CPU が速い (568 vs 45 ms)。小さい行列と動的な形が多い処理は CPU に置く、と分けるのが良い。
 - **テキストの判断 (openvons.lm) も 0.35〜0.6 秒/状態で回る** (1 回の prefill で全質問の logit が出る形なので、質問を足しても増えない)。生成に切り替えると 1 token 70〜100 ms なので、ここでも「生成しない」設計の差が出る。
-- Qwen3-VL-2B (judge のライブ判定) の OpenVINO 変換は optimum-intel が transformers 5.0 系までしか対応せず、5.0 系に下げて再試行中 (結果は追記)。
+- **Qwen3-VL-2B のライブ判定は iGPU で約 1 fps** (1 フレーム 0.9 秒、CPU 1.5 秒)。Blackwell の 10 fps には届かないが、「1 秒ごとに進路を判断する」用途なら Intel ミニ PC で成立する。optimum-intel は transformers 5.0 系までしか変換できないので、変換用の venv は 5.0.0 に固定した。
 - openvons の端末アプリ (Android) と同じ ONNX がそのまま読めたので、**Intel ミニ PC / ノートを「置き型の端末」にする経路は成立する**。
