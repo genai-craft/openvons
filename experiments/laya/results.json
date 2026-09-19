@@ -1,0 +1,71 @@
+{
+ "massive_scenario_en": {
+  "n": 1000,
+  "accuracy": 0.785,
+  "ece": 0.17906270000000005,
+  "latency_ms_median": 9.213726036250591,
+  "checkpoint": "en",
+  "example_answer_keys": [
+   "type",
+   "choice",
+   "probabilities",
+   "confidence",
+   "action"
+  ]
+ },
+ "tweet_offensive": {
+  "n": 860,
+  "accuracy": 0.7709302325581395,
+  "ece": 0.05705604651162793,
+  "latency_ms_median": 8.756240829825401,
+  "checkpoint": "en",
+  "example_answer_keys": [
+   "type",
+   "noul",
+   "confidence",
+   "action"
+  ]
+ },
+ "glaive_tools": {
+  "n": 1000,
+  "accuracy": 0.702,
+  "ece": 0.23050900000000002,
+  "latency_ms_median": 8.04932601749897,
+  "checkpoint": "en",
+  "example_answer_keys": [
+   "type",
+   "choice",
+   "probabilities",
+   "confidence",
+   "action"
+  ]
+ },
+ "massive_intent_en": {
+  "n": 1000,
+  "accuracy": 0.494,
+  "ece": 0.43016270000000006,
+  "latency_ms_median": 9.858732111752033,
+  "checkpoint": "en",
+  "example_answer_keys": [
+   "type",
+   "choice",
+   "probabilities",
+   "confidence",
+   "action"
+  ]
+ },
+ "massive_scenario_ja": {
+  "n": 1000,
+  "accuracy": 0.672,
+  "ece": 0.10380859999999995,
+  "latency_ms_median": 7.715942338109016,
+  "checkpoint": "multilingual",
+  "example_answer_keys": [
+   "type",
+   "choice",
+   "probabilities",
+   "confidence",
+   "action"
+  ]
+ }
+}
