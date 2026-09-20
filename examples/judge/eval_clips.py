@@ -14,7 +14,7 @@ import numpy as np
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 from examples.judge.checks import BY_KEY, CHECKS  # noqa: E402
-from examples.judge.server import merge_long, summarize, vqs  # noqa: E402
+from examples.judge.server import apply_scene_filter, merge_long, scene_vq, sub_vqs, summarize, vqs  # noqa: E402
 from openvons.vision.video_judge import VideoJudge  # noqa: E402
 
 DATA = Path(os.environ.get("JUDGE_DATA", str(Path(__file__).resolve().parents[2] / "state" / "judge")))
@@ -33,13 +33,25 @@ def fit_temperature(logits: np.ndarray, labels: np.ndarray) -> float:
 
 
 def main():
+    import argparse
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--only", default="", help="評価する項目 (カンマ区切り、空なら全部)")
+    ap.add_argument("--auto", action="store_true", help="シーン自動判定 (場面・種目の合う項目だけ聞く) で評価する")
+    ap.add_argument("--out", default="eval.json")
+    a = ap.parse_args()
+    only = [k for k in a.only.split(",") if k]
     man = json.load(open(CLIPS / "manifest.json"))
+    if only:
+        man = [m for m in man if m["check"] in only]
     judge = VideoJudge(os.environ.get("JUDGE_MODEL", "Qwen/Qwen3-VL-4B-Instruct"))
     judge.T = {}  # 生の確率で回し、後で校正
     rows, win_logit, win_label = [], {c.key: [] for c in CHECKS}, {c.key: [] for c in CHECKS}
     for m in man:
         c = BY_KEY[m["check"]]
-        res = judge.judge(str(CLIPS / m["file"]), [q for x in CHECKS for q in vqs(x)], state="Fixed camera footage.", max_s=60)
+        res = judge.judge(str(CLIPS / m["file"]), [q for x in CHECKS for q in vqs(x)], state="Fixed camera footage.", max_s=60,
+                          scene_question=scene_vq() if a.auto else None, sub_questions=sub_vqs() if a.auto else None)
+        if a.auto:
+            apply_scene_filter(res, [c.key for c in CHECKS])
         merge_long(res)
         summ = summarize(res)
         it = next(i for i in summ["items"] if i["key"] == c.key)
@@ -52,6 +64,8 @@ def main():
                      "_res": res})
         # 窓単位: 事象区間に重なる窓 = 1、それ以外 = 0 (問題なし動画は全部 0)
         for w in res["questions"][c.key]["series"]:
+            if w.get("skipped"):
+                continue
             p = np.array(w["p"]); lg = np.log(p + 1e-9)
             ev = m["label"] == 1 and m["event_start"] is not None and w["t1"] > m["event_start"] and w["t0"] < m["event_end"]
             win_logit[c.key].append(lg); win_label[c.key].append(0 if ev else 1)   # 0 = yes, 1 = no
@@ -88,8 +102,13 @@ def main():
         cal_correct.append(r["correct_calibrated"])
     out = {"rows": rows, "per_check": per, "false_alarms_per_clip": fa, "false_alarms_same_scene_per_clip": fa_scene,
            "accuracy": float(np.mean([r["correct"] for r in rows])), "accuracy_calibrated": float(np.mean(cal_correct))}
-    json.dump(out, open(DATA / "eval.json", "w"), ensure_ascii=False, indent=1)
-    json.dump({"temperature": {k: v["T"] for k, v in per.items()} | {"_default": float(np.median([v["T"] for v in per.values()]))}}, open(DATA / "calibration.json", "w"), indent=1)
+    json.dump(out, open(DATA / a.out, "w"), ensure_ascii=False, indent=1)
+    if not only:   # 部分評価では温度校正を上書きしない
+        json.dump({"temperature": {k: v["T"] for k, v in per.items()} | {"_default": float(np.median([v["T"] for v in per.values()]))}}, open(DATA / "calibration.json", "w"), indent=1)
+    else:
+        cal = json.load(open(DATA / "calibration.json")) if (DATA / "calibration.json").exists() else {"temperature": {}}
+        cal["temperature"].update({k: v["T"] for k, v in per.items()})
+        json.dump(cal, open(DATA / "calibration.json", "w"), indent=1)
     print(json.dumps({k: {a: (round(b, 3) if isinstance(b, float) else b) for a, b in v.items()} for k, v in per.items()}, ensure_ascii=False, indent=1))
     print("accuracy %.3f (calibrated %.3f)  false alarms/clip %.2f (same scene %.2f)" % (out["accuracy"], out["accuracy_calibrated"], fa, fa_scene))
 

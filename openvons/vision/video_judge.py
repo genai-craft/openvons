@@ -71,6 +71,11 @@ def _phase_shift(a: "np.ndarray", b: "np.ndarray") -> tuple[float, float]:
     return float((dx * dx + dy * dy) ** 0.5), float(r.max() / (np.abs(r).mean() + 1e-9))
 
 
+def scene_match(want: str, have: str) -> bool:
+    """質問の場面 want ("スポーツ" や "スポーツ/バスケ") がシーンの場面 have ("スポーツ/バスケ") に合うか。"""
+    return bool(have) and (have == want or have.startswith(want + "/"))
+
+
 def detect_scenes(frames: list[Image.Image], ts: list[float], min_len_s: float = 2.0) -> list[dict]:
     """シーン切り替えを検出して区間に分ける。2 種類を見る:
     (1) カット (編集・別カメラへの切替): 連続フレームの色ヒストグラム距離が大きく (実測 車載 ≤0.21、カット 0.37〜0.68)、縮小画像の平均差も大きい。
@@ -176,10 +181,12 @@ class VideoJudge:
     # ---- 動画全体 ----
     @torch.inference_mode()
     def judge(self, path: str, questions: list[VQuestion], state: str = "Security camera footage.", max_s: float = 90.0, progress=None,
-              scene_question: VQuestion | None = None, split_scenes: bool = True) -> dict:
+              scene_question: VQuestion | None = None, split_scenes: bool = True, sub_questions: dict[str, VQuestion] | None = None) -> dict:
         """質問群を fps/window でグループ化し、窓ごとに全質問を採点する。戻り値: 質問ごとの時系列と要約。
         split_scenes: カットを検出し、窓がカットをまたがないようにする (前後の文脈もカットでリセット)。
-        scene_question: 与えると各シーン区間の先頭の窓で 1 回だけ「どんな場面か」を聞き、result["scenes"][i]["type"] に入れる。"""
+        scene_question: 与えると各シーン区間の先頭の窓で 1 回だけ「どんな場面か」を聞き、result["scenes"][i]["type"] に入れる。
+        sub_questions: {場面ラベル: 追加の質問}。場面がその値なら同じ窓で追加の 1 問 (種目など) を聞き、type_ja を "場面/答え" にする。
+        質問の scene は "場面" か "場面/答え"。"場面" だけの質問はその場面の全サブ場面で聞く。"""
         t_all = time.perf_counter()
         groups: dict[tuple[float, float], list[VQuestion]] = {}
         for q in questions:
@@ -191,8 +198,8 @@ class VideoJudge:
         for (fps, win), qs in sorted(groups.items(), key=lambda kv: (kv[0] != first, kv[0])):
             if scene_question is not None and "scenes" in result:
                 # 場面が分かった後のグループ: どのシーンにも合わない質問だけなら、動画の読み直し (10 fps など) も省く
-                types = {sc.get("type_ja") for sc in result["scenes"]}
-                if all(q.scene is not None and q.scene not in types for q in qs):
+                types = [sc.get("type_ja") or "" for sc in result["scenes"]]
+                if all(q.scene is not None and not any(scene_match(q.scene, t) for t in types) for q in qs):
                     for q in qs:
                         result["questions"][q.key] = {"series": [{"t0": sc["t0"], "t1": sc["t1"], "scene": si, "p": [0.0] * len(q.options), "logit": [0.0] * len(q.options), "skipped": True} for si, sc in enumerate(result["scenes"])],
                                                       "fps": fps, "window_s": win, "options": q.options, "labels_ja": q.labels_ja, "none_index": q.none_index, "risk": q.risk}
@@ -224,11 +231,10 @@ class VideoJudge:
                 if e <= s:
                     continue   # この fps では空になった区間
                 stype = result["scenes"][si].get("type_ja") if scene_question is not None else None
-                qs_here = [q for q in qs if q.scene is None or stype is None or q.scene == stype]
-                for q in qs:
-                    if q not in qs_here:   # 場面が違う → 符号化も質問もしない
+                qs_here = [q for q in qs if q.scene is None or stype is None or scene_match(q.scene, stype)]
+                if not qs_here and not (scene_question is not None and "type" not in result["scenes"][si]):
+                    for q in qs:   # 場面が違う → 符号化も質問もしない
                         series[q.key].append({"t0": ts[s], "t1": ts[e - 1], "scene": si, "p": [0.0] * len(q.options), "logit": [0.0] * len(q.options), "skipped": True})
-                if not qs_here:
                     continue
                 fr = frames[s:e]
                 t0 = time.perf_counter()
@@ -240,7 +246,18 @@ class VideoJudge:
                     lg = self._ask(inp, cache, scene_question)
                     p = self._probs(scene_question.key, lg)
                     k = int(np.argmax(p))
-                    result["scenes"][si].update({"type": scene_question.options[k], "type_ja": (scene_question.labels_ja or scene_question.options)[k], "p": [float(x) for x in p]})
+                    tja = (scene_question.labels_ja or scene_question.options)[k]
+                    result["scenes"][si].update({"type": scene_question.options[k], "type_ja": tja, "p": [float(x) for x in p]})
+                    sq = (sub_questions or {}).get(tja)
+                    if sq is not None:
+                        lg2 = self._ask(inp, cache, sq); p2 = self._probs(sq.key, lg2); k2 = int(np.argmax(p2))
+                        result["scenes"][si]["type_ja"] = f"{tja}/{(sq.labels_ja or sq.options)[k2]}"
+                        result["scenes"][si]["sub_p"] = [float(x) for x in p2]
+                    stype = result["scenes"][si]["type_ja"]
+                    qs_here = [q for q in qs if q.scene is None or scene_match(q.scene, stype)]
+                for q in qs:
+                    if q not in qs_here:
+                        series[q.key].append({"t0": ts[s], "t1": ts[e - 1], "scene": si, "p": [0.0] * len(q.options), "logit": [0.0] * len(q.options), "skipped": True})
                 for q in qs_here:
                     lg = self._ask(inp, cache, q)
                     p = self._probs(q.key, lg)

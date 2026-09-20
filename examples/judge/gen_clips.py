@@ -119,7 +119,12 @@ def run(args):
 
 
 def write_manifest():
+    old = {m["file"]: m for m in json.load(open(CLIPS / "manifest.json"))} if (CLIPS / "manifest.json").exists() else {}
     man = [{k: v for k, v in j.items() if k != "prompt"} | {"file": f"{j['name']}.mp4", "prompt": j["prompt"]} for j in jobs() if (CLIPS / f"{j['name']}.mp4").exists()]
+    for m in man:   # 監査の結果 (suspect, audit_p) は残す
+        for k in ("suspect", "audit_p"):
+            if k in old.get(m["file"], {}):
+                m[k] = old[m["file"]][k]
     json.dump(man, open(CLIPS / "manifest.json", "w"), ensure_ascii=False, indent=1)
     print(len(man), "clips in manifest ->", CLIPS / "manifest.json")
 

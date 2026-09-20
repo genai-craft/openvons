@@ -19,7 +19,7 @@ fetch('/api/checks').then(r => r.json()).then(d => {
   d.scenes.forEach(s => { const o = document.createElement('option'); o.value = s; o.textContent = s + ' (' + checks.filter(c => c.scene === s).length + ')'; sel.appendChild(o); });
   $('#scene option[value=""]').textContent = `全部の項目 (${checks.length})`;
   const tb = $('#checkTable tbody');
-  checks.forEach(c => { const tr = document.createElement('tr'); tr.innerHTML = `<td>${c.title}</td><td>${c.scene}</td><td>${c.fps} fps × ${c.window_s} 秒</td><td>${c.risk}</td><td class="muted small">${c.question}</td>`; tb.appendChild(tr); });
+  checks.forEach(c => { const tr = document.createElement('tr'); tr.innerHTML = `<td>${c.title}</td><td>${c.scene}${c.sport ? ' / ' + c.sport : ''}</td><td>${c.fps} fps × ${c.window_s} 秒</td><td>${c.risk}</td><td class="muted small">${c.question}</td>`; tb.appendChild(tr); });
 });
 fetch('/api/samples').then(r => r.json()).then(d => {
   samplesList = d.samples || [];
@@ -145,6 +145,7 @@ async function showAnswer(file, d) {
   if (!a || a.label === undefined) return;
   const it = d.summary.find(x => x.key === a.check);
   const flagged = it && (it.action === 'execute' || it.action === 'confirm');
+  const pos = checks.find(c => c.key === a.check)?.positive;
   const ok = (a.label === 1) === flagged;
   const el = $('#answer'); el.hidden = false; el.className = 'answer ' + (ok ? 'ok' : 'ng');
   el.innerHTML = `<b>正解:</b> この動画は「${it ? it.title : a.check}」が <b>${a.label === 1 ? `ある (${a.event_start}〜${a.event_end} 秒)` : 'ない'}</b>。判定は「${it ? it.label : '-'}」→ ${ok ? '一致' : '不一致'}。`

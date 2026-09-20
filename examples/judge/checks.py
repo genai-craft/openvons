@@ -21,6 +21,8 @@ class Check:
     event_prompts: list[str] = field(default_factory=list)   # 事象あり (5 秒断片)
     normal_prompts: list[str] = field(default_factory=list)  # 事象なし
     style: str = ""       # 共通のカメラ・画質の書き方
+    sport: str = ""              # スポーツの種目 (サブ場面)。「自動」ではシーンの種目を 1 問で判定し、合う種目の項目だけ見る
+    positive: bool = False       # True = 「あった」が良い知らせの事象 (ヒット・ゴールなど)。表示を 検出/問題なし ではなく あり/なし にする
     long_window_s: float = 0.0   # >0 なら「前後の文脈」用の長い窓 (1 fps) も併用する。置く→離れる、取る→隠す→出る、外→中 など
     long_fps: float = 1.0
 
@@ -59,7 +61,7 @@ CHECKS: list[Check] = [
                           "A worker wearing a white hard hat operates a small excavator control panel on a construction site.",
                           "A man in a high-visibility vest and a hard hat walks under scaffolding carrying a bucket."]),
     Check("double_dribble", "バスケのダブルドリブル", "スポーツ", "Does the basketball player stop dribbling, hold the ball with both hands, and then start dribbling again (double dribble)?",
-          fps=10.0, window_s=1.6, style=BROADCAST,
+          fps=10.0, window_s=1.6, sport="バスケ", style=BROADCAST,
           event_prompts=["Indoor basketball court, a player dribbles the ball, stops and holds it firmly with both hands for a moment, then dribbles again and drives forward.",
                          "A basketball player in a gym dribbles, catches the ball in both hands, looks around, then resumes dribbling.",
                          "Street basketball, a player picks up his dribble with both hands, fakes a pass, then dribbles again toward the hoop."],
@@ -124,6 +126,65 @@ CHECKS.append(
                           "The car waits at a crossing while pedestrians walk across, then proceeds slowly.",
                           "The car follows another car through a curve at a safe distance."]))
 
+# ---- スポーツ (10 fps × 2.4 秒 = 24 フレーム。動作の判定は 10 fps 必要) ----
+SPORTS = "Broadcast-style sports footage from a single fixed camera, realistic, natural stadium or field lighting, no text, no scoreboard graphics."
+CHECKS += [
+    Check("baseball_hit", "野球のヒット", "スポーツ",
+          "Does the batter hit the pitched ball into the field of play (a fair hit, not a swing and miss, a foul, or a taken pitch)?",
+          fps=10.0, window_s=2.4, sport="野球", risk="low", positive=True, style=SPORTS,
+          event_prompts=["Baseball game, camera behind home plate: the pitcher throws, the batter swings and hits a sharp line drive into the outfield, drops the bat and runs to first base.",
+                         "Baseball game, side view of home plate: the batter connects with the pitch and the ball flies over the infield, the batter sprints toward first base.",
+                         "Baseball game, high camera behind the backstop: the batter hits a ground ball through the infield into the outfield grass and runs."],
+          normal_prompts=["Baseball game, camera behind home plate: the pitcher throws, the batter swings and misses, the catcher catches the ball.",
+                          "Baseball game, side view of home plate: the batter watches the pitch go by without swinging, the catcher throws it back to the pitcher.",
+                          "Baseball game, high camera behind the backstop: the batter steps out of the box, adjusts the helmet and taps the bat on the plate, the pitcher waits."]),
+    Check("golf_swing_fault", "ゴルフのスイングの欠点", "スポーツ",
+          "Does the golf swing show an obvious fault: losing balance or stumbling after the swing, the head moving a lot, the body standing up early during the downswing, or a wild over-swing?",
+          fps=10.0, window_s=2.4, sport="ゴルフ", risk="low", style=SPORTS.replace("stadium or field", "golf course"),
+          event_prompts=["Golf driving range, side view: a golfer takes a wild over-swing, loses balance and stumbles a step sideways after hitting the ball.",
+                         "Golf course tee box, view from behind: a golfer lifts the head and straightens the body early during the downswing, topping the ball, and staggers.",
+                         "Golf practice, side view: a golfer sways heavily, the head moves far off the ball during the backswing, and the follow-through is off balance."],
+          normal_prompts=["Golf driving range, side view: a golfer makes a smooth, balanced swing and holds a steady finish position watching the ball.",
+                          "Golf course tee box, view from behind: a golfer swings with a stable head and posture and finishes balanced on the front foot.",
+                          "Golf practice, side view: a golfer takes a relaxed practice swing, then addresses the ball calmly."]),
+    Check("soccer_goal", "サッカーのゴール", "スポーツ",
+          "Is a goal scored (the ball goes past the goalkeeper and into the goal net)?",
+          fps=10.0, window_s=2.4, sport="サッカー", risk="low", positive=True, style=SPORTS,
+          event_prompts=["Soccer match, camera behind the goal: a striker shoots from the edge of the box, the keeper dives and the ball flies into the net.",
+                         "Soccer match, side view of the penalty area: a header from a corner kick goes into the goal past the keeper, the net ripples.",
+                         "Soccer match, high wide camera: a low shot rolls into the corner of the goal, the goalkeeper on the ground, players raise their arms."],
+          normal_prompts=["Soccer match, camera behind the goal: a striker shoots and the goalkeeper catches the ball cleanly.",
+                          "Soccer match, side view of the penalty area: players pass the ball around outside the box, a defender clears it.",
+                          "Soccer match, high wide camera: a shot hits the post and bounces away, players chase the rebound."]),
+    Check("basketball_shot_made", "バスケのシュート成功", "スポーツ",
+          "Does the shot go in (the ball passes down through the hoop and net)?",
+          fps=10.0, window_s=2.4, sport="バスケ", risk="low", positive=True, style=SPORTS,
+          event_prompts=["Basketball game, camera behind the baseline: a player takes a jump shot and the ball swishes through the net.",
+                         "Basketball game, side view of the court: a player drives to the basket and lays the ball in, it drops through the hoop.",
+                         "Basketball game, high camera: a three-point shot arcs and goes cleanly through the net."],
+          normal_prompts=["Basketball game, camera behind the baseline: a player takes a jump shot, the ball hits the rim and bounces out.",
+                          "Basketball game, side view of the court: players pass the ball around the perimeter, the defense shifts.",
+                          "Basketball game, high camera: a player dribbles up the court and calls a play, no shot is taken."]),
+    Check("soccer_handball", "サッカーのハンド", "スポーツ",
+          "Does a player other than the goalkeeper stop or touch the ball with a hand or arm?",
+          fps=10.0, window_s=2.4, sport="サッカー", risk="low", style=SPORTS,
+          event_prompts=["Soccer match, side view: a defender in a dark kit reaches out and stops the ball with the hand, players around react and appeal.",
+                         "Soccer match, camera behind the goal: a defender blocks a shot with an outstretched arm, the ball hits the arm clearly.",
+                         "Soccer match, midfield view: a player catches the ball with both hands to stop a pass, then drops it."],
+          normal_prompts=["Soccer match, side view: a defender blocks the ball with the chest and knee, then passes it away.",
+                          "Soccer match, camera behind the goal: the goalkeeper catches the ball with both hands, defenders run out.",
+                          "Soccer match, midfield view: players pass and control the ball with their feet."]),
+    Check("running_form_fault", "ランニングフォームの問題", "スポーツ",
+          "Does the runner show an obvious form problem: the foot landing far ahead of the body with a heavy heel strike, a strongly hunched or leaning-back upper body, or arms swinging across the body?",
+          fps=10.0, window_s=2.4, sport="ランニング", risk="low", style="Side-view running footage from a fixed camera at a track or park path, realistic, no text.",
+          event_prompts=["A runner on a track over-strides, landing heel first far in front of the body, upper body hunched forward, arms swinging across the chest.",
+                         "A runner on a park path leans far back with the chest up, feet slapping down ahead of the body, arms flailing.",
+                         "A runner on a track with the shoulders rolled forward and the head down, bouncing high with each heavy heel landing."],
+          normal_prompts=["A runner on a track runs with an upright relaxed posture, landing under the body, arms swinging straight forward and back.",
+                          "A runner on a park path jogs at a steady pace with a slight forward lean from the ankles and quiet footsteps.",
+                          "A runner on a track stretches, then runs smoothly with relaxed shoulders."]),
+]
+
 # シーン種別 (分母) の判定: カットで区切った区間ごとに 1 回聞き、その区間ではシーンの合う項目だけを判定する
 SCENE_OPTIONS = [
     ("店舗・街", "a shop, station concourse, street or other public place seen from a fixed security camera"),
@@ -134,6 +195,19 @@ SCENE_OPTIONS = [
     ("その他", "a title card or text-only screen with no live footage, or something else"),
 ]
 SCENE_QUESTION = "What kind of footage is this?"
+
+# サブ場面: スポーツと判定されたシーンでは種目を 1 問で決め、その種目の項目だけを見る (バスケの動画にサッカーのゴールを聞かない)
+SUB_SCENE = {
+    "スポーツ": ("Which sport is being played?", [
+        ("バスケ", "basketball"), ("サッカー", "soccer (football)"), ("野球", "baseball or softball"), ("ゴルフ", "golf"),
+        ("ランニング", "running, jogging or track athletics"), ("その他", "another sport or cannot tell"),
+    ]),
+}
+
+
+def scene_of(c: "Check") -> str:
+    """項目が意味を持つ場面のラベル (サブ場面があれば 場面/種目)。"""
+    return f"{c.scene}/{c.sport}" if c.sport else c.scene
 
 BY_KEY = {c.key: c for c in CHECKS}
 SCENES = sorted({c.scene for c in CHECKS}, key=lambda s: [c.scene for c in CHECKS].index(s))

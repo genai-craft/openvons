@@ -46,6 +46,7 @@ h3{margin:8px 0 4px;font-size:14px;color:var(--muted)}
 .opts{display:flex;gap:10px;font-size:12px;color:var(--muted);margin-top:3px;flex-wrap:wrap}
 .lv{border-radius:999px;padding:0 8px;font-size:12px;font-weight:700;white-space:nowrap}
 .lv.検出{background:#3b2020;color:var(--bad)}.lv.要確認{background:#3b3220;color:var(--warn)}.lv.問題なし{background:#1f3b26;color:var(--ok)}.lv.判別できない{background:#22303c;color:var(--muted)}
+.lv.あり{background:#1f2f3b;color:#58a6ff}.lv.なし{background:#22303c;color:var(--muted)}
 .lv.該当シーンなし{background:#1b222b;color:#6b7785}
 .lv.execute{background:#1f3b26;color:var(--ok)}.lv.confirm{background:#3b3220;color:var(--warn)}.lv.reject,.lv.none{background:#22303c;color:var(--muted)}
 .answer{background:#0b0f14;border:1px dashed var(--line);border-radius:8px;padding:8px 10px;font-size:13px}

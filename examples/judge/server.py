@@ -29,9 +29,9 @@ from PIL import Image
 from pydantic import BaseModel
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
-from examples.judge.checks import HEAD_KEYS, SCENE_OPTIONS, SCENE_QUESTION, BY_KEY, CHECKS, SCENES  # noqa: E402
+from examples.judge.checks import HEAD_KEYS, SCENE_OPTIONS, SCENE_QUESTION, SUB_SCENE, scene_of, BY_KEY, CHECKS, SCENES  # noqa: E402
 from openvons.core.decision import Thresholds, decide  # noqa: E402
-from openvons.vision.video_judge import VQuestion, VideoJudge  # noqa: E402
+from openvons.vision.video_judge import scene_match, VQuestion, VideoJudge  # noqa: E402
 
 HERE = Path(__file__).resolve().parent
 DATA = Path(os.environ.get("JUDGE_DATA", str(HERE.parents[1] / "state" / "judge")))
@@ -65,14 +65,18 @@ NAV_FLOOR = VQuestion("floor", "What is directly ahead on the floor?", ["clear f
 
 
 def vq(c) -> VQuestion:
-    return VQuestion(c.key, c.question, ["yes", "no", "cannot tell"], 2, fps=c.fps, window_s=c.window_s, risk=c.risk, labels_ja=["はい", "いいえ", "判別できない"], scene=c.scene)
+    return VQuestion(c.key, c.question, ["yes", "no", "cannot tell"], 2, fps=c.fps, window_s=c.window_s, risk=c.risk, labels_ja=["はい", "いいえ", "判別できない"], scene=scene_of(c))
+
+
+def sub_vqs() -> dict[str, VQuestion]:
+    return {k: VQuestion(f"__sub_{k}__", q, [d for _, d in opts], len(opts) - 1, labels_ja=[n for n, _ in opts]) for k, (q, opts) in SUB_SCENE.items()}
 
 
 def vqs(c) -> list[VQuestion]:
     """短い窓 (動作) + 必要なら長い窓 (前後の文脈、key に @long を付ける)。"""
     qs = [vq(c)]
     if c.long_window_s:
-        q = VQuestion(c.key + "@long", c.question, ["yes", "no", "cannot tell"], 2, fps=c.long_fps, window_s=c.long_window_s, risk=c.risk, labels_ja=["はい", "いいえ", "判別できない"], scene=c.scene)
+        q = VQuestion(c.key + "@long", c.question, ["yes", "no", "cannot tell"], 2, fps=c.long_fps, window_s=c.long_window_s, risk=c.risk, labels_ja=["はい", "いいえ", "判別できない"], scene=scene_of(c))
         qs.append(q)
     return qs
 
@@ -88,12 +92,12 @@ def apply_scene_filter(res: dict, keys: list[str]) -> None:
         q = res["questions"].get(key)
         if not q:
             continue
-        want = BY_KEY[key].scene
+        want = scene_of(BY_KEY[key])
         for w in q["series"]:
             si = w.get("scene")
             if si is None or si >= len(scenes) or "type_ja" not in scenes[si]:
                 continue
-            if scenes[si]["type_ja"] != want or w.get("skipped"):
+            if not scene_match(want, scenes[si]["type_ja"]) or w.get("skipped"):
                 w["skipped"] = True
                 w["p"] = [0.0, 0.0, 1.0]
 
@@ -131,6 +135,8 @@ def summarize(res: dict) -> dict:
             # どの窓も「はい」が低い → 「いいえ」が確かなら問題なし、映っていない/見えないなら判別できない
             action = "reject" if float(np.median(no)) >= 0.6 else "none"
             label = "問題なし" if action == "reject" else "判別できない"
+        if c.positive:   # ヒット・ゴールなど「あった」が良い知らせの事象は あり/なし で表示
+            label = {"検出": "あり", "問題なし": "なし"}.get(label, label)
         segs = []
         for s, p in zip(live, ps):
             if p[0] >= TH.confirm:
@@ -222,7 +228,7 @@ def healthz():
 
 @app.get("/api/checks")
 def checks():
-    return {"scenes": SCENES, "auto_scene": True, "checks": [{"key": c.key, "title": c.title, "scene": c.scene, "fps": c.fps, "window_s": c.window_s, "risk": c.risk, "question": c.question} for c in CHECKS]}
+    return {"scenes": SCENES, "auto_scene": True, "checks": [{"key": c.key, "title": c.title, "scene": c.scene, "fps": c.fps, "window_s": c.window_s, "risk": c.risk, "question": c.question, "positive": c.positive, "sport": c.sport} for c in CHECKS]}
 
 
 @app.get("/api/jaf/samples")
@@ -297,7 +303,7 @@ async def judge(file: UploadFile | None = File(None), sample: str = Form(""), sc
         tmp.write(data); tmp.close(); path = Path(tmp.name)
     try:
         st = state or "Fixed camera footage."
-        res = G["judge"].judge(str(path), qs, state=st, max_s=90.0, scene_question=scene_vq() if auto else None, split_scenes=split_scenes not in ("0", "false"))
+        res = G["judge"].judge(str(path), qs, state=st, max_s=90.0, scene_question=scene_vq() if auto else None, split_scenes=split_scenes not in ("0", "false"), sub_questions=sub_vqs() if auto else None)
     finally:
         if tmp:
             os.unlink(tmp.name)

@@ -18,7 +18,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 import numpy as np  # noqa: E402
 
 from examples.judge.checks import BY_KEY  # noqa: E402
-from examples.judge.server import DATA, apply_scene_filter, merge_long, scene_vq, summarize, vqs  # noqa: E402
+from examples.judge.server import DATA, apply_scene_filter, merge_long, scene_vq, sub_vqs, summarize, vqs  # noqa: E402
 from openvons.vision.video_judge import VideoJudge, read_frames  # noqa: E402
 
 JAF = DATA / "jaf"
@@ -58,7 +58,7 @@ def main():
         if not path.exists():
             continue
         fz = find_freeze(str(path))
-        res = judge.judge(str(path), qs, state="Road safety footage.", max_s=90.0, scene_question=scene_vq())
+        res = judge.judge(str(path), qs, state="Road safety footage.", max_s=90.0, scene_question=scene_vq(), sub_questions=sub_vqs())
         apply_scene_filter(res, keys)
         merge_long(res)
         scenes = res["scenes"]
