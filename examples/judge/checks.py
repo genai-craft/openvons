@@ -113,7 +113,8 @@ VARIANTS = [
 ]
 
 # 学習 head の入力 (質問方式の 30 logit) に使う 10 項目。features.npz と head_*.pt はこの順に依存するので、項目を足すときはここには足さない
-HEAD_KEYS = ["fight", "shoplift", "no_harness", "no_helmet", "double_dribble", "collapse", "intrusion", "fire", "phone_driving", "abandoned_bag"]
+HEAD_KEYS = ["fight", "shoplift", "no_harness", "no_helmet", "double_dribble", "collapse", "intrusion", "fire", "phone_driving", "abandoned_bag",
+             "near_miss", "baseball_hit", "golf_swing_fault", "soccer_goal", "basketball_shot_made", "soccer_handball", "running_form_fault"]
 
 CHECKS.append(
     Check("near_miss", "ヒヤリハット (飛び出し・急接近)", "道路",

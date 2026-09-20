@@ -114,7 +114,10 @@ def train(test_from: int = 7, epochs: int = 300, use_z: bool = True, mil_epochs:
         y = np.array([1 if (meta[i]["check"] == c.key and meta[i]["event"]) else 0 for i in idx_all])
         same = np.array([meta[i]["check"] == c.key for i in idx_all])
         clipidx = np.array([meta[i]["idx"] for i in idx_all])
-        tr = np.array([(clipidx[k] < test_from) for k in range(len(idx_all))]) & (same | (clipidx < test_from))
+        # 動画が少ない項目 (20 本 = idx 0〜9) は分割点を半分にする (40 本の項目は idx 14 から、20 本の項目は 7 から)
+        n_idx = int(clipidx[same].max()) + 1 if same.any() else 20
+        tf = test_from if n_idx >= 20 else max(1, test_from // 2)
+        tr = np.array([(clipidx[k] < tf) for k in range(len(idx_all))]) & (same | (clipidx < tf))
         te = (~tr) & same  # 評価はこの項目の動画 (idx >= test_from) のみ
         ii = torch.tensor(idx_all, device=dev)
         Zc = Z[ii] if use_z else torch.zeros(len(idx_all), 0, device=dev)
