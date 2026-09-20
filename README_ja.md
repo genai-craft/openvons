@@ -118,5 +118,6 @@ GitHub の Issue はコード自体の不具合・質問用です。
 
 ## ライセンス
 
-コード Apache-2.0。第三者のモデル・データは [docs/licensing.md](docs/licensing.md)。
+コードは Apache-2.0 — 商用利用・改変・再配布は自由。ただし**出典の記名**をお願いします: 再配布や派生物には [LICENSE](LICENSE) と [NOTICE](NOTICE) をそのまま残し (Apache-2.0 第 4 条の義務)、
+製品・サービス・論文・記事で使うときは「openvons (open-Jev) — https://github.com/genai-craft/openvons」と記載してください (引用形式は [CITATION.cff](CITATION.cff))。第三者のモデル・データは [docs/licensing.md](docs/licensing.md)。
 openvons (open-Jev) は TypeSafe AI 社および同社製品 Jev とは無関係の独立実装で、同社の API 出力は一切使っていない。

@@ -154,7 +154,9 @@ GitHub Issues are for bugs and questions about the code itself.
 
 ## License
 
-Code is Apache-2.0. Third-party models and data are listed in [docs/licensing.md](docs/licensing.md): kana-whisper (MIT), Silero VAD (MIT),
+Code is Apache-2.0 — free to use commercially, modify and redistribute, **with attribution**: keep the [LICENSE](LICENSE) and [NOTICE](NOTICE) files in redistributions
+(Apache-2.0 §4), and when you use openvons in a product, service, paper or article please credit it as "openvons (open-Jev) — https://github.com/genai-craft/openvons"
+(a ready-made citation is in [CITATION.cff](CITATION.cff)). Third-party models and data are listed in [docs/licensing.md](docs/licensing.md): kana-whisper (MIT), Silero VAD (MIT),
 pyopenjtalk (MIT), station_database (CC BY 4.0), Japan Post postal-code data (no copyright claimed), Qwen3 (Apache-2.0),
 river camera list and images from the MLIT Kanto Regional Development Bureau website (Public Data License 1.0, edited; images fetched live and not stored), OpenStreetMap tiles (ODbL).
 

@@ -1,4 +1,6 @@
-# 第三者ライセンスの棚卸し (2026-09-17)
+# 第三者ライセンスの棚卸し (2026-09-17、2026-09-20 更新)
+
+自分たちのコードの帰属表示の求め方は README「ライセンス」と NOTICE、CITATION.cff。
 
 コードは Apache-2.0。実行時に取得・利用するモデルとデータ:
 
@@ -15,6 +17,14 @@
 | OpenStreetMap タイル・Nominatim | ODbL / タイル利用ポリシー | 地図表示・地理コーディング | 帰属表示あり。アクセスは軽量 (デモ) |
 | Seo-4d696b75/station_database | CC BY 4.0 (駅データ.jp 由来) | examples/stations の駅カタログ | UI と README に帰属表示 |
 | Qwen3 / Qwen3-VL (Qwen/…) | Apache-2.0 | テキスト・画像の Decision Model のバックボーン | |
+| z-lab/Qwen3-4B-DFlash-b16 | MIT | JevPick の比較対象・併用 (draft) | |
+| incoai/Qwen3.8-27B-DFlash2 | Apache-2.0 | JevPick の比較対象・併用 (draft) | |
+| Qwen/Qwen3.8-27B, Qwen3-VL-2B/4B/8B/32B-Instruct | Apache-2.0 | JevPick 27B、judge の VLM | |
+| Qwen/Qwen3.8-Flash-Next | Qwen Community License 1.0 (other) | JevPick Phase 5 (実験のみ) | 再配布・商用の条件はライセンス本文を確認 |
+| convaiinnovations/laya | Apache-2.0 | openvons.lm の代替バックエンド (LayaBackend) | |
+| MiniMax-H3 (ComfyUI 経由で生成した judge の試験動画) | MiniMax H3 Community License (other) | judge デモの試験動画 400 本の生成 | 動画は repo に含めず、デモで表示するのみ。生成物の利用条件は同ライセンスに従う |
+| JAF 危険予知トレーニング動画 | © JAF (再配布不可) | judge の実写評価 (手元・社内確認のみ) | 公開せず、パスワード付きで社内確認のみ |
+| yt-dlp | Unlicense | 上記の取得 | |
 | FairFace / PA-100K / MASSIVE / tweet_eval / Yelp / glaive | 各データセットの規約 | 評価・学習 (再配布しない) | docs/lm_benchmark.md |
 
 未確認・要作業: Irodori TTS の重みライセンス、VOICEVOX 各キャラの規約 (デモで使う話者を限定して明記する)。

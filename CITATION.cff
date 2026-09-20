@@ -1,0 +1,13 @@
+cff-version: 1.2.0
+message: "If you use openvons in research, a product or an article, please cite it as below and keep the NOTICE file."
+title: "openvons (open-Jev): finite-candidate decision models for voice, vision and video, and JevPick speculative decoding"
+type: software
+authors:
+  - family-names: Toriumi
+    given-names: Satoshi
+    affiliation: GenAI Craft
+repository-code: "https://github.com/genai-craft/openvons"
+url: "https://openvons.com"
+license: Apache-2.0
+version: "0.1"
+date-released: "2026-09-20"
