@@ -21,6 +21,8 @@ class Check:
     event_prompts: list[str] = field(default_factory=list)   # 事象あり (5 秒断片)
     normal_prompts: list[str] = field(default_factory=list)  # 事象なし
     style: str = ""       # 共通のカメラ・画質の書き方
+    long_window_s: float = 0.0   # >0 なら「前後の文脈」用の長い窓 (1 fps) も併用する。置く→離れる、取る→隠す→出る、外→中 など
+    long_fps: float = 1.0
 
 
 CCTV = "Fixed security camera footage, slightly high angle, realistic, natural lighting, no text, no watermark."
@@ -107,6 +109,31 @@ VARIANTS = [
     " Wide shot from a corner-mounted camera, fluorescent lighting, a few other people in the background.",
     " Overcast daylight, handheld-looking but steady camera, muted colors.",
 ]
+
+# 学習 head の入力 (質問方式の 30 logit) に使う 10 項目。features.npz と head_*.pt はこの順に依存するので、項目を足すときはここには足さない
+HEAD_KEYS = ["fight", "shoplift", "no_harness", "no_helmet", "double_dribble", "collapse", "intrusion", "fire", "phone_driving", "abandoned_bag"]
+
+CHECKS.append(
+    Check("near_miss", "ヒヤリハット (飛び出し・急接近)", "道路",
+          "Near miss: does a vehicle, motorbike, cyclist or pedestrian suddenly move into the path of the camera (the car or person filming) or very close to it, so that a collision is about to happen unless someone brakes, stops or swerves?",
+          fps=2.0, window_s=3.0, long_window_s=8.0, risk="high", style="Dashcam footage from a car driving on a Japanese road, realistic, no text.",
+          event_prompts=["A cyclist darts out from a side street directly in front of the car, the car brakes hard.",
+                         "A child runs out from between parked cars into the road just ahead of the car.",
+                         "A car pulls out of a parking lot without stopping and cuts across the lane right in front."],
+          normal_prompts=["The car drives along a residential street, a cyclist rides on the left edge keeping its line.",
+                          "The car waits at a crossing while pedestrians walk across, then proceeds slowly.",
+                          "The car follows another car through a curve at a safe distance."]))
+
+# シーン種別 (分母) の判定: カットで区切った区間ごとに 1 回聞き、その区間ではシーンの合う項目だけを判定する
+SCENE_OPTIONS = [
+    ("店舗・街", "a shop, station concourse, street or other public place seen from a fixed security camera"),
+    ("工事現場", "a construction site, factory or work at height"),
+    ("スポーツ", "a sports game or practice"),
+    ("介護・監視", "an indoor room, office, care facility or home"),
+    ("道路", "a road, parking lot or traffic scene seen from a moving car (dashcam), from a walking person, or from a traffic camera, even with captions overlaid"),
+    ("その他", "a title card or text-only screen with no live footage, or something else"),
+]
+SCENE_QUESTION = "What kind of footage is this?"
 
 BY_KEY = {c.key: c for c in CHECKS}
 SCENES = sorted({c.scene for c in CHECKS}, key=lambda s: [c.scene for c in CHECKS].index(s))

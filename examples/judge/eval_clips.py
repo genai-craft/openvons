@@ -14,7 +14,7 @@ import numpy as np
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 from examples.judge.checks import BY_KEY, CHECKS  # noqa: E402
-from examples.judge.server import summarize, vq  # noqa: E402
+from examples.judge.server import merge_long, summarize, vqs  # noqa: E402
 from openvons.vision.video_judge import VideoJudge  # noqa: E402
 
 DATA = Path(os.environ.get("JUDGE_DATA", str(Path(__file__).resolve().parents[2] / "state" / "judge")))
@@ -39,7 +39,8 @@ def main():
     rows, win_logit, win_label = [], {c.key: [] for c in CHECKS}, {c.key: [] for c in CHECKS}
     for m in man:
         c = BY_KEY[m["check"]]
-        res = judge.judge(str(CLIPS / m["file"]), [vq(x) for x in CHECKS], state="Fixed camera footage.", max_s=60)
+        res = judge.judge(str(CLIPS / m["file"]), [q for x in CHECKS for q in vqs(x)], state="Fixed camera footage.", max_s=60)
+        merge_long(res)
         summ = summarize(res)
         it = next(i for i in summ["items"] if i["key"] == c.key)
         flagged = it["action"] in ("execute", "confirm")

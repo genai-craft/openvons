@@ -19,7 +19,7 @@ import numpy as np
 import torch
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
-from examples.judge.checks import BY_KEY, CHECKS  # noqa: E402
+from examples.judge.checks import BY_KEY, CHECKS, HEAD_KEYS  # noqa: E402
 
 DATA = Path(os.environ.get("JUDGE_DATA", str(Path(__file__).resolve().parents[2] / "state" / "judge")))
 CLIPS = DATA / "clips"
@@ -31,7 +31,7 @@ def extract(model: str):
     from openvons.vision.video_judge import VideoJudge, read_frames
     judge = VideoJudge(model); judge.T = {}
     man = json.load(open(CLIPS / "manifest.json"))
-    qs = [vq(c) for c in CHECKS]
+    qs = [vq(BY_KEY[k]) for k in HEAD_KEYS]
     feats, zs, meta = [], [], []
     with torch.inference_mode():
         for m in man:
@@ -79,13 +79,36 @@ def auroc(s, y):
     return float(np.mean([[1.0 if a > b else 0.5 if a == b else 0.0 for b in neg] for a in pos]))
 
 
-def train(test_from: int = 7, epochs: int = 300, use_z: bool = True, mil_epochs: int = 150, agg: str = 'top2'):
+def neighbor_index(meta: list[dict], n: int) -> np.ndarray:
+    """窓 i の前後 n 個の窓の index (同じ動画・同じ窓設定、時刻順)。端は自分自身で埋める。形 [N, 2n+1] (中央が自分)。"""
+    groups: dict[tuple, list[int]] = {}
+    for i, m in enumerate(meta):
+        groups.setdefault((m["file"], m["fps"], m["win"]), []).append(i)
+    nb = np.zeros((len(meta), 2 * n + 1), np.int64)
+    for g in groups.values():
+        g = sorted(g, key=lambda i: meta[i]["t0"])
+        for k, i in enumerate(g):
+            for o in range(-n, n + 1):
+                nb[i, o + n] = g[min(max(k + o, 0), len(g) - 1)]
+    return nb
+
+
+def with_ctx(H: torch.Tensor, Z: torch.Tensor, meta: list[dict], n: int) -> tuple[torch.Tensor, torch.Tensor]:
+    """前後 n 窓の特徴を連結 → 「前後の状況」を head に見せる (n=0 なら元のまま)。"""
+    if n <= 0:
+        return H, Z
+    nb = torch.tensor(neighbor_index(meta, n), device=H.device)
+    return H[nb].flatten(1), Z[nb].flatten(1)
+
+
+def train(test_from: int = 7, epochs: int = 300, use_z: bool = True, mil_epochs: int = 150, agg: str = 'top2', ctx: int = 0, tag: str = ""):
     d = np.load(FEAT, allow_pickle=True)
     H = torch.tensor(d["h"].astype(np.float32)); Z = torch.tensor(d["z"]); meta = json.loads(str(d["meta"]))
     dev = "cuda" if torch.cuda.is_available() else "cpu"
     H, Z = H.to(dev), Z.to(dev)
+    H, Z = with_ctx(H, Z, meta, ctx)
     results = {}
-    for c in CHECKS:
+    for c in [BY_KEY[k] for k in HEAD_KEYS]:
         # この項目の窓設定の窓だけ使う。負例は同じシーン (+ 他シーン少量) の全動画から
         idx_all = [i for i, m in enumerate(meta) if (m["fps"], m["win"]) == (c.fps, c.window_s)]
         y = np.array([1 if (meta[i]["check"] == c.key and meta[i]["event"]) else 0 for i in idx_all])
@@ -125,7 +148,7 @@ def train(test_from: int = 7, epochs: int = 300, use_z: bool = True, mil_epochs:
         clips = {}
         for k in np.where(te)[0]:
             m = meta[idx_all[k]]; clips.setdefault(m["file"], {"label": m["label"], "p": []})["p"].append(p[k])
-        zs = Z[ii][:, [i for i, q in enumerate(CHECKS) if q.key == c.key][0] * 3 : [i for i, q in enumerate(CHECKS) if q.key == c.key][0] * 3 + 3].cpu().numpy()
+        zs = Z[ii][:, HEAD_KEYS.index(c.key) * 3 : HEAD_KEYS.index(c.key) * 3 + 3].cpu().numpy()
         zp = np.exp(zs - zs.max(1, keepdims=True)); zp = zp[:, 0] / zp.sum(1)   # ゼロショットの p(yes)
         zclips = {}
         for k in np.where(te)[0]:
@@ -149,8 +172,8 @@ def train(test_from: int = 7, epochs: int = 300, use_z: bool = True, mil_epochs:
         results[c.key] = {"title": c.title, "n_train_windows": int(tr.sum()), "n_test_clips": len(clips), "head_window_auroc": a, "head_clip_acc": acc, "thr": thr,
                           "zeroshot_window_auroc": za, "zeroshot_clip_acc": zacc}
         print(f"{c.title:14s} head AUROC {a if a is None else round(a,3)} acc {acc if acc is None else round(acc,2)} | zero-shot AUROC {za if za is None else round(za,3)} acc {zacc if zacc is None else round(zacc,2)}  (test clips {len(clips)})", flush=True)
-        torch.save({"state": head.state_dict(), "d_h": H.shape[1], "d_z": Zc.shape[1], "thr": thr}, DATA / f"head_{c.key}.pt")
-    json.dump(results, open(DATA / "head_eval.json", "w"), ensure_ascii=False, indent=1)
+        torch.save({"state": head.state_dict(), "d_h": H.shape[1], "d_z": Zc.shape[1], "thr": thr, "ctx": ctx}, DATA / f"head_{c.key}{tag}.pt")
+    json.dump(results, open(DATA / f"head_eval{tag}.json", "w"), ensure_ascii=False, indent=1)
     hs = [v["head_clip_acc"] for v in results.values() if v["head_clip_acc"] is not None]; zs_ = [v["zeroshot_clip_acc"] for v in results.values() if v["zeroshot_clip_acc"] is not None]
     print("mean clip acc: head %.3f  zero-shot %.3f" % (np.mean(hs), np.mean(zs_)))
 
@@ -164,8 +187,10 @@ if __name__ == "__main__":
     ap.add_argument("--no-z", action="store_true")
     ap.add_argument("--mil-epochs", type=int, default=150)
     ap.add_argument("--agg", default="top2")
+    ap.add_argument("--ctx", type=int, default=0, help="前後 N 窓の特徴も連結して学習する (時間文脈)")
+    ap.add_argument("--tag", default="", help="出力ファイル名の接尾辞 (例 _ctx1)")
     a = ap.parse_args()
     if a.extract:
         extract(a.model)
     if a.train:
-        train(a.test_from, use_z=not a.no_z, mil_epochs=a.mil_epochs, agg=a.agg)
+        train(a.test_from, use_z=not a.no_z, mil_epochs=a.mil_epochs, agg=a.agg, ctx=a.ctx, tag=a.tag)

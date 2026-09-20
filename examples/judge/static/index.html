@@ -25,7 +25,7 @@
   <section class="stage">
     <div class="bar">
       <label class="upl">動画を選ぶ (15 秒〜1 分)<input type="file" id="file" accept="video/*" hidden></label>
-      <select id="scene"><option value="">全部の項目 (10)</option></select>
+      <select id="scene"><option value="">全部の項目</option></select>
       <select id="mode" title="判定のしかた"><option value="zeroshot">質問方式 (学習なし)</option><option value="head">学習 head (凍結 VLM + 小さな head)</option></select>
       <button id="judgeBtn" class="mic" disabled>判定する</button>
       <span class="muted small" id="status"></span>
@@ -34,7 +34,8 @@
       <div class="marker" id="marker" hidden></div></div>
     <div class="timeline" id="timeline"></div>
     <div class="timings muted" id="timings"></div>
-    <h3>試験動画 <span class="muted small">(H3 で生成。項目ごとに 問題あり 10 本 / 問題なし 10 本。正解は判定後に開きます)</span></h3>
+    <div class="samplesHead"><h3>試験動画 <span class="muted small">(H3 で生成。項目ごとに 問題あり 10 本 / 問題なし 10 本。正解は判定後に開きます。一覧はこの枠の中でスクロール)</span></h3>
+      <span class="sp"></span><span id="picked" hidden></span><button id="jafBtn" class="contact" type="button" title="実写 (JAF 危険予知トレーニング動画) は社内確認用にパスワード付きで見られます">🔒 実写 (社内)</button><button id="toTop" class="contact" type="button">▲ 動画へ</button></div>
     <div class="samples" id="samples"><div class="muted small">試験動画はまだありません。手元の動画を選んでください。</div></div>
   </section>
   <aside class="panel">
@@ -48,7 +49,9 @@
       <li><span class="lv 問題なし">問題なし</span> 全部の窓で「いいえ」が確か</li>
       <li><span class="lv 判別できない">判別できない</span> 映っていない・見えない。「該当なし」を選択肢に入れてあるので、無理に答えない</li>
     </ul>
-    <p class="muted small">動画を 2 fps (スポーツは 10 fps) で切り、4 秒 (1.6 秒) の窓をずらしながら、窓ごとに 10 個の質問を選択肢で答えさせる。
+    <p class="muted small">動画を 2 fps (スポーツは 10 fps) で切り、4 秒 (1.6 秒) の窓をずらしながら、窓ごとに質問を選択肢で答えさせる。
+    カット (編集・別カメラ) と監視カメラの PTZ 操作 (画面全体の動き) でシーンを区切り、窓も前後の文脈もシーンをまたがない。
+    「自動」を選ぶとシーンごとに場面の種類を 1 問で判定し、その場面の項目だけを見る (黄色の帯)。
     動画の符号化は窓ごとに 1 回、質問は追加 1 問あたり約 25 ms。動画はサーバーに保存しない。</p>
   </aside>
 </main>
@@ -77,7 +80,9 @@
 <main id="tab-about" class="tabpane about" hidden>
   <h2>しくみ</h2>
   <ol>
-    <li><b>動画を窓に切る</b> — 監視・安全系は 2 fps × 4 秒、スポーツの反則は 10 fps × 1.6 秒。窓は半分ずつ重ねてずらす。</li>
+    <li><b>動画を窓に切る</b> — 監視・安全系は 2 fps × 4 秒、スポーツの反則は 10 fps × 1.6 秒。窓は半分ずつ重ねてずらす。カット (色分布の急変) と PTZ 操作 (位相相関で画面全体が動く) で<b>シーンを区切り</b>、窓はシーンをまたがない。</li>
+    <li><b>前後の状況</b> — 学習 head は前後 1 窓ずつの特徴も連結して見る (同じシーンの中だけ)。生成動画の評価で動画正解率 72→83% (12 本 × 10 項目)。12 秒の長い窓を足すだけでは差が出なかった。</li>
+    <li><b>場面の判定 (分母)</b> — 「自動」ではシーンごとに「これはどんな映像か」を 1 問だけ聞き (店舗・街 / 工事現場 / スポーツ / 室内 / 道路 / タイトル画面など)、その場面の項目だけを判定する。タイトル画面や別の場面で誤検出しない。</li>
     <li><b>窓ごとに質問を並べる</b> — 「喧嘩が起きているか」「高所で作業している人がハーネスを着けていないか」など 10 項目。答えは はい / いいえ / 判別できない の 3 択。「判別できない」があるので、見えないものに無理に答えない。</li>
     <li><b>確率で答えさせる</b> — VLM (Qwen3-VL-4B) に文章を書かせず、選択肢の 1 文字の確率だけを読む。動画の符号化は窓につき 1 回で、質問を 10 個にしても符号化はやり直さない (KV cache の複製)。</li>
     <li><b>学習 head (切替可)</b> — 凍結した VLM の内部状態 (hidden state) に項目ごとの小さな MLP を載せ、ラベル付き動画 400 本で学習したもの。細かい動作 (万引きの「隠す」、ダブルドリブル) の窓レベルの識別力が質問方式より高い。判定画面の「判定のしかた」で切り替え。</li>

@@ -22,20 +22,36 @@ from pathlib import Path
 import numpy as np
 from typing import Any
 
-from fastapi import FastAPI, File, Form, UploadFile
-from fastapi.responses import HTMLResponse, JSONResponse
+from fastapi import FastAPI, File, Form, Request, UploadFile
+from fastapi.responses import FileResponse, HTMLResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from PIL import Image
 from pydantic import BaseModel
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
-from examples.judge.checks import BY_KEY, CHECKS, SCENES  # noqa: E402
+from examples.judge.checks import HEAD_KEYS, SCENE_OPTIONS, SCENE_QUESTION, BY_KEY, CHECKS, SCENES  # noqa: E402
 from openvons.core.decision import Thresholds, decide  # noqa: E402
 from openvons.vision.video_judge import VQuestion, VideoJudge  # noqa: E402
 
 HERE = Path(__file__).resolve().parent
 DATA = Path(os.environ.get("JUDGE_DATA", str(HERE.parents[1] / "state" / "judge")))
 CLIPS = DATA / "clips"
+JAF = DATA / "jaf"          # 社内確認用の実写 (© JAF、再配布しない): パスワード付きでだけ見せる
+
+
+def _jaf_key() -> str:
+    """JAF 動画の閲覧パスワード。環境変数 JUDGE_JAF_PASS か state/judge/jaf_pass.txt。無ければ非公開。"""
+    k = os.environ.get("JUDGE_JAF_PASS", "")
+    f = DATA / "jaf_pass.txt"
+    if not k and f.exists():
+        k = f.read_text().strip()
+    return k
+
+
+def _jaf_ok(key: str) -> bool:
+    import hmac
+    real = _jaf_key()
+    return bool(real) and hmac.compare_digest(key or "", real)
 app = FastAPI(title="openvons judge")
 G: dict[str, Any] = {}
 V = {"v": "0"}
@@ -52,16 +68,59 @@ def vq(c) -> VQuestion:
     return VQuestion(c.key, c.question, ["yes", "no", "cannot tell"], 2, fps=c.fps, window_s=c.window_s, risk=c.risk, labels_ja=["はい", "いいえ", "判別できない"])
 
 
+def vqs(c) -> list[VQuestion]:
+    """短い窓 (動作) + 必要なら長い窓 (前後の文脈、key に @long を付ける)。"""
+    qs = [vq(c)]
+    if c.long_window_s:
+        q = VQuestion(c.key + "@long", c.question, ["yes", "no", "cannot tell"], 2, fps=c.long_fps, window_s=c.long_window_s, risk=c.risk, labels_ja=["はい", "いいえ", "判別できない"])
+        qs.append(q)
+    return qs
+
+
+def scene_vq() -> VQuestion:
+    return VQuestion("__scene__", SCENE_QUESTION, [d for _, d in SCENE_OPTIONS], len(SCENE_OPTIONS) - 1, fps=2.0, window_s=4.0, labels_ja=[n for n, _ in SCENE_OPTIONS])
+
+
+def apply_scene_filter(res: dict, keys: list[str]) -> None:
+    """シーン自動判定: 各区間の種別が項目のシーンと違う窓は判定対象外 (skipped、p=[0,0,1]) にする。"""
+    scenes = res.get("scenes") or []
+    for key in keys:
+        q = res["questions"].get(key)
+        if not q:
+            continue
+        want = BY_KEY[key].scene
+        for w in q["series"]:
+            si = w.get("scene")
+            if si is None or si >= len(scenes) or "type_ja" not in scenes[si]:
+                continue
+            if scenes[si]["type_ja"] != want:
+                w["skipped"] = True
+                w["p"] = [0.0, 0.0, 1.0]
+
+
+def merge_long(res: dict) -> None:
+    """key@long の窓を key の窓列に合流させる (判定は両方の窓の最大値)。UI 用に元の系列も残す。"""
+    for k in [k for k in res["questions"] if k.endswith("@long")]:
+        base = k[: -len("@long")]
+        if base in res["questions"]:
+            res["questions"][base]["series"] = sorted(res["questions"][base]["series"] + [dict(w, long=True) for w in res["questions"][k]["series"]], key=lambda w: (w["t0"], w["t1"]))
+        del res["questions"][k]
+
+
 def summarize(res: dict) -> dict:
     """窓ごとの確率 → 項目ごとの要約 (最大確率の窓、判断、検出区間)。"""
     out = []
     for key, q in res["questions"].items():
         c = BY_KEY[key]
-        ps = [s["p"] for s in q["series"]]
+        ps = [s["p"] for s in q["series"] if not s.get("skipped")]
         if not ps:
+            if q["series"]:
+                out.append({"key": key, "title": c.title, "scene": c.scene, "risk": c.risk, "p_max": 0.0, "t_max": 0.0, "action": "skip", "label": "該当シーンなし",
+                            "segments": [], "fps": q["fps"], "window_s": q["window_s"]})
             continue
         yes = [p[0] for p in ps]; no = [p[1] for p in ps]; none = [p[2] for p in ps]
         i = max(range(len(yes)), key=lambda k: yes[k])
+        live = [s for s in q["series"] if not s.get("skipped")]
         if yes[i] >= TH.confirm:
             # 「はい」が疑われる窓がある → その窓の分布で判断 (危険度 high は必ず要確認)
             action, reason = decide(yes[i], none[i], c.risk, TH)
@@ -73,15 +132,15 @@ def summarize(res: dict) -> dict:
             action = "reject" if float(np.median(no)) >= 0.6 else "none"
             label = "問題なし" if action == "reject" else "判別できない"
         segs = []
-        for s, p in zip(q["series"], ps):
+        for s, p in zip(live, ps):
             if p[0] >= TH.confirm:
                 if segs and s["t0"] <= segs[-1][1] + 1e-6:
                     segs[-1][1] = s["t1"]
                 else:
                     segs.append([s["t0"], s["t1"]])
-        out.append({"key": key, "title": c.title, "scene": c.scene, "risk": c.risk, "p_max": yes[i], "t_max": q["series"][i]["t0"],
+        out.append({"key": key, "title": c.title, "scene": c.scene, "risk": c.risk, "p_max": yes[i], "t_max": live[i]["t0"],
                     "action": action, "label": label, "segments": segs, "fps": q["fps"], "window_s": q["window_s"]})
-    order = {"execute": 0, "confirm": 1, "none": 2, "reject": 3}
+    order = {"execute": 0, "confirm": 1, "none": 2, "reject": 3, "skip": 4}
     out.sort(key=lambda r: (order[r["action"]], -r["p_max"]))
     return {"items": out}
 
@@ -95,33 +154,47 @@ def _load_heads():
         f = DATA / f"head_{c.key}.pt"
         if f.exists():
             ck = torch.load(f, map_location="cuda")
-            h = Head(ck["d_h"], ck["d_z"]).cuda().eval(); h.load_state_dict(ck["state"]); heads[c.key] = (h, ck.get("thr", 0.5))
+            ck.setdefault("ctx", 0)
+            h = Head(ck["d_h"], ck["d_z"]).cuda().eval(); h.load_state_dict(ck["state"]); heads[c.key] = (h, ck.get("thr", 0.5), int(ck.get("ctx", 0)))
     return heads
 
 
 def apply_heads(res: dict, keys: list[str]) -> None:
-    """窓の確率を head の出力 [p, 1-p, 0] に置き換える (head がある項目のみ)。質問方式の 30 logit も入力に使う。"""
+    """窓の確率を head の出力 [p, 1-p, 0] に置き換える (head がある項目のみ)。質問方式の 30 logit も入力に使う。
+    head が ctx>0 で学習されていれば前後 ctx 窓の特徴も連結する (前後の状況)。同じシーン区間の中だけで取り、区間の端は自分で埋める = カットや PTZ でリセット。"""
     import numpy as np
     import torch
     heads = G.get("heads") or {}
-    order = [c.key for c in CHECKS]
     for key in keys:
         if key not in heads or key not in res["questions"]:
             continue
-        h, thr = heads[key]
+        h, thr, ctx = heads[key]
         q = res["questions"][key]
-        for i, w in enumerate(q["series"]):
-            if "_hidden" not in w:
-                continue
-            z = np.zeros(len(order) * 3, np.float32)
+        wins = [w for w in q["series"] if "_hidden" in w and not w.get("long")]
+        if not wins:
+            continue
+        def zvec(w_index: int) -> np.ndarray:
+            z = np.zeros(len(HEAD_KEYS) * 3, np.float32)
             for k2, q2 in res["questions"].items():
-                if k2 in order and i < len(q2["series"]) and (q2["fps"], q2["window_s"]) == (q["fps"], q["window_s"]):
-                    z[order.index(k2) * 3 : order.index(k2) * 3 + 3] = q2["series"][i]["logit"]
+                if k2 in HEAD_KEYS and w_index < len(q2["series"]) and (q2["fps"], q2["window_s"]) == (q["fps"], q["window_s"]):
+                    z[HEAD_KEYS.index(k2) * 3 : HEAD_KEYS.index(k2) * 3 + 3] = q2["series"][w_index]["logit"]
+            return z
+        idx_of = {id(w): i for i, w in enumerate(q["series"])}
+        H = [w["_hidden"] for w in wins]; Z = [zvec(idx_of[id(w)]) for w in wins]
+        for i, w in enumerate(wins):
+            nb = []
+            for o in range(-ctx, ctx + 1):
+                j = min(max(i + o, 0), len(wins) - 1)
+                if wins[j].get("scene") != w.get("scene"):
+                    j = i   # 別のシーン区間は見ない
+                nb.append(j)
+            hh = np.concatenate([H[j] for j in nb]); zz = np.concatenate([Z[j] for j in nb])
             with torch.no_grad():
-                p = float(torch.sigmoid(h(torch.tensor(w["_hidden"])[None].cuda(), torch.tensor(z)[None].cuda()))[0])
+                p = float(torch.sigmoid(h(torch.tensor(hh)[None].cuda(), torch.tensor(zz)[None].cuda()))[0])
             # head の閾値を 0.5 に写像して decide の閾値 (0.4 / 0.85) と揃える
             p = 0.5 * p / thr if p < thr else 0.5 + 0.5 * (p - thr) / max(1 - thr, 1e-6)
-            w["p"] = [p, 1 - p, 0.0]
+            if not w.get("skipped"):
+                w["p"] = [p, 1 - p, 0.0]
         q["mode"] = "head"
 
 
@@ -149,7 +222,32 @@ def healthz():
 
 @app.get("/api/checks")
 def checks():
-    return {"scenes": SCENES, "checks": [{"key": c.key, "title": c.title, "scene": c.scene, "fps": c.fps, "window_s": c.window_s, "risk": c.risk, "question": c.question} for c in CHECKS]}
+    return {"scenes": SCENES, "auto_scene": True, "checks": [{"key": c.key, "title": c.title, "scene": c.scene, "fps": c.fps, "window_s": c.window_s, "risk": c.risk, "question": c.question} for c in CHECKS]}
+
+
+@app.get("/api/jaf/samples")
+def jaf_samples(key: str = ""):
+    """パスワード付き: JAF 危険予知トレーニング動画の一覧 (手元にある分だけ)。"""
+    if not _jaf_ok(key):
+        return JSONResponse({"error": "パスワードが違います"}, status_code=401)
+    lst = JAF / "list.json"
+    rows = json.load(open(lst)) if lst.exists() else []
+    out = []
+    for r in rows:
+        f = f'{r["cat"]}_{r["scene"]}.mp4'
+        if (JAF / f).exists():
+            out.append({"file": f, "title": r["title"].replace("（危険予知・事故回避トレーニング）", ""), "page": r["page"], "id": f[:-4]})
+    return {"samples": out, "note": "© JAF。社内確認用。再配布しないでください。"}
+
+
+@app.get("/jaf/{name}")
+def jaf_file(name: str, request: Request, key: str = ""):
+    if not _jaf_ok(key):
+        return JSONResponse({"error": "パスワードが違います"}, status_code=401)
+    path = JAF / Path(name).name
+    if not path.exists() or path.suffix not in (".mp4", ".jpg"):
+        return JSONResponse({"error": "not found"}, status_code=404)
+    return FileResponse(str(path), media_type="video/mp4" if path.suffix == ".mp4" else "image/jpeg")
 
 
 @app.get("/api/samples")
@@ -167,16 +265,25 @@ def sample_answer(file: str):
     man = CLIPS / "manifest.json"
     rows = json.load(open(man)) if man.exists() else []
     r = next((x for x in rows if x["file"] == file), None)
-    return r and {"label": r["label"], "check": r["check"], "event_start": r.get("event_start"), "event_end": r.get("event_end")} or {}
+    return r and {"label": r["label"], "check": r["check"], "event_start": r.get("event_start"), "event_end": r.get("event_end"), "suspect": bool(r.get("suspect"))} or {}
 
 
 @app.post("/api/judge")
-async def judge(file: UploadFile | None = File(None), sample: str = Form(""), scene: str = Form(""), checks: str = Form(""), state: str = Form(""), mode: str = Form("zeroshot")):
+async def judge(file: UploadFile | None = File(None), sample: str = Form(""), scene: str = Form(""), checks: str = Form(""), state: str = Form(""), mode: str = Form("zeroshot"),
+                split_scenes: str = Form("1"), key: str = Form("")):
+    """scene: "" = 全項目、"auto" = カットで区切った区間ごとに場面の種類を判定し、その場面の項目だけ判定する、それ以外 = その場面の項目。"""
     t0 = time.time()
-    keys = [k for k in checks.split(",") if k] or [c.key for c in CHECKS if not scene or c.scene == scene]
-    qs = [vq(BY_KEY[k]) for k in keys if k in BY_KEY]
+    auto = scene == "auto"
+    keys = [k for k in checks.split(",") if k] or [c.key for c in CHECKS if auto or not scene or c.scene == scene]
+    qs = [q for k in keys if k in BY_KEY for q in vqs(BY_KEY[k])]
     tmp = None
-    if sample:
+    if sample.startswith("jaf:"):
+        if not _jaf_ok(key):
+            return JSONResponse({"error": "パスワードが違います"}, status_code=401)
+        path = JAF / Path(sample[4:]).name
+        if not path.exists():
+            return JSONResponse({"error": "sample not found"}, status_code=404)
+    elif sample:
         path = CLIPS / Path(sample).name
         if not path.exists():
             return JSONResponse({"error": "sample not found"}, status_code=404)
@@ -190,17 +297,20 @@ async def judge(file: UploadFile | None = File(None), sample: str = Form(""), sc
         tmp.write(data); tmp.close(); path = Path(tmp.name)
     try:
         st = state or "Fixed camera footage."
-        res = G["judge"].judge(str(path), qs, state=st, max_s=90.0)
+        res = G["judge"].judge(str(path), qs, state=st, max_s=90.0, scene_question=scene_vq() if auto else None, split_scenes=split_scenes not in ("0", "false"))
     finally:
         if tmp:
             os.unlink(tmp.name)
+    if auto:
+        apply_scene_filter(res, keys)
     if mode == "head":
         apply_heads(res, keys)
+    merge_long(res)
     for v in res["questions"].values():
         for w in v["series"]:
             w.pop("_hidden", None)
     summ = summarize(res)
-    return {"duration": res["duration"], "timing": res["timing"], "summary": summ["items"], "mode": mode, "heads": sorted(G.get("heads") or {}),
+    return {"duration": res["duration"], "timing": res["timing"], "summary": summ["items"], "mode": mode, "heads": sorted(G.get("heads") or {}), "scenes": res.get("scenes", []), "auto_scene": auto,
             "series": {k: {"windows": v["series"], "fps": v["fps"], "window_s": v["window_s"]} for k, v in res["questions"].items()},
             "model": G["model"], "elapsed_s": time.time() - t0}
 

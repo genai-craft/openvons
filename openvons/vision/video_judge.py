@@ -58,6 +58,67 @@ def read_frames(path: str, fps: float, max_s: float | None = None) -> tuple[list
     return frames, ts, dur
 
 
+def _phase_shift(a: "np.ndarray", b: "np.ndarray") -> tuple[float, float]:
+    """位相相関で b が a からどれだけ平行移動したかを推定。戻り値 (移動量 px, ピークの鋭さ)。画面全体が一様に動く (カメラの動き) と鋭いピークになる。"""
+    A = np.fft.fft2(a - a.mean()); B = np.fft.fft2(b - b.mean())
+    R = A * np.conj(B); R /= np.abs(R) + 1e-6
+    r = np.real(np.fft.ifft2(R))
+    dy, dx = np.unravel_index(int(np.argmax(r)), r.shape)
+    H, W = r.shape
+    dy = dy - H if dy > H // 2 else dy
+    dx = dx - W if dx > W // 2 else dx
+    return float((dx * dx + dy * dy) ** 0.5), float(r.max() / (np.abs(r).mean() + 1e-9))
+
+
+def detect_scenes(frames: list[Image.Image], ts: list[float], min_len_s: float = 2.0) -> list[dict]:
+    """シーン切り替えを検出して区間に分ける。2 種類を見る:
+    (1) カット (編集・別カメラへの切替): 連続フレームの色ヒストグラム距離が大きく (実測 車載 ≤0.21、カット 0.37〜0.68)、縮小画像の平均差も大きい。
+    (2) カメラの動き (監視カメラの PTZ 操作・パン): 位相相関で画面全体が一様に 2.5px/フレーム (64px 幅) 以上動いたと出る状態が 2 フレーム以上続き、
+        かつ直前 3 秒が固定カメラ (連続差の中央値 < 0.05) だったとき。動き始めと止まった所で区切る。固定カメラで人や車が動くだけでは画面全体は動かないので区切られない。
+        車載・手持ちなど常に動いているカメラでは (2) は働かず、(1) だけで区切る。
+    min_len_s より短い区間は前の区間に吸収する。戻り値 [{"i0","i1","t0","t1","kind"}] (i1 は含まない、kind は区間の始まりの種類: start/cut/camera)。
+    窓はこの区間をまたがないようにし、前後の文脈もこの区間の中だけで使う。"""
+    if not frames:
+        return []
+    small = np.stack([np.asarray(f.convert("RGB").resize((32, 18)), np.float32) / 255.0 for f in frames])
+    gray = np.stack([np.asarray(f.convert("L").resize((64, 36)), np.float32) / 255.0 for f in frames])
+    hists = np.stack([np.histogramdd(np.asarray(f.convert("RGB").resize((64, 36)), np.float32).reshape(-1, 3), bins=(8, 8, 8), range=((0, 256),) * 3)[0].ravel() for f in frames])
+    hists /= hists.sum(1, keepdims=True) + 1e-9
+    pix = np.r_[0.0, np.abs(small[1:] - small[:-1]).mean(axis=(1, 2, 3))]
+    hd = np.r_[0.0, 0.5 * np.abs(hists[1:] - hists[:-1]).sum(1)]
+    is_cut = (hd > 0.35) & (pix > 0.15)
+    moving = np.zeros(len(frames), bool)
+    for i in range(1, len(frames)):
+        if not is_cut[i]:
+            sh, pk = _phase_shift(gray[i - 1], gray[i])
+            moving[i] = sh >= 2.5 and pk >= 6.0
+    marks: list[tuple[int, str]] = []
+    i = 1
+    while i < len(frames):
+        if is_cut[i]:
+            marks.append((i, "cut")); i += 1
+        elif moving[i] and i + 1 < len(frames) and moving[i + 1]:
+            j = i
+            while j < len(frames) and moving[j]:
+                j += 1
+            pre = pix[max(1, i - 6):i]
+            if len(pre) and float(np.median(pre)) < 0.05:
+                marks.append((i, "camera"))
+                if j < len(frames):
+                    marks.append((j, "camera"))
+            i = j
+        else:
+            i += 1
+    bounds = [0]; kinds = ["start"]
+    for b, k in marks:
+        if ts[b] - ts[bounds[-1]] >= min_len_s:
+            bounds.append(b); kinds.append(k)
+    if len(bounds) > 1 and ts[-1] - ts[bounds[-1]] < min_len_s * 0.5:
+        bounds.pop(); kinds.pop()   # 末尾のごく短い区間は前に吸収
+    bounds.append(len(frames))
+    return [{"i0": a, "i1": b, "t0": ts[a], "t1": ts[b - 1], "kind": k} for a, b, k in zip(bounds[:-1], bounds[1:], kinds) if b > a]
+
+
 class VideoJudge:
     def __init__(self, model: str = "Qwen/Qwen3-VL-4B-Instruct", device: str = "cuda", calibration: str | None = None):
         from transformers import AutoModelForImageTextToText, AutoProcessor
@@ -113,8 +174,11 @@ class VideoJudge:
 
     # ---- 動画全体 ----
     @torch.inference_mode()
-    def judge(self, path: str, questions: list[VQuestion], state: str = "Security camera footage.", max_s: float = 90.0, progress=None) -> dict:
-        """質問群を fps/window でグループ化し、窓ごとに全質問を採点する。戻り値: 質問ごとの時系列と要約。"""
+    def judge(self, path: str, questions: list[VQuestion], state: str = "Security camera footage.", max_s: float = 90.0, progress=None,
+              scene_question: VQuestion | None = None, split_scenes: bool = True) -> dict:
+        """質問群を fps/window でグループ化し、窓ごとに全質問を採点する。戻り値: 質問ごとの時系列と要約。
+        split_scenes: カットを検出し、窓がカットをまたがないようにする (前後の文脈もカットでリセット)。
+        scene_question: 与えると各シーン区間の先頭の窓で 1 回だけ「どんな場面か」を聞き、result["scenes"][i]["type"] に入れる。"""
         t_all = time.perf_counter()
         groups: dict[tuple[float, float], list[VQuestion]] = {}
         for q in questions:
@@ -128,24 +192,48 @@ class VideoJudge:
             n_win = max(1, int(round(win * fps)))
             step = max(1, n_win // 2)
             series = {q.key: [] for q in qs}
-            for s in range(0, max(1, len(frames) - n_win + 1), step):
-                fr = frames[s : s + n_win]
+            if "scenes" not in result:
+                # カットは最初の fps グループで一度だけ検出し、他の fps グループは時刻で同じ区間に対応づける
+                scs = detect_scenes(frames, ts) if split_scenes else [{"i0": 0, "i1": len(frames), "t0": ts[0], "t1": ts[-1]}]
+                result["scenes"] = [{"t0": sc["t0"], "t1": sc["t1"], "kind": sc.get("kind", "start")} for sc in scs]
+            bounds_t = [sc["t0"] for sc in result["scenes"]][1:]
+            idx_bounds = [0] + [next((i for i, t in enumerate(ts) if t >= bt - 1e-6), len(frames)) for bt in bounds_t] + [len(frames)]
+            scenes = [{"i0": a, "i1": b} for a, b in zip(idx_bounds[:-1], idx_bounds[1:])]
+            starts: list[tuple[int, int, int]] = []   # (開始, 終了, シーン番号) — 窓はシーン区間をまたがない
+            for si, sc in enumerate(scenes):
+                a, b = sc["i0"], sc["i1"]
+                if b - a <= n_win:
+                    starts.append((a, b, si))
+                    continue
+                ss = list(range(a, b - n_win + 1, step))
+                if ss[-1] != b - n_win:
+                    ss.append(b - n_win)   # 区間の末尾の窓も必ず見る
+                starts += [(x, x + n_win, si) for x in ss]
+            for s, e, si in starts:
+                if e <= s:
+                    continue   # この fps では空になった区間
+                fr = frames[s:e]
                 t0 = time.perf_counter()
                 inp, cache = self._prefill(fr, state)
                 result["timing"]["encode_s"] += time.perf_counter() - t0
                 t0 = time.perf_counter()
                 hid = self.last_hidden.cpu().numpy() if self.want_hidden else None
+                if scene_question is not None and e > s and "type" not in result["scenes"][si]:
+                    lg = self._ask(inp, cache, scene_question)
+                    p = self._probs(scene_question.key, lg)
+                    k = int(np.argmax(p))
+                    result["scenes"][si].update({"type": scene_question.options[k], "type_ja": (scene_question.labels_ja or scene_question.options)[k], "p": [float(x) for x in p]})
                 for q in qs:
                     lg = self._ask(inp, cache, q)
                     p = self._probs(q.key, lg)
-                    rec = {"t0": ts[s], "t1": ts[min(s + n_win, len(ts)) - 1], "p": [float(x) for x in p], "logit": [float(x) for x in lg]}
+                    rec = {"t0": ts[s], "t1": ts[e - 1], "scene": si, "p": [float(x) for x in p], "logit": [float(x) for x in lg]}
                     if hid is not None:
                         rec["_hidden"] = hid
                     series[q.key].append(rec)
                 result["timing"]["ask_s"] += time.perf_counter() - t0
                 result["timing"]["windows"] += 1; result["timing"]["asks"] += len(qs)
                 if progress:
-                    progress(s + n_win, len(frames))
+                    progress(e, len(frames))
                 del cache
             for q in qs:
                 result["questions"][q.key] = {"series": series[q.key], "fps": fps, "window_s": win, "options": q.options, "labels_ja": q.labels_ja, "none_index": q.none_index, "risk": q.risk}
