@@ -26,16 +26,19 @@ CLIPS = DATA / "clips"
 FEAT = DATA / "features.npz"
 
 
-def extract(model: str):
+def extract(model: str, shard: tuple[int, int] = (0, 1)):
     from examples.judge.server import vq
     from openvons.vision.video_judge import VideoJudge, read_frames
     judge = VideoJudge(model); judge.T = {}
     man = json.load(open(CLIPS / "manifest.json"))
     qs = [vq(BY_KEY[k]) for k in HEAD_KEYS]
     feats, zs, meta = [], [], []
+    man = [m for k, m in enumerate(man) if k % shard[1] == shard[0]]
     with torch.inference_mode():
         for m in man:
-            for (fps, win) in sorted({(c.fps, c.window_s) for c in CHECKS}):
+            # その動画の場面 (店舗・街 / スポーツ …) にある項目の窓設定だけ抽出する (+ 共通の 2 fps × 4 秒)。スポーツの 10 fps 窓を全動画で作ると 5 倍かかる
+            scene = BY_KEY[m["check"]].scene
+            for (fps, win) in sorted({(c.fps, c.window_s) for c in CHECKS if c.scene == scene} | {(2.0, 4.0)}):
                 frames, ts, dur = read_frames(str(CLIPS / m["file"]), fps, 60)
                 n_win = max(1, int(round(win * fps))); step = max(1, n_win // 2)
                 for s in range(0, max(1, len(frames) - n_win + 1), step):
@@ -58,8 +61,19 @@ def extract(model: str):
                                  "fps": fps, "win": win, "t0": t0, "t1": t1, "event": int(ev)})
                     del cache
             print(m["file"], len(meta), flush=True)
-    np.savez_compressed(FEAT, h=np.stack(feats), z=np.stack(zs), meta=json.dumps(meta))
-    print("->", FEAT, np.stack(feats).shape)
+    out = FEAT if shard[1] == 1 else FEAT.with_name(f"features_shard{shard[0]}of{shard[1]}.npz")
+    np.savez_compressed(out, h=np.stack(feats), z=np.stack(zs), meta=json.dumps(meta))
+    print("->", out, np.stack(feats).shape)
+
+
+def merge_shards(n: int):
+    """features_shard*.npz を features.npz にまとめる。"""
+    hs, zs, metas = [], [], []
+    for i in range(n):
+        d = np.load(FEAT.with_name(f"features_shard{i}of{n}.npz"), allow_pickle=True)
+        hs.append(d["h"]); zs.append(d["z"]); metas += json.loads(str(d["meta"]))
+    np.savez_compressed(FEAT, h=np.concatenate(hs), z=np.concatenate(zs), meta=json.dumps(metas))
+    print("->", FEAT, np.concatenate(hs).shape)
 
 
 class Head(torch.nn.Module):
@@ -102,6 +116,7 @@ def with_ctx(H: torch.Tensor, Z: torch.Tensor, meta: list[dict], n: int) -> tupl
 
 
 def train(test_from: int = 7, epochs: int = 300, use_z: bool = True, mil_epochs: int = 150, agg: str = 'top2', ctx: int = 0, tag: str = ""):
+    torch.manual_seed(0); np.random.seed(0)   # 再現性 (項目ごとの数字が走らせるたびに ±0.1 動いていた)
     d = np.load(FEAT, allow_pickle=True)
     H = torch.tensor(d["h"].astype(np.float32)); Z = torch.tensor(d["z"]); meta = json.loads(str(d["meta"]))
     dev = "cuda" if torch.cuda.is_available() else "cpu"
@@ -184,6 +199,8 @@ def train(test_from: int = 7, epochs: int = 300, use_z: bool = True, mil_epochs:
 if __name__ == "__main__":
     ap = argparse.ArgumentParser()
     ap.add_argument("--extract", action="store_true")
+    ap.add_argument("--shard", default="0/1", help="抽出を分割する i/n (GPU ごとに)")
+    ap.add_argument("--merge", type=int, default=0, help="n 個の shard をまとめる")
     ap.add_argument("--train", action="store_true")
     ap.add_argument("--model", default=os.environ.get("JUDGE_MODEL", "Qwen/Qwen3-VL-4B-Instruct"))
     ap.add_argument("--test-from", type=int, default=7)
@@ -194,6 +211,8 @@ if __name__ == "__main__":
     ap.add_argument("--tag", default="", help="出力ファイル名の接尾辞 (例 _ctx1)")
     a = ap.parse_args()
     if a.extract:
-        extract(a.model)
+        i, n = a.shard.split("/"); extract(a.model, (int(i), int(n)))
+    if a.merge:
+        merge_shards(a.merge)
     if a.train:
         train(a.test_from, use_z=not a.no_z, mil_epochs=a.mil_epochs, agg=a.agg, ctx=a.ctx, tag=a.tag)
