@@ -65,14 +65,14 @@ NAV_FLOOR = VQuestion("floor", "What is directly ahead on the floor?", ["clear f
 
 
 def vq(c) -> VQuestion:
-    return VQuestion(c.key, c.question, ["yes", "no", "cannot tell"], 2, fps=c.fps, window_s=c.window_s, risk=c.risk, labels_ja=["はい", "いいえ", "判別できない"])
+    return VQuestion(c.key, c.question, ["yes", "no", "cannot tell"], 2, fps=c.fps, window_s=c.window_s, risk=c.risk, labels_ja=["はい", "いいえ", "判別できない"], scene=c.scene)
 
 
 def vqs(c) -> list[VQuestion]:
     """短い窓 (動作) + 必要なら長い窓 (前後の文脈、key に @long を付ける)。"""
     qs = [vq(c)]
     if c.long_window_s:
-        q = VQuestion(c.key + "@long", c.question, ["yes", "no", "cannot tell"], 2, fps=c.long_fps, window_s=c.long_window_s, risk=c.risk, labels_ja=["はい", "いいえ", "判別できない"])
+        q = VQuestion(c.key + "@long", c.question, ["yes", "no", "cannot tell"], 2, fps=c.long_fps, window_s=c.long_window_s, risk=c.risk, labels_ja=["はい", "いいえ", "判別できない"], scene=c.scene)
         qs.append(q)
     return qs
 
@@ -93,7 +93,7 @@ def apply_scene_filter(res: dict, keys: list[str]) -> None:
             si = w.get("scene")
             if si is None or si >= len(scenes) or "type_ja" not in scenes[si]:
                 continue
-            if scenes[si]["type_ja"] != want:
+            if scenes[si]["type_ja"] != want or w.get("skipped"):
                 w["skipped"] = True
                 w["p"] = [0.0, 0.0, 1.0]
 

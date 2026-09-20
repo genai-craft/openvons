@@ -15,7 +15,7 @@ document.querySelectorAll('.tab').forEach(b => b.addEventListener('click', () =>
 fetch('/api/checks').then(r => r.json()).then(d => {
   checks = d.checks;
   const sel = $('#scene');
-  if (d.auto_scene) { const o = document.createElement('option'); o.value = 'auto'; o.textContent = '自動 (シーンごとに場面を判定して項目を選ぶ)'; sel.appendChild(o); }
+  if (d.auto_scene) { const o = document.createElement('option'); o.value = 'auto'; o.textContent = '自動 (シーンごとに場面を判定して項目を選ぶ)'; sel.appendChild(o); sel.value = 'auto'; }
   d.scenes.forEach(s => { const o = document.createElement('option'); o.value = s; o.textContent = s + ' (' + checks.filter(c => c.scene === s).length + ')'; sel.appendChild(o); });
   $('#scene option[value=""]').textContent = `全部の項目 (${checks.length})`;
   const tb = $('#checkTable tbody');

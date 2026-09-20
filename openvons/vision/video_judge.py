@@ -32,6 +32,7 @@ class VQuestion:
     window_s: float = 4.0
     risk: str = "low"
     labels_ja: list[str] = field(default_factory=list)
+    scene: str | None = None       # この質問が意味を持つ場面 (scene_question の labels_ja の値)。judge() に scene_question を渡したとき、場面が違うシーンでは窓を作らない
 
 
 def read_frames(path: str, fps: float, max_s: float | None = None) -> tuple[list[Image.Image], list[float], float]:
@@ -185,7 +186,17 @@ class VideoJudge:
             groups.setdefault((q.fps, q.window_s), []).append(q)
         result = {"questions": {}, "timing": {"decode_s": 0.0, "encode_s": 0.0, "ask_s": 0.0, "windows": 0, "asks": 0}}
         duration = 0.0
-        for (fps, win), qs in groups.items():
+        # 場面判定の質問と同じ窓設定のグループを最初に処理する (そこでシーンの種類が決まり、他のグループはそれを見て窓を省く)
+        first = (scene_question.fps, scene_question.window_s) if scene_question is not None else None
+        for (fps, win), qs in sorted(groups.items(), key=lambda kv: (kv[0] != first, kv[0])):
+            if scene_question is not None and "scenes" in result:
+                # 場面が分かった後のグループ: どのシーンにも合わない質問だけなら、動画の読み直し (10 fps など) も省く
+                types = {sc.get("type_ja") for sc in result["scenes"]}
+                if all(q.scene is not None and q.scene not in types for q in qs):
+                    for q in qs:
+                        result["questions"][q.key] = {"series": [{"t0": sc["t0"], "t1": sc["t1"], "scene": si, "p": [0.0] * len(q.options), "logit": [0.0] * len(q.options), "skipped": True} for si, sc in enumerate(result["scenes"])],
+                                                      "fps": fps, "window_s": win, "options": q.options, "labels_ja": q.labels_ja, "none_index": q.none_index, "risk": q.risk}
+                    continue
             t0 = time.perf_counter()
             frames, ts, duration = read_frames(path, fps, max_s)
             result["timing"]["decode_s"] += time.perf_counter() - t0
@@ -212,6 +223,13 @@ class VideoJudge:
             for s, e, si in starts:
                 if e <= s:
                     continue   # この fps では空になった区間
+                stype = result["scenes"][si].get("type_ja") if scene_question is not None else None
+                qs_here = [q for q in qs if q.scene is None or stype is None or q.scene == stype]
+                for q in qs:
+                    if q not in qs_here:   # 場面が違う → 符号化も質問もしない
+                        series[q.key].append({"t0": ts[s], "t1": ts[e - 1], "scene": si, "p": [0.0] * len(q.options), "logit": [0.0] * len(q.options), "skipped": True})
+                if not qs_here:
+                    continue
                 fr = frames[s:e]
                 t0 = time.perf_counter()
                 inp, cache = self._prefill(fr, state)
@@ -223,7 +241,7 @@ class VideoJudge:
                     p = self._probs(scene_question.key, lg)
                     k = int(np.argmax(p))
                     result["scenes"][si].update({"type": scene_question.options[k], "type_ja": (scene_question.labels_ja or scene_question.options)[k], "p": [float(x) for x in p]})
-                for q in qs:
+                for q in qs_here:
                     lg = self._ask(inp, cache, q)
                     p = self._probs(q.key, lg)
                     rec = {"t0": ts[s], "t1": ts[e - 1], "scene": si, "p": [float(x) for x in p], "logit": [float(x) for x in lg]}
@@ -231,7 +249,7 @@ class VideoJudge:
                         rec["_hidden"] = hid
                     series[q.key].append(rec)
                 result["timing"]["ask_s"] += time.perf_counter() - t0
-                result["timing"]["windows"] += 1; result["timing"]["asks"] += len(qs)
+                result["timing"]["windows"] += 1; result["timing"]["asks"] += len(qs_here)
                 if progress:
                     progress(e, len(frames))
                 del cache
