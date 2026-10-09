@@ -22,20 +22,7 @@ DEFAULT_MODEL = "sbintuitions/kana-whisper"
 SR = 16000
 
 
-@dataclass
-class Transcript:
-    kana: str
-    logprob: float          # 生成列の対数尤度の合計 (prefix と EOT を除く内容トークン)
-    n_tokens: int
-    ms: float
-    tokens: list[int] | None = None
-
-
-@dataclass
-class Encoded:
-    hidden: torch.Tensor    # (1, T, d)
-    seconds: float
-    ms: float
+from .asr_types import Encoded, Transcript  # noqa: E402,F401  (torch を読まずに使えるよう別ファイル)
 
 
 class KanaASR:

@@ -7,6 +7,8 @@
 | 対象 | ライセンス | 用途 | 備考 |
 |---|---|---|---|
 | sbintuitions/kana-whisper | MIT | 音声の自由認識・候補採点 | 学習データ非公開。出力 (疑似ラベル) の利用制限なし |
+| genai-craft/komimi (C エンジン・Python 束縛・語彙表) | Apache-2.0 | kana 入力 (サーバー CPU)。C エンジンは振り分けの WebAssembly (`demo_static/wasm/ovkana*.wasm`) に同梱 | 同じ作者・同じライセンス |
+| komimi の重み ja_v12 / v12a / v12m / v12s (.kmm) | Apache-2.0 (ゼロから学習) | kana 入力。デモが `/kana/models/` でブラウザに配る | 学習音声は ReazonSpeech (情報解析目的で利用、音声は再配布しない)、読みの教師は kana-whisper (MIT)。v10 系 (CC-BY-4.0、NeMo 由来) は使っていない |
 | Silero VAD (silero-vad) | MIT | 発話区間の切り出し | |
 | pyopenjtalk + Open JTalk 辞書 (naist-jdic) | MIT / BSD-3 | 読みの生成 (フォールバック) | 初回に辞書を DL |
 | rapidfuzz | MIT | 絞り込み | |

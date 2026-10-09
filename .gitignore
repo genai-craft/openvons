@@ -13,3 +13,8 @@ app/android/local.properties
 app/ios/Pods/
 app/ios/Flutter/Flutter.podspec
 app/ios/.symlinks/
+
+# 学習データ置き場 (jev-rag 等から symlink)
+data/store/
+openvons/lm/data/
+openvons/voice/wasm/libovroute.so

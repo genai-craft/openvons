@@ -15,8 +15,14 @@ ort.env.wasm.numThreads = self.crossOriginIsolated ? Math.min(4, navigator.hardw
 
 const cfg = await (await fetch('/api/config')).json();
 S.cfg = cfg; S.cal = cfg.calibration; S.name = cfg.models[cfg.models.length - 1];
-$('#modelSel').innerHTML = cfg.models.map(m => `<option ${m === S.name ? 'selected' : ''}>${m}</option>`).join('');
-$('#modelSel').onchange = (e) => { S.name = e.target.value; $('#loadBtn').disabled = false; $('#loadMsg').textContent = 'モデルを変えました。読み込み直してください。'; };
+// 端末内エンジン: kana 蒸留 (whisper 系 ONNX) と komimi (Conformer-CTC、WebAssembly で振り分けまで)
+$('#modelSel').innerHTML = cfg.models.map(m => `<option value="${m}" ${m === S.name ? 'selected' : ''}>${m} (ONNX)</option>`).join('')
+  + (cfg.komimi || []).map(k => `<option value="komimi:${k.id}">${k.label}・WebAssembly ${k.mb} MB</option>`).join('');
+const onModel = () => { const v = $('#modelSel').value; const km = v.startsWith('komimi:'); $('#device').disabled = km; $('#dtype').disabled = km; };
+$('#modelSel').onchange = (e) => { S.name = e.target.value; onModel(); $('#loadBtn').disabled = false; $('#loadMsg').textContent = 'モデルを変えました。読み込み直してください。'; };
+if (cfg.server_engines && cfg.server_engines.length) {
+  $('#cmpEngine').innerHTML = cfg.server_engines.map(e => `<option>${e}</option>`).join('');
+} else { $('#cmpEngine').hidden = true; }
 S.sets = await (await fetch('/api/commands?app_name=kasen')).json();
 $('#stateSel').innerHTML = Object.keys(S.sets).map(k => `<option>${k}</option>`).join('');
 $('#stateSel').onchange = (e) => { S.state = e.target.value; showState(); };
@@ -25,7 +31,65 @@ showState();
 $('#envInfo').textContent = `WebGPU: ${('gpu' in navigator) ? '使えます' : '使えません (WASM で動きます)'} / WASM スレッド: ${ort.env.wasm.numThreads} / 校正 T=${S.cal.temperature.toFixed(2)} β0=${S.cal.none_bias.toFixed(1)} β1=${S.cal.len_bonus.toFixed(1)} γ=${S.cal.residual_penalty.toFixed(1)}`;
 
 /* ---------------- モデル読み込み ---------------- */
+/* komimi: 1 つの WebAssembly (komimi の C エンジン + openvons の振り分け) をワーカーで。/shared/kana_worker.js は全デモ共通 */
+const K = { worker: null, ready: false, wait: {}, seq: 0, cmdState: null };
+function kmCall(msg, key) { return new Promise((res) => { K.wait[key] = res; K.worker.postMessage(msg, msg.blob ? [msg.blob] : []); }); }
+async function loadKomimi(id) {
+  const spec = cfg.komimi.find(k => k.id === id);
+  if (K.worker) K.worker.terminate();
+  K.worker = new Worker(cfg.worker); K.ready = false; K.cmdState = null; S.enc = null;
+  const t0 = performance.now();
+  await new Promise((resolve, reject) => {
+    K.worker.onmessage = (e) => { const d = e.data;
+      if (d.type === 'progress') $('#dlBar').style.width = (d.loaded / d.total * 100).toFixed(0) + '%';
+      else if (d.type === 'ready') { K.ready = true; resolve(d); }
+      else if (d.type === 'error' && !d.req) reject(new Error(d.msg));
+      else if (d.type === 'commands' && K.wait.cmd) { K.wait.cmd(d); delete K.wait.cmd; }
+      else if (d.req && K.wait[d.req]) { K.wait[d.req](d); delete K.wait[d.req]; } };
+    K.worker.postMessage({ type: 'init', wasm: cfg.wasm, model: spec.model, vocab: cfg.vocab });
+  });
+  S.kind = 'komimi'; S.cal = spec.calibration; S.enc = 'komimi';
+  $('#envInfo').textContent = `komimi ${id} (WebAssembly、単スレッド) / 校正 T=${S.cal.temperature.toFixed(2)} β0=${S.cal.none_bias.toFixed(1)} β1=${S.cal.len_bonus.toFixed(1)} γ=${S.cal.residual_penalty.toFixed(1)}`;
+  return performance.now() - t0;
+}
+function packHyps(hyps) {
+  const mid = new Map(); const enc = new TextEncoder(); const parts = []; let n = 4;
+  for (const h of hyps) {
+    const key = h.i + '|' + JSON.stringify(h.s); if (!mid.has(key)) mid.set(key, mid.size);
+    const b = enc.encode(h.k); const risk = { low: 0, medium: 1, high: 2 }[h.r] || 0;
+    const flags = (h.e === false ? 0 : 1) | (h.c === false ? 0 : 2) | (h.y === false ? 0 : 4);
+    parts.push([mid.get(key), risk, flags, b]); n += 8 + b.length;
+  }
+  const buf = new Uint8Array(n); const dv = new DataView(buf.buffer); dv.setUint32(0, hyps.length, true); let o = 4;
+  for (const [m, r, f, b] of parts) { dv.setUint32(o, m, true); buf[o + 4] = r; buf[o + 5] = f; dv.setUint16(o + 6, b.length, true); buf.set(b, o + 8); o += 8 + b.length; }
+  return buf.buffer;
+}
+async function handleKomimi(audio) {
+  const hyps = S.sets[S.state].hyps;
+  if (K.cmdState !== S.state) {
+    const c = S.cal; // 並びは ov_route.c の P_* (校正 4 + 閾値 8 + 絞り込み・埋め込み 6)
+    const params = [c.temperature, c.none_bias, c.len_bonus, c.residual_penalty, 0.85, 0.40, 0.95, 0.65, 3.0, 0.20, 0.60, 0.40, 16, 1, 0.3, 14, 4, 0.5];
+    await kmCall({ type: 'commands', key: S.state, blob: packHyps(hyps), params }, 'cmd'); K.cmdState = S.state;
+  }
+  const req = 'r' + (++K.seq);
+  const d = await kmCall({ type: 'route', req, pcm: audio }, req);
+  if (d.type === 'error') throw new Error(d.msg);
+  const o = d.out; const t = o.timings_ms;
+  const ranked = o.meanings.map(([hi, p]) => ({ c: hyps[hi], p }));
+  render({ free: { kana: o.free_kana, ms: t.transcribe || 0, tokens: new Array(o.n_free) }, encMs: t.encode, scoreMs: (t.shortlist || 0) + (t.score || 0),
+           ranked, none: o.none_prob, action: o.action, audio, labels: ['komimi (音声 → CTC 行列)', '自由認識 (greedy)', '振り分け (絞り込み + CTC 採点 + 判断)'] });
+  const top = ranked[0];
+  return { free: o.free_kana, answer: o.action === 'none' ? '該当なし' : (top ? top.c.t : '-'), action: o.action, ms: t.total };
+}
+
 $('#loadBtn').onclick = async () => {
+  if (S.name.startsWith('komimi:')) {
+    $('#loadBtn').disabled = true; $('#loadMsg').textContent = 'komimi (WebAssembly) を読み込み中…';
+    try { const ms = await loadKomimi(S.name.slice(7)); $('#loadMsg').textContent = `読み込み完了 ${(ms / 1000).toFixed(1)} 秒 (WebAssembly)`; $('#micBtn').disabled = false; $('#selfTest').disabled = false; }
+    catch (e) { $('#loadMsg').textContent = 'エラー: ' + e.message; $('#loadBtn').disabled = false; }
+    return;
+  }
+  S.kind = 'onnx'; S.cal = cfg.calibration;
   const want = $('#device').value, dtype = $('#dtype').value;
   const ep = want === 'auto' ? (('gpu' in navigator) ? 'webgpu' : 'wasm') : want;
   $('#loadBtn').disabled = true; $('#loadMsg').textContent = `読み込み中 (${ep} / ${dtype})…`;
@@ -159,6 +223,7 @@ async function handle(audio) {
   if (S.busy || !S.enc) return { free: '', answer: '-', action: 'busy', ms: 0 };
   S.busy = true;
   try {
+    if (S.kind === 'komimi') return await handleKomimi(audio);
     S.supSet = new Set(S.suppress);
     const hyps = S.sets[S.state].hyps;
     const e = await encode(audio);
@@ -191,7 +256,8 @@ function render(r) {
   $('#speech').textContent = r.ranked[0] && r.action !== 'none' ? r.ranked[0].c.t : '(システム宛ではないと判断)';
   $('#nbest').innerHTML = r.ranked.slice(0, 5).map(x => bar(x.c.t, x.p, '')).concat([bar('該当なし', r.none, 'none')]).join('');
   const tot = r.encMs + r.free.ms + r.scoreMs;
-  $('#times').innerHTML = [['encoder + 前処理', r.encMs], [`自由認識 (${r.free.tokens.length} トークン)`, r.free.ms], ['候補採点', r.scoreMs], ['合計 (端末内)', tot]]
+  const L = r.labels || ['encoder + 前処理', '自由認識', '候補採点'];
+  $('#times').innerHTML = [[L[0], r.encMs], [`${L[1]} (${r.free.tokens.length} トークン)`, r.free.ms], [L[2], r.scoreMs], ['合計 (端末内)', tot]]
     .map(([k, v]) => `<tr><td>${k}</td><td>${v.toFixed(0)} ms</td></tr>`).join('');
   log(`[${S.state}] ${r.free.kana} -> ${r.action} ${r.ranked[0] ? r.ranked[0].c.t : '-'} p=${r.ranked[0] ? r.ranked[0].p.toFixed(3) : 0} (${tot.toFixed(0)}ms)`);
   if ($('#cmpServer').checked) compareServer(r.audio, tot);
@@ -201,10 +267,10 @@ async function compareServer(audio, localMs) {
   $('#serverCmp').textContent = 'サーバーに問い合わせ中…';
   const t0 = performance.now();
   const r = await (await fetch('/api/server_decide', { method: 'POST', headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ audio_base64: encodeWav(audio, 16000), state: S.state }) })).json();
+    body: JSON.stringify({ audio_base64: encodeWav(audio, 16000), state: S.state, engine: $('#cmpEngine').value || 'kana-whisper' }) })).json();
   const ms = performance.now() - t0;
   if (r.error) { $('#serverCmp').textContent = 'サーバー比較: ' + r.error; return; }
-  $('#serverCmp').innerHTML = `サーバー (kana-whisper 809M): <b>${r.free_kana}</b> → ${r.action} ${r.top ? r.top.text : '-'} p=${r.top ? r.top.prob : 0}　往復 ${ms.toFixed(0)}ms (端末内 ${localMs.toFixed(0)}ms)`;
+  $('#serverCmp').innerHTML = `サーバー (${r.engine || 'kana-whisper'}): <b>${r.free_kana}</b> → ${r.action} ${r.top ? r.top.text : '-'} p=${r.top ? r.top.prob : 0}　往復 ${ms.toFixed(0)}ms (端末内 ${localMs.toFixed(0)}ms)`;
 }
 function encodeWav(f32, sr) {
   const n = f32.length; const buf = new ArrayBuffer(44 + n * 2); const v = new DataView(buf);
@@ -307,7 +373,7 @@ function renderSelf(rows, total) {
       <td class="${r.hit ? 'ok' : 'ng'}">${r.hit ? '○' : '×'}</td>
       <td>${r.ms.toFixed(0)} ms</td></tr>`).join('') + `</table>
     <div class="verdict">${rows.length}/${total} 実行　<b>${ok}/${rows.length} 一致</b>　1 発話あたり平均 <b>${avg.toFixed(0)} ms</b>
-      （実行先 ${S.ep || '-'}・WASM ${ort.env.wasm.numThreads} スレッド）<br>
+      （実行先 ${S.kind === 'komimi' ? 'komimi (WebAssembly)' : (S.ep || '-') + '・WASM ' + ort.env.wasm.numThreads + ' スレッド'}）<br>
       <span class="muted small">この表が出ていれば、音声認識も候補の採点もこの端末の中だけで動いています (通信はモデルの初回ダウンロードのみ)。
       ×が出る場合は小型モデルの精度の問題で、経路そのものは動いています。</span></div>`;
 }

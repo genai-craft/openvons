@@ -16,6 +16,13 @@ CALIBRATION_STATES, SLOT, DATA_FILE, default_scopes(lexicon), TITLE。静的 UI 
   POST /api/say {text}           テキストを TTS で喋らせて認識に通す (マイク無しの試験用)
   POST /api/pretrain {scope_id}  事前学習を開始 (バックグラウンド)、進捗は WS の "pretrain" イベント
   GET  /api/state                状態のスナップショット
+  GET  /api/kana/config           kana 入力エンジンの一覧 (サーバー / ブラウザ)、ブラウザ用モデル・語彙・WASM の場所
+  GET  /api/kana/commands         いまの状態のコマンド集合 (ブラウザの WebAssembly 振り分け用) と校正値
+  WS   {"type":"engine"}          このセッションの kana 入力エンジンを切り替える
+  WS   {"type":"decision"}        ブラウザで振り分けた結果 (仮説 index と確率) を状態機械に通す
+
+kana 入力は --asr で共有 ASR サーバー (openvons.voice.asr_server) を指せば、そこに載ったエンジンを使う (このプロセスは GPU を使わない)。
+--asr local なら必要なエンジンをこのプロセスに読む。
 """
 from __future__ import annotations
 
@@ -39,9 +46,9 @@ from fastapi.staticfiles import StaticFiles
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT))
 import importlib  # noqa: E402
-from openvons.voice.asr import KanaASR  # noqa: E402
 from openvons.core.none_calibration import Calibration  # noqa: E402
-from openvons.voice.engine import Recognizer, Thresholds  # noqa: E402
+from openvons.voice.engine import Candidate, Decision, Recognizer, Thresholds  # noqa: E402
+from openvons.voice.engines import DEFAULT_ENGINE, ENGINES, default_calibration, load_local  # noqa: E402
 from openvons.voice.lexicon import Lexicon, Scope, ScopeStore  # noqa: E402
 from openvons.voice.synth import Pretrainer, PretrainConfig, TTSClient  # noqa: E402
 from openvons.voice.vad import StreamingVad  # noqa: E402
@@ -57,6 +64,35 @@ G: dict[str, Any] = {}          # グローバル資源 (asr, recognizer, lexico
 SESSIONS: dict[str, "Session"] = {}
 
 
+RISK_CODE = {"low": 0, "medium": 1, "high": 2}
+
+
+def recognizer(engine: str) -> Recognizer:
+    """エンジンごとの Recognizer (全セッションで共有。状態は持たない)。共有 ASR サーバーがあればそこへ問い合わせる。"""
+    rec = G["recognizers"].get(engine)
+    if rec is None:
+        if G["asr_url"]:
+            from openvons.voice.remote import RemoteASR
+            asr = RemoteASR(G["asr_url"], engine)
+        else:
+            asr = load_local(engine)
+        rec = G["recognizers"][engine] = Recognizer(asr, Calibration.from_dict(default_calibration(engine)), Thresholds())
+    return rec
+
+
+def engine_calibration(scope: Scope, engine: str) -> tuple[dict, bool]:
+    """(校正値, 事前学習済みか)。範囲の事前学習はエンジンごと (尤度の尺度が違う)。kana-whisper は旧形式 (profile.calibration) も読む。"""
+    prof = scope.profile or {}
+    cal = (prof.get("calibrations") or {}).get(engine)
+    if cal is None and engine == "kana-whisper":
+        cal = prof.get("calibration")
+    return (cal, True) if cal else (default_calibration(engine), False)
+
+
+def cs_key(app_inst, cs) -> str:
+    return f"{app_inst.scope.id}:{cs.state}:{id(cs):x}:{len(cs)}"
+
+
 class Session:
     def __init__(self, sid: str, scope: Scope):
         self.id = sid
@@ -65,15 +101,17 @@ class Session:
         self.ws: WebSocket | None = None
         self.loop: asyncio.AbstractEventLoop | None = None
         self.busy = False
+        self.engine = G["default_engine"]
 
-    def calibration(self) -> Calibration:
-        return Calibration.from_dict(self.app.scope.profile.get("calibration"))
+    def calibration(self, engine: str | None = None) -> Calibration:
+        return Calibration.from_dict(engine_calibration(self.app.scope, engine or self.engine)[0])
 
     def handle_utterance(self, wav: np.ndarray, source: str = "mic") -> dict[str, Any]:
         expired = self.app.expire_confirm()
         cs = self.app.command_set()
-        d = G["recognizer"].recognize(wav, cs, self.calibration())
+        d = recognizer(self.engine).recognize(wav, cs, self.calibration())
         ev = self.app.apply(d)
+        ev["engine"] = self.engine; ev["route"] = "server"
         if source == "mic" and os.environ.get("JEV_DUMP_UTTS", "1") == "1":
             # 実音声の収集 (再校正・実測用)。wav と判断結果を並べて保存する
             try:
@@ -81,12 +119,58 @@ class Session:
                 d_dir = STATE_DIR / "utts"; d_dir.mkdir(parents=True, exist_ok=True)
                 stamp = time.strftime("%Y%m%d_%H%M%S") + f"_{self.id}_{int(time.time() * 1000) % 1000:03d}"
                 sf.write(d_dir / f"{stamp}.wav", wav, 16000)
-                (d_dir / f"{stamp}.json").write_text(json.dumps({"decision": d.to_dict(), "state_before": d.state, "scope": self.app.scope.id}, ensure_ascii=False), encoding="utf-8")
+                (d_dir / f"{stamp}.json").write_text(json.dumps({"decision": d.to_dict(), "state_before": d.state, "scope": self.app.scope.id, "engine": self.engine}, ensure_ascii=False), encoding="utf-8")
             except Exception:
                 log.exception("dump failed")
         ev["audio_sec"] = round(len(wav) / 16000, 2)
         if expired:
             ev["note"] = "確認待ちがタイムアウトしたため取り消しました"
+        return ev
+
+    def apply_client_decision(self, data: dict[str, Any]) -> dict[str, Any]:
+        """ブラウザ (WebAssembly) で振り分けた結果を状態機械に通す。ブラウザは仮説の index と確率だけを送り、
+        意味ごとの合算と判断 (実行 / 確認 / 棄却) はここでやり直す (同じ規則。閾値はサーバーが持つ)。
+        コマンド集合が変わっていたら (確認の時間切れ・別の操作) stale を返し、ブラウザが同じ音声で振り分け直す。"""
+        expired = self.app.expire_confirm()
+        cs = self.app.command_set()
+        key = cs_key(self.app, cs)
+        if data.get("cs_key") != key:
+            return {"type": "stale", "cs_key": key, "req": data.get("req")}
+        cands = [(int(i), float(p), float(sc)) for i, p, sc, *_ in data.get("cands") or [] if 0 <= int(i) < len(cs.hyps)]
+        none_prob = float(data.get("none_prob", 1.0))
+        agg: dict[tuple, Candidate] = {}
+        for i, p, sc in cands:
+            h = cs.hyps[i]
+            c = agg.get(h.meaning)
+            if c is None:
+                agg[h.meaning] = Candidate(h, p, sc, {h.kana: p})
+            else:
+                c.prob += p; c.surface_probs[h.kana] = p
+                if sc > c.score:
+                    c.score = sc; c.hypothesis = h
+        ranked = sorted(agg.values(), key=lambda c: -c.prob)
+        top = ranked[0] if ranked else None
+        rec = recognizer(self.engine) if G["recognizers"] else None
+        if top is None:
+            action, reason = "none", data.get("reason") or "no candidates"
+        else:
+            action, reason = (rec or Recognizer(None))._decide(top, none_prob)
+        timings = {k: float(v) for k, v in (data.get("timings_ms") or {}).items()}
+        d = Decision(action, top, ranked, none_prob, data.get("free_kana", ""), float(data.get("free_score", 0.0)), timings, cs.state, reason)
+        ev = self.app.apply(d)
+        ev["engine"] = data.get("engine"); ev["route"] = "wasm"; ev["audio_sec"] = data.get("audio_sec")
+        if data.get("action") and data["action"] != action:
+            ev["route_note"] = f"ブラウザの判断 {data['action']} をサーバーの規則で {action} に"
+        if expired:
+            ev["note"] = "確認待ちがタイムアウトしたため取り消しました"
+        if os.environ.get("JEV_DUMP_UTTS", "1") == "1":
+            try:
+                d_dir = STATE_DIR / "utts"; d_dir.mkdir(parents=True, exist_ok=True)
+                stamp = time.strftime("%Y%m%d_%H%M%S") + f"_{self.id}_{int(time.time() * 1000) % 1000:03d}_wasm"
+                (d_dir / f"{stamp}.json").write_text(json.dumps({"decision": d.to_dict(), "state_before": d.state, "scope": self.app.scope.id,
+                                                                 "engine": data.get("engine"), "route": "wasm"}, ensure_ascii=False), encoding="utf-8")
+            except Exception:
+                log.exception("dump failed")
         return ev
 
     async def send(self, msg: dict[str, Any]) -> None:
@@ -128,7 +212,7 @@ def index():
 @app.middleware("http")
 async def no_cache_static(request, call_next):
     resp = await call_next(request)
-    if request.url.path.startswith("/static/"):
+    if request.url.path.startswith(("/static/", "/shared/")):
         resp.headers["Cache-Control"] = "no-cache, must-revalidate"
     return resp
 
@@ -232,6 +316,11 @@ async def say(body: dict):
         import random
         from openvons.voice.synth import add_noise
         wav = add_noise(wav, float(body["snr_db"]), random.Random(0))
+    if body.get("recognize") is False:
+        # ブラウザで振り分ける試験用: 合成した音声 (16 kHz PCM16) だけ返す
+        import base64
+        pcm = (np.clip(wav, -1, 1) * 32767).astype("<i2").tobytes()
+        return {"pcm16_b64": base64.b64encode(pcm).decode(), "sr": 16000, "tts_ms": round(t_tts), "tts_text": text}
     ev = await asyncio.to_thread(sess.handle_utterance, wav, "tts")
     ev["tts_ms"] = round(t_tts)
     ev["tts_text"] = text
@@ -255,10 +344,16 @@ async def pretrain(body: dict):
     cfg = PretrainConfig(seeds=body.get("seeds") or [1, 2, 3], carriers=body.get("carriers") or ["{%s}" % slot, "{%s}を表示" % slot],
                          n_out_of_grammar=int(body.get("n_out_of_grammar", 12)), extra_states=APP.CALIBRATION_STATES)
     G["pretrain_busy"] = True
+    engine = body.get("engine") or sess.engine
+    if engine not in ENGINES:
+        G["pretrain_busy"] = False
+        return JSONResponse({"error": f"unknown engine {engine}"}, 400)
+    # 読みの追加 (TTS 往復で聞こえた読みを辞書に足す) は kana-whisper のときだけ。小さいエンジンの聞き違いを全エンジン共通の辞書に入れない
+    cfg.add_readings = engine == "kana-whisper"
 
     def work():
         try:
-            pt = Pretrainer(G["tts"], G["recognizer"], sess.app.grammar, G["lexicon"])
+            pt = Pretrainer(G["tts"], recognizer(engine), sess.app.grammar, G["lexicon"])
             last = [0.0]
 
             def prog(kw):
@@ -266,15 +361,22 @@ async def pretrain(body: dict):
                     last[0] = time.time()
                     sess.send_threadsafe({"type": "pretrain", "status": "running", **kw})
             res = pt.run(s, [APP.SELECT_INTENT], slot=APP.SLOT, cfg=cfg, progress=prog, entities=sess.app.entities())
-            s.profile = {"calibration": res.calibration, "accuracy": res.accuracy, "accuracy_after": res.accuracy_after, "n_utts": res.n_utts,
-                         "none_recall": res.none_recall, "false_accept": res.false_accept, "ece_after": res.ece_after,
-                         "trained_at": time.strftime("%Y-%m-%d %H:%M"), "confusions": res.confusions,
-                         "added_readings": res.added_readings, "warnings": res.warnings[:20]}
+            summary = {"calibration": res.calibration, "accuracy": res.accuracy, "accuracy_after": res.accuracy_after, "n_utts": res.n_utts,
+                       "none_recall": res.none_recall, "false_accept": res.false_accept, "ece_after": res.ece_after,
+                       "trained_at": time.strftime("%Y-%m-%d %H:%M"), "confusions": res.confusions,
+                       "added_readings": res.added_readings, "warnings": res.warnings[:20]}
+            prof = dict(s.profile or {})
+            prof.setdefault("calibrations", {})[engine] = res.calibration
+            prof.setdefault("engines", {})[engine] = {k: v for k, v in summary.items() if k not in ("confusions", "warnings")}
+            if engine == "kana-whisper" or "accuracy" not in prof:
+                prof.update(summary)          # 画面の「事前学習済み」表示は従来どおり (最後に kana-whisper で学習した結果)
+            prof["engine"] = engine if engine != "kana-whisper" else prof.get("engine", "kana-whisper")
+            s.profile = prof
             st.upsert(s)
             G["lexicon"].save(G["lexicon_path"])
             for x in SESSIONS.values():
                 x.app.invalidate()
-            sess.send_threadsafe({"type": "pretrain", "status": "done", "result": res.to_dict(), "state": sess.app.snapshot()})
+            sess.send_threadsafe({"type": "pretrain", "status": "done", "engine": engine, "result": res.to_dict(), "state": sess.app.snapshot()})
         except Exception as ex:  # noqa: BLE001
             log.exception("pretrain failed")
             sess.send_threadsafe({"type": "pretrain", "status": "error", "error": str(ex)})
@@ -283,6 +385,57 @@ async def pretrain(body: dict):
 
     threading.Thread(target=work, daemon=True).start()
     return {"ok": True, "started": True}
+
+
+def engines_list() -> list[dict]:
+    """使えるエンジン (共有 ASR サーバーに載っているもの + ブラウザで動かせるもの)。"""
+    if G.get("engines_cache") and time.time() - G["engines_cache"][0] < 30:
+        return G["engines_cache"][1]
+    avail = None
+    if G["asr_url"]:
+        try:
+            from openvons.voice.remote import list_engines
+            avail = {e["id"]: e for e in list_engines(G["asr_url"])}
+        except Exception as e:  # noqa: BLE001
+            log.warning("asr server unreachable: %s", e)
+            avail = {}
+    out = []
+    for e in ENGINES.values():
+        d = e.to_dict()
+        d["server"] = (e.id in avail) if avail is not None else True
+        d["browser_model"] = f"/kana/models/{e.file}" if e.browser and G.get("komimi_models") else None
+        out.append(d)
+    G["engines_cache"] = (time.time(), out)
+    return out
+
+
+@app.get("/api/kana/config")
+def kana_config(session: str | None = None):
+    sess = get_session(session) if session else None
+    return {"engines": engines_list(), "engine": sess.engine if sess else G["default_engine"], "asr": "shared" if G["asr_url"] else "local",
+            "vocab": "/kana/models/ja1024_vocab.json" if G.get("komimi_models") else None, "wasm": "/shared/wasm/ovkana.js",
+            "worker": "/shared/kana_worker.js"}
+
+
+@app.get("/api/kana/commands")
+def kana_commands(session: str, engine: str | None = None):
+    """ブラウザの振り分け (WebAssembly) に渡すコマンド集合。仮説ごとに [カナ, 意味 id (初出順), 危険度 0/1/2, フラグ]。
+    フラグ: 1 埋め込み可、2 確認し直せる、4 実行側 (はい)。cs_key は判断を返すときに付ける (状態が変わっていたら stale)。"""
+    sess = get_session(session)
+    cs = sess.app.command_set()
+    mid: dict[tuple, int] = {}
+    rows = []
+    for h in cs.hyps:
+        m = mid.setdefault(h.meaning, len(mid))
+        rows.append([h.kana, m, RISK_CODE.get(h.risk, 0), (1 if h.allow_embed else 0) | (2 if h.confirmable else 0) | (4 if h.positive else 0)])
+    eng = engine or sess.engine
+    cal, trained = engine_calibration(sess.app.scope, eng)
+    th = Thresholds(); r = Recognizer(None)
+    params = [cal.get("temperature", 2.5), cal.get("none_bias", 4.0), cal.get("len_bonus", 1.4), cal.get("residual_penalty", 1.0),
+              th.execute, th.confirm, th.execute_medium, th.clear_min, th.clear_ratio, th.clear_none_max, th.answer_yes, th.answer_no,
+              r.shortlist_k, 1.0 if r.embed else 0.0, r.embed_min_ratio, r.embed_max_residual, r.embed_min_morae, r.embed_penalty]
+    return {"cs_key": cs_key(sess.app, cs), "state": cs.state, "scope": sess.app.scope.id, "engine": eng, "calibrated": trained,
+            "calibration": cal, "params": params, "n_meanings": len(mid), "hyps": rows}
 
 
 @app.get("/api/log")
@@ -298,7 +451,8 @@ async def ws_endpoint(ws: WebSocket):
     sess = get_session(sid)
     sess.ws = ws
     sess.loop = asyncio.get_running_loop()
-    await sess.send({"type": "hello", "session": sess.id, "state": sess.app.snapshot(), "scopes": list_scopes()})
+    await sess.send({"type": "hello", "session": sess.id, "state": sess.app.snapshot(), "scopes": list_scopes(),
+                     "engine": sess.engine, "engines": await asyncio.to_thread(engines_list)})
     speaking = False
     try:
         while True:
@@ -344,6 +498,17 @@ async def ws_endpoint(ws: WebSocket):
                         h = Hypothesis(name, it.description or name, "", {}, dict(it.params), it.risk)
                         d = Decision("execute", Candidate(h, 1.0, 0.0), [], 0.0, "(ui)", 0.0, {}, sess.app.sm.state, "UI")
                         await sess.send(sess.app.apply(d))
+                elif t == "engine":         # kana 入力エンジンの切り替え (サーバー側で認識するときに使う。校正もエンジンごと)
+                    e = data.get("engine")
+                    if e in ENGINES:
+                        sess.engine = e
+                    cal, trained = engine_calibration(sess.app.scope, sess.engine)
+                    await sess.send({"type": "engine", "engine": sess.engine, "calibrated": trained, "calibration": cal})
+                elif t == "decision":       # ブラウザ (WebAssembly) で振り分けた結果
+                    ev = await asyncio.to_thread(sess.apply_client_decision, data)
+                    if ev.get("type") == "result":
+                        ev["req"] = data.get("req")
+                    await sess.send(ev)
                 elif t == "vad_config":
                     for k, v in data.get("config", {}).items():
                         if hasattr(sess.vad.cfg, k):
@@ -365,12 +530,16 @@ def main():
     ap.add_argument("--data", default=None, help="実体 JSON (既定: アプリの DATA_FILE)")
     ap.add_argument("--hierarchy", default=None)
     ap.add_argument("--ssl-dir", default=None, help="cert.pem/key.pem のあるディレクトリ (マイクは https か localhost が必須)")
+    ap.add_argument("--asr", default=os.environ.get("OPENVONS_ASR_URL", "local"),
+                    help="共有 ASR サーバーの URL (例 http://127.0.0.1:8630)。local ならこのプロセスにエンジンを読む")
+    ap.add_argument("--engine", default=DEFAULT_ENGINE, help="既定の kana 入力エンジン (" + " | ".join(ENGINES) + ")")
     args = ap.parse_args()
     logging.basicConfig(level=logging.INFO, format="%(asctime)s %(name)s %(levelname)s %(message)s")
     APP = importlib.import_module(args.app)
     app_dir = Path(APP.__file__).resolve().parent
     G["static"] = app_dir / "static"
-    G["version"] = str(int(max(p.stat().st_mtime for p in (app_dir / "static").glob("*")) if list((app_dir / "static").glob("*")) else time.time()))
+    stamps = [p.stat().st_mtime for d in (app_dir / "static", HERE / "demo_static", HERE / "demo_static" / "wasm") if d.exists() for p in d.glob("*") if p.is_file()]
+    G["version"] = str(int(max(stamps) if stamps else time.time()))     # 共通部品 (kana.js・WASM) を直したときも取り直させる
     app.title = getattr(APP, "TITLE", app.title)
     if "JEV_STATE_DIR" not in os.environ:
         STATE_DIR = STATE_ROOT / app_dir.name
@@ -388,14 +557,22 @@ def main():
     G["scopes"] = ScopeStore(STATE_DIR / "scopes.json")
     G["tts"] = TTSClient(args.tts, cache_dir=STATE_DIR / "tts_cache")
     log.info("tts backend: %s ok=%s", args.tts, G["tts"].ok())
-    log.info("loading kana-whisper ...")
-    G["asr"] = KanaASR()
-    G["recognizer"] = Recognizer(G["asr"], Calibration(), Thresholds())
+    G["asr_url"] = None if args.asr in ("", "local") else args.asr.rstrip("/")
+    G["default_engine"] = args.engine
+    G["recognizers"] = {}
+    from openvons.voice.komimi_asr import KOMIMI_HOME
+    G["komimi_models"] = (KOMIMI_HOME / "models") if (KOMIMI_HOME / "models" / "ja1024_vocab.json").exists() else None
+    log.info("kana engine: %s via %s", args.engine, G["asr_url"] or "local")
+    rec = recognizer(args.engine)
+    rec.asr.warmup()
+    G["recognizer"] = rec        # 互換 (事前学習の既定など)
     log.info("ready: %d cameras, tts=%s", len(G["lexicon"]), G["tts"].ok())
     if hasattr(APP, "register_routes"):        # アプリ固有の API (河川版のライブ画像プロキシなど)
         APP.register_routes(app, G, STATE_DIR)
     app.mount("/static", StaticFiles(directory=str(G["static"])), name="static")
     app.mount("/shared", StaticFiles(directory=str(HERE / "demo_static")), name="shared")
+    if G["komimi_models"]:
+        app.mount("/kana/models", StaticFiles(directory=str(G["komimi_models"])), name="kana_models")
     import uvicorn
     kw = {}
     if args.ssl_dir:

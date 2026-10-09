@@ -1,0 +1,626 @@
+{
+ "date": "2026-10-09 09:59",
+ "results": [
+  {
+   "app": "road_cameras",
+   "scope": "shuto",
+   "engine": "kana-whisper",
+   "n_utts": 600,
+   "accuracy_default": 0.975,
+   "accuracy_after": 0.9751,
+   "accuracy_by_snr": {
+    "snr20": 0.9653,
+    "snr10": 0.9844,
+    "clean": 0.9757
+   },
+   "none_recall": 1.0,
+   "false_accept": 0.0,
+   "ece_before": 0.0129,
+   "ece_after": 0.0149,
+   "calibration": {
+    "temperature": 2.01394218791568,
+    "none_bias": 10.559671911692183,
+    "len_bonus": 0.5,
+    "residual_penalty": 2.2150420512514235
+   },
+   "latency_ms": {
+    "encode": 15.8,
+    "transcribe": 25.9,
+    "shortlist": 0.5,
+    "score": 10.9,
+    "total": 53.5
+   },
+   "seconds": 171.2
+  },
+  {
+   "app": "stations",
+   "scope": "yamanote",
+   "engine": "kana-whisper",
+   "n_utts": 360,
+   "accuracy_default": 0.9861,
+   "accuracy_after": 0.99,
+   "accuracy_by_snr": {
+    "snr20": 1.0,
+    "snr10": 0.9902,
+    "clean": 0.968
+   },
+   "none_recall": 0.9167,
+   "false_accept": 0.0,
+   "ece_before": 0.0544,
+   "ece_after": 0.0172,
+   "calibration": {
+    "temperature": 1.6619001760766046,
+    "none_bias": 9.55378082274855,
+    "len_bonus": 0.5,
+    "residual_penalty": 1.3415113217022485
+   },
+   "latency_ms": {
+    "encode": 15.5,
+    "transcribe": 18.0,
+    "shortlist": 0.2,
+    "score": 6.8,
+    "total": 44.2
+   },
+   "seconds": 62.6
+  },
+  {
+   "app": "kasen",
+   "scope": "tone",
+   "engine": "kana-whisper",
+   "n_utts": 370,
+   "accuracy_default": 1.0,
+   "accuracy_after": 0.9951,
+   "accuracy_by_snr": {
+    "snr20": 1.0,
+    "snr10": 1.0,
+    "clean": 1.0
+   },
+   "none_recall": 1.0,
+   "false_accept": 0.0,
+   "ece_before": 0.0717,
+   "ece_after": 0.0269,
+   "calibration": {
+    "temperature": 1.210321503273272,
+    "none_bias": 12.0,
+    "len_bonus": 0.5,
+    "residual_penalty": 2.573269065235017
+   },
+   "latency_ms": {
+    "encode": 16.3,
+    "transcribe": 28.1,
+    "shortlist": 0.3,
+    "score": 7.3,
+    "total": 54.2
+   },
+   "seconds": 108.8
+  },
+  {
+   "app": "road_cameras",
+   "scope": "shuto",
+   "engine": "komimi-v12",
+   "n_utts": 600,
+   "accuracy_default": 0.97,
+   "accuracy_after": 0.972,
+   "accuracy_by_snr": {
+    "snr20": 0.9802,
+    "snr10": 0.9583,
+    "clean": 0.9709
+   },
+   "none_recall": 1.0,
+   "false_accept": 0.0,
+   "ece_before": 0.0246,
+   "ece_after": 0.0115,
+   "calibration": {
+    "temperature": 2.280976518212424,
+    "none_bias": 4.913359445663696,
+    "len_bonus": 2.3835702842551507,
+    "residual_penalty": 0.5406059340102265
+   },
+   "latency_ms": {
+    "encode": 200.5,
+    "transcribe": 0.7,
+    "shortlist": 0.6,
+    "score": 2.5,
+    "total": 205.6
+   },
+   "seconds": 278.0
+  },
+  {
+   "app": "road_cameras",
+   "scope": "shuto",
+   "engine": "komimi-v12a",
+   "n_utts": 600,
+   "accuracy_default": 0.965,
+   "accuracy_after": 0.9673,
+   "accuracy_by_snr": {
+    "snr20": 0.9703,
+    "snr10": 0.9583,
+    "clean": 0.966
+   },
+   "none_recall": 1.0,
+   "false_accept": 0.0,
+   "ece_before": 0.012,
+   "ece_after": 0.01,
+   "calibration": {
+    "temperature": 2.947455655163936,
+    "none_bias": 1.757842704767723,
+    "len_bonus": 2.9888246691206684,
+    "residual_penalty": 4.0
+   },
+   "latency_ms": {
+    "encode": 73.3,
+    "transcribe": 0.6,
+    "shortlist": 0.5,
+    "score": 2.1,
+    "total": 77.3
+   },
+   "seconds": 106.0
+  },
+  {
+   "app": "road_cameras",
+   "scope": "shuto",
+   "engine": "komimi-v12m",
+   "n_utts": 600,
+   "accuracy_default": 0.9633,
+   "accuracy_after": 0.9705,
+   "accuracy_by_snr": {
+    "snr20": 0.9703,
+    "snr10": 0.9635,
+    "clean": 0.9563
+   },
+   "none_recall": 1.0,
+   "false_accept": 0.0,
+   "ece_before": 0.015,
+   "ece_after": 0.0097,
+   "calibration": {
+    "temperature": 2.6003196307745773,
+    "none_bias": 0.43546327545018615,
+    "len_bonus": 3.008578232893677,
+    "residual_penalty": 2.692278671693746
+   },
+   "latency_ms": {
+    "encode": 52.5,
+    "transcribe": 0.6,
+    "shortlist": 0.5,
+    "score": 2.1,
+    "total": 56.4
+   },
+   "seconds": 77.8
+  },
+  {
+   "app": "road_cameras",
+   "scope": "shuto",
+   "engine": "komimi-v12s",
+   "n_utts": 600,
+   "accuracy_default": 0.9667,
+   "accuracy_after": 0.972,
+   "accuracy_by_snr": {
+    "snr20": 0.9703,
+    "snr10": 0.9688,
+    "clean": 0.9612
+   },
+   "none_recall": 1.0,
+   "false_accept": 0.0,
+   "ece_before": 0.0178,
+   "ece_after": 0.0093,
+   "calibration": {
+    "temperature": 2.1315013750925553,
+    "none_bias": 2.530599037854049,
+    "len_bonus": 2.4941560334358304,
+    "residual_penalty": 0.5
+   },
+   "latency_ms": {
+    "encode": 26.1,
+    "transcribe": 0.6,
+    "shortlist": 0.5,
+    "score": 2.2,
+    "total": 30.0
+   },
+   "seconds": 42.3
+  },
+  {
+   "app": "stations",
+   "scope": "yamanote",
+   "engine": "komimi-v12",
+   "n_utts": 360,
+   "accuracy_default": 0.9833,
+   "accuracy_after": 0.995,
+   "accuracy_by_snr": {
+    "snr20": 0.985,
+    "snr10": 0.9902,
+    "clean": 0.976
+   },
+   "none_recall": 1.0,
+   "false_accept": 0.0,
+   "ece_before": 0.0791,
+   "ece_after": 0.0067,
+   "calibration": {
+    "temperature": 0.5,
+    "none_bias": 12.0,
+    "len_bonus": 0.5,
+    "residual_penalty": 1.0213353991120935
+   },
+   "latency_ms": {
+    "encode": 142.1,
+    "transcribe": 0.5,
+    "shortlist": 0.3,
+    "score": 1.9,
+    "total": 146.0
+   },
+   "seconds": 121.2
+  },
+  {
+   "app": "stations",
+   "scope": "yamanote",
+   "engine": "komimi-v12a",
+   "n_utts": 360,
+   "accuracy_default": 0.9944,
+   "accuracy_after": 0.9925,
+   "accuracy_by_snr": {
+    "snr20": 0.9925,
+    "snr10": 1.0,
+    "clean": 0.992
+   },
+   "none_recall": 1.0,
+   "false_accept": 0.0,
+   "ece_before": 0.0822,
+   "ece_after": 0.0121,
+   "calibration": {
+    "temperature": 0.5,
+    "none_bias": 10.520556227746594,
+    "len_bonus": 0.5,
+    "residual_penalty": 0.5
+   },
+   "latency_ms": {
+    "encode": 51.7,
+    "transcribe": 0.5,
+    "shortlist": 0.2,
+    "score": 1.6,
+    "total": 54.3
+   },
+   "seconds": 46.4
+  },
+  {
+   "app": "stations",
+   "scope": "yamanote",
+   "engine": "komimi-v12m",
+   "n_utts": 360,
+   "accuracy_default": 0.9833,
+   "accuracy_after": 0.99,
+   "accuracy_by_snr": {
+    "snr20": 0.9925,
+    "snr10": 0.9804,
+    "clean": 0.976
+   },
+   "none_recall": 1.0,
+   "false_accept": 0.0,
+   "ece_before": 0.0828,
+   "ece_after": 0.0096,
+   "calibration": {
+    "temperature": 0.5075920076330062,
+    "none_bias": 11.617770103194571,
+    "len_bonus": 0.5,
+    "residual_penalty": 0.5
+   },
+   "latency_ms": {
+    "encode": 37.0,
+    "transcribe": 0.4,
+    "shortlist": 0.2,
+    "score": 1.7,
+    "total": 40.6
+   },
+   "seconds": 34.1
+  },
+  {
+   "app": "stations",
+   "scope": "yamanote",
+   "engine": "komimi-v12s",
+   "n_utts": 360,
+   "accuracy_default": 0.9833,
+   "accuracy_after": 0.9925,
+   "accuracy_by_snr": {
+    "snr20": 0.9925,
+    "snr10": 0.9902,
+    "clean": 0.968
+   },
+   "none_recall": 0.9167,
+   "false_accept": 0.0,
+   "ece_before": 0.0867,
+   "ece_after": 0.016,
+   "calibration": {
+    "temperature": 0.865618229792152,
+    "none_bias": 7.861838263882305,
+    "len_bonus": 0.5432503056056287,
+    "residual_penalty": 0.5
+   },
+   "latency_ms": {
+    "encode": 18.4,
+    "transcribe": 0.4,
+    "shortlist": 0.2,
+    "score": 1.4,
+    "total": 21.0
+   },
+   "seconds": 18.4
+  },
+  {
+   "app": "kasen",
+   "scope": "tone",
+   "engine": "komimi-v12",
+   "n_utts": 370,
+   "accuracy_default": 0.9865,
+   "accuracy_after": 0.9927,
+   "accuracy_by_snr": {
+    "snr20": 0.9925,
+    "snr10": 0.9823,
+    "clean": 0.9839
+   },
+   "none_recall": 1.0,
+   "false_accept": 0.0,
+   "ece_before": 0.0748,
+   "ece_after": 0.0095,
+   "calibration": {
+    "temperature": 0.5,
+    "none_bias": 7.459694552673598,
+    "len_bonus": 2.210109462728619,
+    "residual_penalty": 0.5
+   },
+   "latency_ms": {
+    "encode": 204.6,
+    "transcribe": 0.7,
+    "shortlist": 0.5,
+    "score": 2.3,
+    "total": 209.1
+   },
+   "seconds": 178.0
+  },
+  {
+   "app": "kasen",
+   "scope": "tone",
+   "engine": "komimi-v12a",
+   "n_utts": 370,
+   "accuracy_default": 0.9892,
+   "accuracy_after": 0.9951,
+   "accuracy_by_snr": {
+    "snr20": 0.9925,
+    "snr10": 0.9823,
+    "clean": 0.9919
+   },
+   "none_recall": 1.0,
+   "false_accept": 0.0,
+   "ece_before": 0.0797,
+   "ece_after": 0.018,
+   "calibration": {
+    "temperature": 0.8467149857041031,
+    "none_bias": -0.8673626191914188,
+    "len_bonus": 4.0,
+    "residual_penalty": 0.5
+   },
+   "latency_ms": {
+    "encode": 74.9,
+    "transcribe": 0.7,
+    "shortlist": 0.3,
+    "score": 1.9,
+    "total": 78.3
+   },
+   "seconds": 67.4
+  },
+  {
+   "app": "kasen",
+   "scope": "tone",
+   "engine": "komimi-v12m",
+   "n_utts": 370,
+   "accuracy_default": 0.973,
+   "accuracy_after": 0.9902,
+   "accuracy_by_snr": {
+    "snr20": 0.985,
+    "snr10": 0.9646,
+    "clean": 0.9677
+   },
+   "none_recall": 1.0,
+   "false_accept": 0.0,
+   "ece_before": 0.0683,
+   "ece_after": 0.013,
+   "calibration": {
+    "temperature": 0.5,
+    "none_bias": 3.6476419729775995,
+    "len_bonus": 3.091030675792477,
+    "residual_penalty": 0.5
+   },
+   "latency_ms": {
+    "encode": 53.5,
+    "transcribe": 0.6,
+    "shortlist": 0.3,
+    "score": 1.9,
+    "total": 56.8
+   },
+   "seconds": 49.8
+  },
+  {
+   "app": "kasen",
+   "scope": "tone",
+   "engine": "komimi-v12s",
+   "n_utts": 370,
+   "accuracy_default": 0.9811,
+   "accuracy_after": 0.9927,
+   "accuracy_by_snr": {
+    "snr20": 0.9774,
+    "snr10": 0.9735,
+    "clean": 0.9919
+   },
+   "none_recall": 1.0,
+   "false_accept": 0.0,
+   "ece_before": 0.0832,
+   "ece_after": 0.0134,
+   "calibration": {
+    "temperature": 0.5,
+    "none_bias": -0.28845902022516334,
+    "len_bonus": 3.7699799000048646,
+    "residual_penalty": 0.5
+   },
+   "latency_ms": {
+    "encode": 26.7,
+    "transcribe": 0.6,
+    "shortlist": 0.3,
+    "score": 1.8,
+    "total": 30.2
+   },
+   "seconds": 26.8
+  }
+ ],
+ "pooled": {
+  "komimi-v12": {
+   "calibration": {
+    "temperature": 1.385,
+    "none_bias": 8.134,
+    "len_bonus": 0.938,
+    "residual_penalty": 0.5
+   },
+   "n": 1454,
+   "by_app": {
+    "road_cameras": {
+     "n": 643,
+     "accuracy": 0.972,
+     "none_recall": 1.0,
+     "false_accept_argmax": 0.0,
+     "ece": 0.0249
+    },
+    "stations": {
+     "n": 401,
+     "accuracy": 0.995,
+     "none_recall": 1.0,
+     "false_accept_argmax": 0.0,
+     "ece": 0.0389
+    },
+    "kasen": {
+     "n": 410,
+     "accuracy": 0.9878,
+     "none_recall": 1.0,
+     "false_accept_argmax": 0.0,
+     "ece": 0.0343
+    }
+   }
+  },
+  "komimi-v12a": {
+   "calibration": {
+    "temperature": 1.83,
+    "none_bias": 7.111,
+    "len_bonus": 1.003,
+    "residual_penalty": 0.758
+   },
+   "n": 1454,
+   "by_app": {
+    "road_cameras": {
+     "n": 643,
+     "accuracy": 0.9658,
+     "none_recall": 1.0,
+     "false_accept_argmax": 0.0,
+     "ece": 0.0237
+    },
+    "stations": {
+     "n": 401,
+     "accuracy": 0.99,
+     "none_recall": 1.0,
+     "false_accept_argmax": 0.0,
+     "ece": 0.0444
+    },
+    "kasen": {
+     "n": 410,
+     "accuracy": 0.9902,
+     "none_recall": 1.0,
+     "false_accept_argmax": 0.0,
+     "ece": 0.0502
+    }
+   }
+  },
+  "komimi-v12m": {
+   "calibration": {
+    "temperature": 1.802,
+    "none_bias": 4.676,
+    "len_bonus": 1.575,
+    "residual_penalty": 0.5
+   },
+   "n": 1454,
+   "by_app": {
+    "road_cameras": {
+     "n": 643,
+     "accuracy": 0.9673,
+     "none_recall": 1.0,
+     "false_accept_argmax": 0.0,
+     "ece": 0.0182
+    },
+    "stations": {
+     "n": 401,
+     "accuracy": 0.985,
+     "none_recall": 0.9583,
+     "false_accept_argmax": 0.0417,
+     "ece": 0.0408
+    },
+    "kasen": {
+     "n": 410,
+     "accuracy": 0.9854,
+     "none_recall": 1.0,
+     "false_accept_argmax": 0.0,
+     "ece": 0.0479
+    }
+   }
+  },
+  "komimi-v12s": {
+   "calibration": {
+    "temperature": 1.499,
+    "none_bias": 3.815,
+    "len_bonus": 1.533,
+    "residual_penalty": 0.5
+   },
+   "n": 1454,
+   "by_app": {
+    "road_cameras": {
+     "n": 643,
+     "accuracy": 0.9673,
+     "none_recall": 1.0,
+     "false_accept_argmax": 0.0,
+     "ece": 0.0226
+    },
+    "stations": {
+     "n": 401,
+     "accuracy": 0.9825,
+     "none_recall": 0.9583,
+     "false_accept_argmax": 0.0417,
+     "ece": 0.0317
+    },
+    "kasen": {
+     "n": 410,
+     "accuracy": 0.9829,
+     "none_recall": 1.0,
+     "false_accept_argmax": 0.0,
+     "ece": 0.0395
+    }
+   }
+  }
+ },
+ "defaults": {
+  "komimi-v12": {
+   "temperature": 1.385,
+   "none_bias": 8.134,
+   "len_bonus": 0.938,
+   "residual_penalty": 0.5
+  },
+  "komimi-v12a": {
+   "temperature": 1.83,
+   "none_bias": 7.111,
+   "len_bonus": 1.003,
+   "residual_penalty": 0.758
+  },
+  "komimi-v12m": {
+   "temperature": 1.802,
+   "none_bias": 4.676,
+   "len_bonus": 1.575,
+   "residual_penalty": 0.5
+  },
+  "komimi-v12s": {
+   "temperature": 1.499,
+   "none_bias": 3.815,
+   "len_bonus": 1.533,
+   "residual_penalty": 0.5
+  }
+ }
+}

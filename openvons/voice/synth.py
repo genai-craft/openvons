@@ -279,6 +279,7 @@ class Pretrainer:
 
         # --- 3. 校正
         cal = fit(samples, self.rec.calibration)
+        self.last_samples = samples          # 複数範囲をまとめた校正 (scripts/fit_engine_calibration.py) 用
         res.calibration = cal.to_dict()
         # ECE は可変長の分布なので「正解に置いた確率 vs 正解/不正解」で top-label ECE を計算
         def top_ece(cal_: Calibration) -> float:

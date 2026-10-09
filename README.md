@@ -45,6 +45,12 @@ scripts/serve_text.sh start 8604
 
 ```bash
 docker run -d --name voicevox -p 127.0.0.1:50021:50021 voicevox/voicevox_engine:cpu-latest   # TTS used for pre-training
+scripts/serve_asr.sh start 0 8630     # shared kana ASR server (kana-whisper on GPU 0 + komimi on CPU); every voice demo queries it
+# 全デモの生死確認 / 落ちているものだけ起動 / 全部入れ直す
+scripts/serve_all.sh status
+scripts/serve_all.sh start
+scripts/serve_all.sh restart
+
 JEV_APP=examples.stations.app     scripts/serve_demo.sh start 0 8601   # railway map driven by station names (general audience)
 JEV_APP=examples.kasen.app        scripts/serve_demo.sh start 0 8603   # river live cameras (MLIT Kanto, real images)
 JEV_APP=examples.road_cameras.app scripts/serve_demo.sh start 0 8600   # road camera monitoring (synthetic catalog, industrial example)
@@ -60,6 +66,14 @@ Utterances captured through the microphone are stored under `state/<app>/utts/` 
 | River live cameras (kasen) | https://kasen.openvons.com | 199 live cameras of MLIT Kanto Regional Development Bureau (Tone, Arakawa, Naka, Kuji, Watarase, Kasumigaura). Say a site name to show its live image; move upstream / downstream; refresh; zoom; favorite (asks for confirmation) |
 | Video judge | https://judge.openvons.com | Slice a 15 s – 1 min video into windows and answer 10 checks (fight, shoplifting, no harness at height, no hard hat, double dribble, person collapsed, intrusion, fire/smoke, phone while driving, abandoned bag) as yes / no / cannot tell, shown on a timeline. Live camera mode judges frames in real time, including robot navigation (left / right / straight / stop) |
 | Face and body attributes (vision) | https://kao.openvons.com | Webcam or upload. Age (9 bins) and gender per face (FairFace head), gender / age group / orientation / baggage for the body (PA-100K head), each with calibrated probabilities and a decided / check / unknown level. Images are not stored |
+
+**Kana input and routing are selectable per session** (under the mic button). The kana input is kana-whisper (809M, GPU) or
+[komimi](https://github.com/genai-craft/komimi) v12 / v12a / v12m / v12s (Conformer-CTC, 100M–6.5M, Apache-2.0), all hosted once by the shared
+ASR server instead of one kana-whisper per demo (17 GB → 2.5 GB of GPU memory). Routing — shortlist, candidate scoring, calibration and the
+execute / confirm / reject decision — runs either on the server (Python) or **in the browser as WebAssembly**: komimi's C engine and a C port of
+the router (`openvons/voice/wasm/ov_route.c`, 85 KB) turn audio into a decision, and only "which hypothesis, how likely" is sent to the server.
+Because komimi is CTC, scoring a candidate is a dynamic program over one (frames × vocabulary) matrix, so the router itself takes 3–6 ms in the
+browser; the C port matches the Python router decision-for-decision on 612 test utterances. Details and measurements: [docs/kana_engines.md](docs/kana_engines.md) (Japanese).
 
 An application is just `examples/<name>/app.py` (intents, states, entities) plus `static/`; recognition, calibration, pre-training and the server are shared.
 Design and evaluation: [docs/voice_design.md](docs/voice_design.md) / [docs/voice_evaluation.md](docs/voice_evaluation.md) (Japanese).

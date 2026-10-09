@@ -12,9 +12,11 @@ function connect() {
   ws.onmessage = (e) => onMessage(JSON.parse(e.data));
   ws.onclose = () => setTimeout(connect, 1500);
   state.ws = ws;
+  if (window.OVKana) OVKana.attach(ws);
 }
 function send(obj) { if (state.ws && state.ws.readyState === 1) state.ws.send(JSON.stringify(obj)); }
 function onMessage(m) {
+  if (window.OVKana && OVKana.onMessage(m)) return;   // kana 入力・振り分けの切り替え (/shared/kana.js)
   if (m.type === 'hello') { state.session = m.session; localStorage.setItem('jev_st_session', m.session); state.scopes = m.scopes; renderScopes(); applyState(m.state); loadCams(); }
   else if (m.type === 'state') applyState(m.state);
   else if (m.type === 'vad') { $('#vadChip').textContent = m.speaking ? '発話中' : '待機'; $('#vadChip').classList.toggle('on', m.speaking); }
@@ -151,7 +153,7 @@ async function toggleMic() {
     if (state.muteUntil && Date.now() < state.muteUntil) return;
     const ratio = inSr / 16000; const outLen = Math.floor((x.length - carry) / ratio); const out = new Int16Array(outLen); let pos = carry;
     for (let i = 0; i < outLen; i++) { const j = Math.floor(pos); out[i] = Math.max(-32768, Math.min(32767, x[Math.min(j, x.length - 1)] * 32768)); pos += ratio; }
-    carry = pos - x.length; if (state.ws && state.ws.readyState === 1) state.ws.send(out.buffer);
+    carry = pos - x.length; if (window.OVKana) OVKana.feed(out, state.ws); else if (state.ws && state.ws.readyState === 1) state.ws.send(out.buffer);
   };
   src.connect(proc); proc.connect(ac.destination); state.mic = { stream, ac, proc };
   $('#micBtn').textContent = '⏹ マイク停止'; $('#micBtn').classList.add('on');
@@ -212,7 +214,7 @@ function renderCamTable() { $('#camTable').innerHTML = `<table><tr><th>駅</th><
 $('#micBtn').onclick = toggleMic;
 $('#sayForm').onsubmit = async (e) => { e.preventDefault(); const t = $('#sayText').value.trim(); if (t) say(t); };
 $('#quick').onclick = (e) => { const b = e.target.closest('button'); if (b) say(b.dataset.say); };
-async function say(text) { $('#speech').textContent = '… TTS 合成中'; const snr = $('#saySnr').value; const r = await fetch('/api/say', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ session: state.session, text, snr_db: snr ? +snr : null }) }); const j = await r.json(); if (j.error) $('#speech').textContent = 'エラー: ' + j.error; }
+async function say(text) { $('#speech').textContent = '… TTS 合成中'; const snr = $('#saySnr').value; if (window.OVKana && OVKana.isLocal()) { const j = await OVKana.say(text, snr); if (j && j.error) $('#speech').textContent = 'エラー: ' + j.error; return; } const r = await fetch('/api/say', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ session: state.session, text, snr_db: snr ? +snr : null }) }); const j = await r.json(); if (j.error) $('#speech').textContent = 'エラー: ' + j.error; }
 $('#stationCard').onclick = (e) => { const b = e.target.closest('button'); if (b) send({ type: 'intent', intent: b.dataset.intent }); };
 document.addEventListener('keydown', (e) => { if (e.target.tagName === 'INPUT') return; const map = { Escape: 'back', ArrowRight: 'next_station', ArrowLeft: 'prev_station', '+': 'zoom_in', '=': 'zoom_in', '-': 'zoom_out' }; const it = map[e.key]; if (it && state.snap && state.snap.state !== 'MAP') { e.preventDefault(); send({ type: 'intent', intent: it }); } });
 $('#scopeSel').onchange = (e) => useScope(e.target.value);
@@ -225,5 +227,6 @@ $('#saveScope').onclick = saveScope;
 $('#scopeTable').onclick = async (e) => { const b = e.target.closest('button'); if (!b) return; if (b.dataset.use) useScope(b.dataset.use); if (b.dataset.del && confirm('削除しますか?')) { await fetch('/api/scopes/' + b.dataset.del, { method: 'DELETE' }); refreshScopes(); } };
 $('#pretrainBtn').onclick = startPretrain;
 $('#camTable').onclick = async (e) => { const s = e.target.closest('[data-add]'); if (!s) return; const r = prompt('追加する読み (カタカナ)'); if (!r) return; await fetch(`/api/cameras/${s.dataset.add}/readings`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ reading: r }) }); await loadCams(); renderCamTable(); };
+if (window.OVKana) OVKana.mount('#kanaCtl', { onMessage, session: () => state.session });
 connect();
 })();

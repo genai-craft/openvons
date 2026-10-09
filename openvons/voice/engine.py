@@ -23,7 +23,6 @@ from openvons.core.decision import Thresholds, decide
 from openvons.core.none_calibration import Calibration
 
 from . import kana as K
-from .asr import KanaASR
 from .grammar import CommandSet, Hypothesis
 from rapidfuzz import fuzz
 
@@ -98,7 +97,7 @@ class Analysis:
 
 
 class Recognizer:
-    def __init__(self, asr: KanaASR, calibration: Calibration | None = None, thresholds: Thresholds | None = None, shortlist_k: int = 16,
+    def __init__(self, asr, calibration: Calibration | None = None, thresholds: Thresholds | None = None, shortlist_k: int = 16,
                  embed: bool = True, embed_min_ratio: float = 0.3, embed_max_residual: int = 14, embed_min_morae: int = 4,
                  embed_penalty: float = 0.5):
         self.asr = asr
@@ -151,7 +150,7 @@ class Recognizer:
         timings["shortlist"] = (time.perf_counter() - t0) * 1000
         cands = [cs.hyps[i] for i in idx]
         t0 = time.perf_counter()
-        seqs = [self.asr.tokenize(h.kana) for h in cands]
+        texts = [h.kana for h in cands]
         emb_index: list[int] = []
         if self.embed:
             for i, h in enumerate(cands):
@@ -159,7 +158,10 @@ class Recognizer:
                     continue
                 e = self._embedded(free_kana, h.kana)
                 if e is not None:
-                    emb_index.append(i); seqs.append(self.asr.tokenize(e))
+                    emb_index.append(i); texts.append(e)
+        # まとめてトークン化する (共有 ASR サーバー経由のときに往復を 1 回で済ませる)
+        tm = getattr(self.asr, "tokenize_many", None)
+        seqs = tm(texts) if tm else [self.asr.tokenize(t) for t in texts]
         all_scores, _ = self.asr.score_tokens(enc, seqs)
         scores = all_scores[:len(cands)].copy()
         lens = np.array([len(t) for t in seqs[:len(cands)]], dtype=np.float64)

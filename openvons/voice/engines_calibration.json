@@ -1,0 +1,26 @@
+{
+ "komimi-v12": {
+  "temperature": 1.385,
+  "none_bias": 8.134,
+  "len_bonus": 0.938,
+  "residual_penalty": 0.5
+ },
+ "komimi-v12a": {
+  "temperature": 1.83,
+  "none_bias": 7.111,
+  "len_bonus": 1.003,
+  "residual_penalty": 0.758
+ },
+ "komimi-v12m": {
+  "temperature": 1.802,
+  "none_bias": 4.676,
+  "len_bonus": 1.575,
+  "residual_penalty": 0.5
+ },
+ "komimi-v12s": {
+  "temperature": 1.499,
+  "none_bias": 3.815,
+  "len_bonus": 1.533,
+  "residual_penalty": 0.5
+ }
+}

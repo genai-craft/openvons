@@ -6,7 +6,7 @@
 <meta name="theme-color" content="#0f1318">
 <link rel="manifest" href="/static/manifest.webmanifest">
 <title>道路カメラ音声コマンド — openvons (open-Jev) voice demo</title>
-<link rel="stylesheet" href="/static/style.css?v=1789616058">
+<link rel="stylesheet" href="/static/style.css?v=__V__">
 </head>
 <body>
 <header>
@@ -47,6 +47,7 @@
       <div class="vu"><div id="vuBar"></div></div>
       <span id="vadChip" class="chip">待機</span>
     </div>
+    <div id="kanaCtl"></div>
     <div class="speech" id="speech">—</div>
     <div class="free"><span class="muted">聞こえたカナ:</span> <span id="freeKana"></span></div>
     <div id="decision" class="decision"></div>
@@ -107,6 +108,7 @@
   </section>
 </main>
 
-<script src="/static/app.js?v=1789616058"></script>
+<script src="/shared/kana.js?v=__V__"></script>
+<script src="/static/app.js?v=__V__"></script>
 </body>
 </html>

@@ -3,6 +3,8 @@
 #   scripts/serve_demo.sh start [GPU] [PORT]
 #   scripts/serve_demo.sh stop
 #   scripts/serve_demo.sh restart [GPU] [PORT]
+# kana 入力は共有 ASR サーバー (scripts/serve_asr.sh、既定 http://127.0.0.1:8630) に問い合わせ、このプロセスは GPU を使わない。
+# OPENVONS_ASR_URL=local にすると従来どおりこのプロセスに kana-whisper を読む (そのときだけ GPU 引数が効く)。
 set -u
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 APPNAME=$(basename "$(echo "${JEV_APP:-examples.road_cameras.app}" | tr . /)" ); APPNAME=$(basename "$(dirname "$(echo "${JEV_APP:-examples.road_cameras.app}" | tr . /)")"); STATE=${JEV_STATE_DIR:-${OPENVONS_STATE:-$ROOT/state}/$APPNAME}
@@ -14,7 +16,8 @@ mkdir -p "$STATE/logs"
 stop() { if [ -f "$PID" ] && kill -0 "$(cat "$PID")" 2>/dev/null; then kill "$(cat "$PID")"; sleep 2; fi; rm -f "$PID"; }
 start() {
   cd "$ROOT"
-  HF_HOME="${HF_HOME:-$HOME/.cache/huggingface}" JEV_STATE_DIR="$STATE" CUDA_VISIBLE_DEVICES="$GPU" nohup "$ROOT/.venv/bin/python" -m openvons.voice.demo_server --app "${JEV_APP:-examples.road_cameras.app}" --port "$PORT" --tts "$TTS_URL" ${JEV_SSL_DIR:+--ssl-dir "$JEV_SSL_DIR"} >"$LOG" 2>&1 &
+  ASR="${OPENVONS_ASR_URL:-http://127.0.0.1:8630}"; DEV="$GPU"; [ "$ASR" != "local" ] && DEV=""
+  HF_HOME="${HF_HOME:-$HOME/.cache/huggingface}" JEV_STATE_DIR="$STATE" CUDA_VISIBLE_DEVICES="$DEV" nohup "$ROOT/.venv/bin/python" -m openvons.voice.demo_server --app "${JEV_APP:-examples.road_cameras.app}" --port "$PORT" --tts "$TTS_URL" --asr "$ASR" ${JEV_SSL_DIR:+--ssl-dir "$JEV_SSL_DIR"} >"$LOG" 2>&1 &
   echo $! > "$PID"
   for i in $(seq 1 60); do sleep 2; if grep -q "Uvicorn running" "$LOG" 2>/dev/null; then echo "ready on :$PORT (pid $(cat "$PID"))"; return 0; fi; if ! kill -0 "$(cat "$PID")" 2>/dev/null; then echo "failed:"; tail -20 "$LOG"; return 1; fi; done
   echo "timeout"; tail -5 "$LOG"; return 1

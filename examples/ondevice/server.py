@@ -5,7 +5,12 @@
 ページは transformers.js (WebGPU / WASM) で ONNX の kana ASR を読み、
   自由認識 → 候補の絞り込み → 強制トークン採点 → 校正 → 判断
 までを端末の中で行う。サーバーは (1) モデルファイル (2) 状態ごとのコマンド集合 (読み付き) だけを配る。
-比較用に、同じ音声をサーバー側 (kana-whisper 809M) に投げる経路も残してある。
+比較用に、同じ音声をサーバー側 (kana-whisper 809M、または komimi) に投げる経路も残してある。
+サーバー側の認識は共有 ASR サーバー (OPENVONS_ASR_URL、openvons.voice.asr_server) があればそこへ問い合わせる (このプロセスは GPU を使わない)。
+
+端末内のエンジンは 2 系統から選べる:
+  - kana 蒸留 (whisper 系 ONNX、onnxruntime-web)。候補採点は decoder を候補ぶん回す (このページの JS)
+  - komimi (Conformer-CTC、WebAssembly)。音声 → CTC 行列 → 振り分け (絞り込み・CTC 採点・校正・判断) まで 1 つの WASM (openvons/voice/wasm)
 """
 from __future__ import annotations
 
@@ -53,8 +58,16 @@ def index():
 def config():
     """端末側が必要とするもの: モデル一覧、校正値、特殊トークンの id、非カナの抑制リスト。
     トークナイザの内部構造に依存しないよう、id はサーバーで解決して渡す。"""
+    from openvons.voice.engines import ENGINES, default_calibration
+    kana = []
+    if G.get("komimi_models"):
+        for e in ENGINES.values():
+            if e.browser:
+                kana.append({"id": e.id, "label": e.label, "mb": e.mb, "model": f"/kana/models/{e.file}", "calibration": default_calibration(e.id)})
     return {"models": G["model_list"], "calibration": G["calibration"], "server_asr": G["server_asr"],
-            "prefix": G["prefix"], "eot": G["eot"], "suppress": G["suppress"]}
+            "prefix": G["prefix"], "eot": G["eot"], "suppress": G["suppress"],
+            "komimi": kana, "vocab": "/kana/models/ja1024_vocab.json", "wasm": "/shared/wasm/ovkana.js", "worker": "/shared/kana_worker.js",
+            "server_engines": [e.id for e in ENGINES.values()] if G["server_asr"] else []}
 
 
 #: セルフテスト用の発話 (TTS で合成)。「何が正解か」を画面に出すため、期待する答えも持つ
@@ -191,19 +204,44 @@ def manifest():
     }
 
 
+def server_recognizer(engine: str):
+    """比較用のサーバー側 Recognizer。共有 ASR サーバーがあればそこへ、無ければこのプロセスに読む。"""
+    from openvons.core.none_calibration import Calibration
+    from openvons.voice.engine import Recognizer
+    from openvons.voice.engines import ENGINES, default_calibration, load_local
+    if engine not in ENGINES:
+        raise KeyError(engine)
+    recs = G.setdefault("recognizers", {})
+    if engine not in recs:
+        url = os.environ.get("OPENVONS_ASR_URL", "")
+        if url and url != "local":
+            from openvons.voice.remote import RemoteASR
+            asr = RemoteASR(url, engine)
+        else:
+            asr = load_local(engine)
+        recs[engine] = (Recognizer(asr), G["cal_obj"] if engine == "kana-whisper" else Calibration.from_dict(default_calibration(engine)))
+    return recs[engine]
+
+
 @app.post("/api/server_decide")
 def server_decide(body: dict):
-    """比較用: 同じ音声をサーバーの kana-whisper で認識して判断する。"""
-    if not G.get("recognizer"):
-        return JSONResponse({"error": "server ASR not loaded"}, 503)
+    """比較用: 同じ音声をサーバーで認識して判断する (既定 kana-whisper、body.engine で komimi も)。"""
+    if not G.get("server_asr"):
+        return JSONResponse({"error": "server ASR not enabled (--server-asr)"}, 503)
     import soundfile as sf
     wav, sr = sf.read(io.BytesIO(base64.b64decode(body["audio_base64"])))
     wav = np.asarray(wav, dtype=np.float32)
     if wav.ndim > 1:
         wav = wav.mean(1)
     cs = G["cs_by_state"][body.get("state", "MAP")]
-    d = G["recognizer"].recognize(wav, cs, G["cal_obj"])
-    return d.to_dict()
+    engine = body.get("engine") or "kana-whisper"
+    try:
+        rec, cal = server_recognizer(engine)
+    except KeyError:
+        return JSONResponse({"error": f"unknown engine {engine}"}, 400)
+    d = rec.recognize(wav, cs, cal)
+    out = d.to_dict(); out["engine"] = engine
+    return out
 
 
 def build_command_sets(app_module: str):
@@ -227,7 +265,7 @@ def build_command_sets(app_module: str):
             "n": len(cs),
             # ids = カナをトークン化したもの。端末に BPE を実装しなくて済むよう、サーバーで済ませる
             "hyps": [{"t": h.text, "k": h.kana, "i": h.intent, "s": h.slots, "r": h.risk, "p": h.params,
-                      "c": h.confirmable, "y": h.positive,
+                      "c": h.confirmable, "y": h.positive, "e": h.allow_embed,
                       "ids": G["tok"].encode(h.kana, add_special_tokens=False)} for h in cs.hyps],
         }
     inst.sm.state = list(APP.STATES)[0]
@@ -266,12 +304,13 @@ def main() -> None:
     G["calibration"] = {"temperature": prof.get("temperature", 2.5), "none_bias": prof.get("none_bias", 4.0),
                         "len_bonus": prof.get("len_bonus", 1.4), "residual_penalty": prof.get("residual_penalty", 1.0)}
     G["server_asr"] = bool(args.server_asr)
+    from openvons.core.none_calibration import Calibration
+    G["cal_obj"] = Calibration.from_dict(G["calibration"])
     if args.server_asr:
-        from openvons.core.none_calibration import Calibration
-        from openvons.voice.asr import KanaASR
-        from openvons.voice.engine import Recognizer
-        G["recognizer"] = Recognizer(KanaASR())
-        G["cal_obj"] = Calibration.from_dict(G["calibration"])
+        rec, _ = server_recognizer("kana-whisper")       # 共有 ASR サーバーなら問い合わせるだけ (GPU を使わない)
+        rec.asr.warmup()
+    from openvons.voice.komimi_asr import KOMIMI_HOME
+    G["komimi_models"] = (KOMIMI_HOME / "models") if (KOMIMI_HOME / "models" / "ja1024_vocab.json").exists() else None
     log.info("models: %s  states: %s", G["model_list"], {k: v["n"] for k, v in sets.items()})
     # アプリ固有のルート (kasen ならライブ画像の中継)。端末アプリが指令卓を描くのに要る
     if hasattr(G.get("app_module"), "register_routes"):
@@ -279,6 +318,8 @@ def main() -> None:
     app.mount("/model", StaticFiles(directory=str(models)), name="model")
     app.mount("/static", StaticFiles(directory=str(static)), name="static")
     app.mount("/shared", StaticFiles(directory=str(ROOT / "openvons" / "voice" / "demo_static")), name="shared")
+    if G.get("komimi_models"):
+        app.mount("/kana/models", StaticFiles(directory=str(G["komimi_models"])), name="kana_models")
     import uvicorn
     uvicorn.run(app, host=args.host, port=args.port, log_level="info")
 
