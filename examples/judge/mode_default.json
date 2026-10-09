@@ -1,0 +1,20 @@
+{
+  "_comment": "項目ごとの既定の判定方式。examples/judge/ab_mode.py の実測で head が明確に勝つ項目 (差 >= 10pt) だけ head。全項目 head にすると誤検出が増えて全体が下がるため既定にはしない。",
+  "measured_on": "2026-09-29",
+  "n_clips": 485,
+  "criterion": "head - zeroshot >= 0.10 (それ未満は本数的に誤差なので質問方式のまま)",
+  "overall": {"zeroshot": 0.734, "head": 0.662},
+  "head": {
+    "basketball_shot_made": {"zeroshot": 0.40, "head": 0.70, "diff": 0.30},
+    "double_dribble":       {"zeroshot": 0.53, "head": 0.71, "diff": 0.18},
+    "abandoned_bag":        {"zeroshot": 0.43, "head": 0.60, "diff": 0.17},
+    "soccer_goal":          {"zeroshot": 0.55, "head": 0.70, "diff": 0.15}
+  },
+  "zeroshot_kept": {
+    "soccer_handball": {"zeroshot": 0.80, "head": 0.85, "diff": 0.05, "note": "60本中3本の差で誤差"},
+    "phone_driving":   {"zeroshot": 0.97, "head": 0.57, "diff": -0.40},
+    "collapse":        {"zeroshot": 1.00, "head": 0.72, "diff": -0.28},
+    "fire":            {"zeroshot": 0.97, "head": 0.82, "diff": -0.15},
+    "intrusion":       {"zeroshot": 0.73, "head": 0.58, "diff": -0.15}
+  }
+}

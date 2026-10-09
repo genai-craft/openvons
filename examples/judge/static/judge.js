@@ -97,7 +97,10 @@ $('#judgeBtn').addEventListener('click', async () => {
 function render(d) {
   const tm = d.timing;
   $('#timings').textContent = `動画 ${d.duration.toFixed(1)} 秒 → 窓 ${tm.windows} 個 / 質問 ${tm.asks} 回 | 読み込み ${tm.decode_s.toFixed(2)}s + 符号化 ${tm.encode_s.toFixed(2)}s + 質問 ${tm.ask_s.toFixed(2)}s = ${tm.total_s.toFixed(2)}s (${(d.duration / tm.total_s).toFixed(1)}x リアルタイム) | ${d.model}`;
-  $('#resInfo').textContent = `${d.summary.length} 項目 (${d.mode === 'head' ? '学習 head' : '質問方式'})`;
+  const modeLabel = d.mode === 'head' ? '学習 head'
+    : d.mode === 'auto' ? (d.head_used && d.head_used.length ? `自動・うち ${d.head_used.length} 項目は学習 head` : '自動 (全項目 質問方式)')
+    : '質問方式';
+  $('#resInfo').textContent = `${d.summary.length} 項目 (${modeLabel})`;
   const res = $('#results'); res.innerHTML = '';
   d.summary.forEach(it => {
     const segs = it.segments.map(s => `${s[0].toFixed(0)}〜${s[1].toFixed(0)} 秒`).join(', ');

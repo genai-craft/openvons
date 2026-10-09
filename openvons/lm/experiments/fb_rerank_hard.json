@@ -1,0 +1,176 @@
+{
+  "experiment": "fb_rerank_hard",
+  "model": "Qwen/Qwen3-4B",
+  "pooling": "last",
+  "head": "mlp",
+  "loss": "ce",
+  "mode": "head",
+  "target": "hard",
+  "soft_labels": null,
+  "quantization": "bf16",
+  "dataset": "fb_rerank",
+  "n_train": 992,
+  "epochs": 30,
+  "lr": 0.001,
+  "gpu": "NVIDIA RTX PRO 6000 Blackwell Server Edition",
+  "valid": {
+    "accuracy": 0.10483870967741936,
+    "macro_f1": 0.09977666777666777,
+    "ece": 0.42459877003585145,
+    "brier": 1.2306189724386811,
+    "nll": 5.888048664049305,
+    "n": 124
+  },
+  "test": {
+    "accuracy": 0.0967741935483871,
+    "macro_f1": 0.07822222222222222,
+    "ece": 0.4018802319563205,
+    "brier": 1.1870538175163157,
+    "nll": 5.5300165294479875,
+    "n": 124
+  },
+  "temperature": 10.29592238390198,
+  "test_calibrated": {
+    "accuracy": 0.0967741935483871,
+    "macro_f1": 0.07822222222222222,
+    "ece": 0.031528699051300374,
+    "brier": 0.9570205215506526,
+    "nll": 3.2000435788165866,
+    "n": 124
+  },
+  "reliability_test": [
+    {
+      "bin": "0.0-0.1",
+      "count": 0,
+      "mean_confidence": null,
+      "accuracy": null
+    },
+    {
+      "bin": "0.1-0.2",
+      "count": 2,
+      "mean_confidence": 0.17337622493505478,
+      "accuracy": 0.0
+    },
+    {
+      "bin": "0.2-0.3",
+      "count": 20,
+      "mean_confidence": 0.25050941705703733,
+      "accuracy": 0.0
+    },
+    {
+      "bin": "0.3-0.4",
+      "count": 28,
+      "mean_confidence": 0.353150303874697,
+      "accuracy": 0.10714285714285714
+    },
+    {
+      "bin": "0.4-0.5",
+      "count": 23,
+      "mean_confidence": 0.4392436043075893,
+      "accuracy": 0.08695652173913043
+    },
+    {
+      "bin": "0.5-0.6",
+      "count": 15,
+      "mean_confidence": 0.5363100012143452,
+      "accuracy": 0.13333333333333333
+    },
+    {
+      "bin": "0.6-0.7",
+      "count": 9,
+      "mean_confidence": 0.6244558890660604,
+      "accuracy": 0.1111111111111111
+    },
+    {
+      "bin": "0.7-0.8",
+      "count": 9,
+      "mean_confidence": 0.74471025996738,
+      "accuracy": 0.1111111111111111
+    },
+    {
+      "bin": "0.8-0.9",
+      "count": 9,
+      "mean_confidence": 0.8486747940381368,
+      "accuracy": 0.1111111111111111
+    },
+    {
+      "bin": "0.9-1.0",
+      "count": 9,
+      "mean_confidence": 0.9422420064608256,
+      "accuracy": 0.2222222222222222
+    }
+  ],
+  "reliability_test_calibrated": [
+    {
+      "bin": "0.0-0.1",
+      "count": 122,
+      "mean_confidence": 0.06458999368280913,
+      "accuracy": 0.09836065573770492
+    },
+    {
+      "bin": "0.1-0.2",
+      "count": 2,
+      "mean_confidence": 0.10523104416801968,
+      "accuracy": 0.0
+    },
+    {
+      "bin": "0.2-0.3",
+      "count": 0,
+      "mean_confidence": null,
+      "accuracy": null
+    },
+    {
+      "bin": "0.3-0.4",
+      "count": 0,
+      "mean_confidence": null,
+      "accuracy": null
+    },
+    {
+      "bin": "0.4-0.5",
+      "count": 0,
+      "mean_confidence": null,
+      "accuracy": null
+    },
+    {
+      "bin": "0.5-0.6",
+      "count": 0,
+      "mean_confidence": null,
+      "accuracy": null
+    },
+    {
+      "bin": "0.6-0.7",
+      "count": 0,
+      "mean_confidence": null,
+      "accuracy": null
+    },
+    {
+      "bin": "0.7-0.8",
+      "count": 0,
+      "mean_confidence": null,
+      "accuracy": null
+    },
+    {
+      "bin": "0.8-0.9",
+      "count": 0,
+      "mean_confidence": null,
+      "accuracy": null
+    },
+    {
+      "bin": "0.9-1.0",
+      "count": 0,
+      "mean_confidence": null,
+      "accuracy": null
+    }
+  ],
+  "accuracy": 0.0967741935483871,
+  "ece": 0.4018802319563205,
+  "brier": 1.1870538175163157,
+  "nll": 5.5300165294479875,
+  "macro_f1": 0.07822222222222222,
+  "ece_calibrated": 0.031528699051300374,
+  "latency_p50_ms": 78.40608339756727,
+  "latency_p95_ms": 89.31668354198337,
+  "latency_mean_ms": 79.03287323191762,
+  "train_seconds": 181.5,
+  "gpu_mem_alloc_gb": 13.29
+}

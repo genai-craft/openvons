@@ -18,3 +18,4 @@ app/ios/.symlinks/
 data/store/
 openvons/lm/data/
 openvons/voice/wasm/libovroute.so
+*.egg-info/

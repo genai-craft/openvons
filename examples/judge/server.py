@@ -151,6 +151,20 @@ def summarize(res: dict) -> dict:
     return {"items": out}
 
 
+def _load_mode_default() -> set[str]:
+    """項目ごとの既定方式。head が実測で明確に勝つ項目だけ head を使う (state/judge/mode_default.json、無ければ examples/judge/mode_default.json)。
+    全項目を head にすると誤検出が増えて全体は下がる (485 本で 0.734 -> 0.662) ため、既定は項目ごとに選ぶ。"""
+    f = DATA / "mode_default.json"
+    if not f.exists():
+        f = HERE / "mode_default.json"          # 同梱の実測値 (2026-09-29、485 本)
+    if not f.exists():
+        return set()
+    try:
+        return set(json.load(open(f)).get("head", {}))
+    except Exception:
+        return set()
+
+
 def _load_heads():
     """学習 head (state/judge/head_<key>.pt) があれば読む。"""
     import torch
@@ -209,8 +223,10 @@ def _load():
     model = os.environ.get("JUDGE_MODEL", "Qwen/Qwen3-VL-4B-Instruct")
     G["judge"] = VideoJudge(model, calibration=str(DATA / "calibration.json"))
     G["heads"] = _load_heads()
+    G["head_default"] = _load_mode_default() & set(G["heads"])
     G["judge"].want_hidden = bool(G["heads"])
     print("heads loaded:", sorted(G["heads"]), flush=True)
+    print("head by default:", sorted(G["head_default"]), flush=True)
     G["model"] = model
     static = HERE / "static"
     V["v"] = str(int(max(p.stat().st_mtime for p in static.glob("*"))))
@@ -275,7 +291,7 @@ def sample_answer(file: str):
 
 
 @app.post("/api/judge")
-async def judge(file: UploadFile | None = File(None), sample: str = Form(""), scene: str = Form(""), checks: str = Form(""), state: str = Form(""), mode: str = Form("zeroshot"),
+async def judge(file: UploadFile | None = File(None), sample: str = Form(""), scene: str = Form(""), checks: str = Form(""), state: str = Form(""), mode: str = Form("auto"),
                 split_scenes: str = Form("1"), key: str = Form("")):
     """scene: "" = 全項目、"auto" = カットで区切った区間ごとに場面の種類を判定し、その場面の項目だけ判定する、それ以外 = その場面の項目。"""
     t0 = time.time()
@@ -311,12 +327,17 @@ async def judge(file: UploadFile | None = File(None), sample: str = Form(""), sc
         apply_scene_filter(res, keys)
     if mode == "head":
         apply_heads(res, keys)
+    elif mode == "auto":
+        hk = [k for k in keys if k in G.get("head_default", set())]
+        if hk:
+            apply_heads(res, hk)
     merge_long(res)
     for v in res["questions"].values():
         for w in v["series"]:
             w.pop("_hidden", None)
     summ = summarize(res)
-    return {"duration": res["duration"], "timing": res["timing"], "summary": summ["items"], "mode": mode, "heads": sorted(G.get("heads") or {}), "scenes": res.get("scenes", []), "auto_scene": auto,
+    return {"duration": res["duration"], "timing": res["timing"], "summary": summ["items"], "mode": mode, "heads": sorted(G.get("heads") or {}),
+            "head_used": sorted(set(keys) & G.get("head_default", set())) if mode == "auto" else (sorted(keys) if mode == "head" else []), "scenes": res.get("scenes", []), "auto_scene": auto,
             "series": {k: {"windows": v["series"], "fps": v["fps"], "window_s": v["window_s"]} for k, v in res["questions"].items()},
             "model": G["model"], "elapsed_s": time.time() - t0}
 
