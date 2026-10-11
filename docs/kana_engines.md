@@ -148,3 +148,13 @@ API (デモサーバー):
 - komimi の自由認識の CER (dev 17〜20%) は kana-whisper より大きいが、コマンドの選択では候補の CTC 採点が効き、精度の差はほぼ無い (上の表)。
   ただし有限の選択肢の外 (自由文) を聞き取る用途には向かない。
 - ブラウザの komimi は 1 スレッド。SharedArrayBuffer (COOP/COEP) を有効にしてスレッドを使えばさらに速くなる。
+
+### hayamimi 互換の WebSocket 取り込み (`/ingest`) — 2026-10-11
+
+共有 ASR サーバーは [hayamimi](https://github.com/oboroge0/hayamimi) (MIT) と同じ規約の WebSocket 取り込み口を持つ
+(`openvons/voice/ingest_ws.py`)。接続後に JSON テキスト 1 枚 `{"sr": 16000, "format": "pcm_s16le", "channels": 1}` を送り、
+以後は `pcm_s16le` のバイナリフレームを流すと、発話中は 0.5 s ごとに `{"type":"partial","text":...}`、無音 0.35 s で
+`{"type":"final","text":...,"lang":"ja","speaker":"S1","latency_ms":...,"tier":"komimi-v12a","audio_s":...}` が返る。
+エンジンは `ws://host:8630/ingest?engine=komimi-v12a` のように選ぶ (既定 komimi-v12a)。hayamimi 向けに作られた ESP32 / スマホの
+クライアント (hayamimi の `scripts/ws_mic_client.py` が参照実装) をそのまま向けられる。声の立ち上がり前 0.8 s を発話に前置する
+(hayamimi の冒頭脱落対策と同じ)。

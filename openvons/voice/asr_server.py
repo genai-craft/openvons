@@ -74,6 +74,10 @@ def _stat(eid: str, key: str, ms: float) -> None:
     s[key + "_ms"] = s.get(key + "_ms", 0.0) + ms
 
 
+# [2026-10-11] hayamimi 互換の WebSocket 取り込み (/ingest?engine=...)。規約と区切りは openvons/voice/ingest_ws.py
+from openvons.voice.ingest_ws import register as _register_ingest  # noqa: E402
+_register_ingest(app, get_engine)
+
 @app.get("/healthz")
 def healthz():
     return {"ok": True, "loaded": list(LOADED)}
