@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import copy
 import json
+import os
 import time
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -130,7 +131,16 @@ class VideoJudge:
         from transformers import AutoModelForImageTextToText, AutoProcessor
         self.proc = AutoProcessor.from_pretrained(model)
         self.tok = self.proc.tokenizer
-        self.model = AutoModelForImageTextToText.from_pretrained(model, dtype=torch.bfloat16, attn_implementation="sdpa").to(device).eval()
+        # JUDGE_QUANT=int8|nf4: 言語の部分だけ bitsandbytes で量子化して載せる (16GB の GPU に他のデモと相乗りするため)。画像の部分 (visual) と lm_head は bf16 のまま
+        quant = os.environ.get("JUDGE_QUANT", "").strip().lower()
+        if quant in ("int8", "nf4"):
+            from transformers import BitsAndBytesConfig
+            skip = ["visual", "lm_head"]
+            bnb = (BitsAndBytesConfig(load_in_8bit=True, llm_int8_skip_modules=skip) if quant == "int8" else
+                   BitsAndBytesConfig(load_in_4bit=True, bnb_4bit_quant_type="nf4", bnb_4bit_compute_dtype=torch.bfloat16, bnb_4bit_use_double_quant=True, llm_int8_skip_modules=skip))
+            self.model = AutoModelForImageTextToText.from_pretrained(model, dtype=torch.bfloat16, attn_implementation="sdpa", quantization_config=bnb, device_map={"": device}).eval()
+        else:
+            self.model = AutoModelForImageTextToText.from_pretrained(model, dtype=torch.bfloat16, attn_implementation="sdpa").to(device).eval()
         self.dev = device
         self.letter_ids = [self.tok.encode(f" {L}", add_special_tokens=False)[-1] for L in OPTION_LETTERS]
         self.letter_ids_nospace = [self.tok.encode(L, add_special_tokens=False)[-1] for L in OPTION_LETTERS]
